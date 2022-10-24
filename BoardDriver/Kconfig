@@ -1,0 +1,27 @@
+menu "User Driver Config"	#Menu User driven configuration
+    menu "USER ADC Drivers"	#Menu ADC  Drive configuration
+	    config USER_USING_ADC #USER_USING_ADC
+	        bool "Enable user ADC"
+	        default y			#Selected by default
+	        help				#A prompt message is displayed after help is selected
+	        Use a user-programmed ADC driver
+	endmenu
+    menu "CANFESTIVAL MASTER402"	#Menu CANFESTIVAL MASTER402
+	    config CANFESTIVAL_USING_MASTER402 #CANFESTIVAL_USING_MASTER402
+	        bool "Enable CANFESTIVAL MASTER402"
+			select PKG_USING_CANFESTIVAL   #选择此项自动开启这项
+			select BSP_USING_CAN
+	        default n			#Selected by default
+	        help				#A prompt message is displayed after help is selected
+	        Start the DS402 driver
+	endmenu
+    menu "FREEMODBUSV1.5.0"	#Menu FREEMODBUS V1.5.0
+	    config USER_USING_FREEMODBUS #FREEMODBUS
+	        bool "Enable FREEMODBUS"
+			select BSP_USING_UART1   #选择此项自动开启这项
+			select BSP_USING_UART2
+	        default n			#Selected by default
+	        help				#A prompt message is displayed after help is selected
+	        Start the FREEMODBUS driver
+	endmenu
+endmenu
