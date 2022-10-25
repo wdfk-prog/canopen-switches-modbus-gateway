@@ -35,10 +35,10 @@
 /* Memory Management */
 
 #define RT_USING_MEMPOOL
-#define RT_USING_SMALL_MEM
 #define RT_USING_MEMHEAP
 #define RT_MEMHEAP_FAST_MODE
-#define RT_USING_SMALL_MEM_AS_HEAP
+#define RT_USING_MEMHEAP_AS_HEAP
+#define RT_USING_MEMHEAP_AUTO_BINDING
 #define RT_USING_MEMTRACE
 #define RT_USING_HEAP_ISR
 #define RT_USING_HEAP
@@ -126,11 +126,6 @@
 #define ULOG_USING_ISR_LOG
 #define ULOG_ASSERT_ENABLE
 #define ULOG_LINE_BUF_SIZE 256
-#define ULOG_USING_ASYNC_OUTPUT
-#define ULOG_ASYNC_OUTPUT_BUF_SIZE 2048
-#define ULOG_ASYNC_OUTPUT_BY_THREAD
-#define ULOG_ASYNC_OUTPUT_THREAD_STACK 1024
-#define ULOG_ASYNC_OUTPUT_THREAD_PRIORITY 30
 
 /* log format */
 
@@ -277,6 +272,7 @@
 
 /* Onboard Peripheral Drivers */
 
+#define BSP_USING_SDRAM
 #define BSP_USING_SPI_FLASH
 /* end of Onboard Peripheral Drivers */
 
@@ -294,6 +290,7 @@
 #define BSP_SPI5_RX_USING_DMA
 #define BSP_USING_ONCHIP_RTC
 #define BSP_RTC_USING_LSE
+#define BSP_USING_FMC
 /* end of On-chip Peripheral Drivers */
 
 /* Board extended module Drivers */

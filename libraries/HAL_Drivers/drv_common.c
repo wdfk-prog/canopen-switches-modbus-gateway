@@ -191,6 +191,7 @@ RT_WEAK void rt_hw_board_init(void)
 #ifdef RT_USING_PIN
     rt_hw_pin_init();
 #else
+    extern void MX_GPIO_Init(void);
     MX_GPIO_Init();
 #endif
 

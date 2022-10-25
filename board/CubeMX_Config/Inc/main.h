@@ -54,7 +54,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include <rtthread.h>
 #include <rtdevice.h>
-#include <board.h>
+#include <drv_common.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
