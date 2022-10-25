@@ -8,7 +8,6 @@
 
 #include <stdio.h>
 #include <string.h>
-
 #ifndef RT_DEF_LFS_DRIVERS
     #define RT_DEF_LFS_DRIVERS 1
 #endif

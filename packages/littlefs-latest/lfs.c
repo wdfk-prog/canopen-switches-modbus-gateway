@@ -8,7 +8,7 @@
 #include "lfs.h"
 #include "lfs_util.h"
 
-
+#define memcpy(dst, src, count) rt_memcpy(dst, src, count)
 // some constants used throughout the code
 #define LFS_BLOCK_NULL ((lfs_block_t)-1)
 #define LFS_BLOCK_INLINE ((lfs_block_t)-2)
