@@ -87,6 +87,11 @@
 #define RT_SERIAL_USING_DMA
 #define RT_USING_HWTIMER
 #define RT_USING_RTC
+#define RT_USING_SPI
+#define RT_USING_SFUD
+#define RT_SFUD_USING_SFDP
+#define RT_SFUD_USING_FLASH_INFO_TABLE
+#define RT_SFUD_SPI_MAX_HZ 50000000
 
 /* Using USB */
 
@@ -272,6 +277,7 @@
 
 /* Onboard Peripheral Drivers */
 
+#define BSP_USING_SPI_FLASH
 /* end of Onboard Peripheral Drivers */
 
 /* On-chip Peripheral Drivers */
@@ -281,6 +287,11 @@
 #define BSP_UART3_RX_USING_DMA
 #define BSP_UART3_RX_BUFSIZE 256
 #define BSP_UART3_TX_BUFSIZE 0
+#define BSP_USING_ON_CHIP_FLASH
+#define BSP_USING_SPI
+#define BSP_USING_SPI5
+#define BSP_SPI5_TX_USING_DMA
+#define BSP_SPI5_RX_USING_DMA
 #define BSP_USING_ONCHIP_RTC
 #define BSP_RTC_USING_LSE
 /* end of On-chip Peripheral Drivers */
