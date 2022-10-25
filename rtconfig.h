@@ -48,7 +48,7 @@
 #define RT_USING_DEVICE
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
-#define RT_CONSOLE_DEVICE_NAME "uart1"
+#define RT_CONSOLE_DEVICE_NAME "uart3"
 /* end of Kernel Device Object */
 #define RT_VER_NUM 0x40101
 /* end of RT-Thread Kernel */
@@ -245,17 +245,16 @@
 
 /* Onboard Peripheral Drivers */
 
-#define BSP_USING_USB_TO_USART
 /* end of Onboard Peripheral Drivers */
 
 /* On-chip Peripheral Drivers */
 
 #define BSP_USING_GPIO
 #define BSP_USING_UART
-#define BSP_USING_UART1
-#define BSP_UART1_RX_USING_DMA
-#define BSP_UART1_RX_BUFSIZE 256
-#define BSP_UART1_TX_BUFSIZE 0
+#define BSP_USING_UART3
+#define BSP_UART3_RX_USING_DMA
+#define BSP_UART3_RX_BUFSIZE 256
+#define BSP_UART3_TX_BUFSIZE 0
 /* end of On-chip Peripheral Drivers */
 
 /* Board extended module Drivers */
