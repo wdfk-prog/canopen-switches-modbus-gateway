@@ -24,7 +24,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <rtconfig.h>
+/*ulog include*/
+#define LOG_TAG              "main" 
+#define LOG_LVL              DBG_INFO
+#include <ulog.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +56,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
+static int Version(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -66,7 +70,7 @@ int main(void)
 {
     /* set LED0 pin mode to output */
     rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
-
+    Version();
     while (1)
     {
         rt_pin_write(LED0_PIN, PIN_HIGH);
@@ -154,10 +158,10 @@ void Error_Handler(void)
   */
 static int Version(void)
 {
-//  /* 获取编译版本*/
-//  LOG_I(" \\ | /");
-//  LOG_W("- HLY -    Version FULL V%s",VERSION);
-//  LOG_E(" / | \\     build %s %s",__DATE__,__TIME__);
+ /* 获取编译版本*/
+ LOG_I(" \\ | /");
+ LOG_W("- HLY -    Version FULL V%s",VERSION);
+ LOG_E(" / | \\     build %s %s",__DATE__,__TIME__);
   return RT_EOK;
   /* USER CODE END Error_Handler_Debug */
 }
@@ -175,7 +179,7 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-//  LOG_E("Wrong parameters value: file %s on line %d\r\n", file, line);
+ LOG_E("Wrong parameters value: file %s on line %d\r\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

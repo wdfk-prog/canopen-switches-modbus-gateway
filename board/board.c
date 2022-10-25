@@ -1,68 +1,64 @@
-/*
- * Copyright (c) 2006-2021, RT-Thread Development Team
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Change Logs:
- * Date           Author       Notes
- * 2018-11-06     SummerGift   first version
- */
-
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : 
+  * @brief          : 
+  * @date           :
+  ******************************************************************************
+  * @attention
+  * @author
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
 #include "board.h"
+/* Private includes ----------------------------------------------------------*/
+#ifdef RT_USING_SERIAL
+#ifdef RT_USING_SERIAL_V2
+#include "drv_usart_v2.h"
+#else
+#include "drv_usart.h"
+#endif /* RT_USING_SERIAL */
+#endif /* RT_USING_SERIAL_V2 */
+/*ulog include*/
+#define LOG_TAG              "board" 
+#define LOG_LVL              DBG_INFO
+#include <ulog.h>
+/* Private typedef -----------------------------------------------------------*/
 
-//void SystemClock_Config(void)
-//{
-//    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-//    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-//    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+/* Private define ------------------------------------------------------------*/
+/*串口中断优先级设置*/
+#define FINSH_IRQ_PRIORITY  4
+/* Private macro -------------------------------------------------------------*/
 
-//    /**Configure the main internal regulator output voltage
-//    */
-//    __HAL_RCC_PWR_CLK_ENABLE();
-//    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-//    /**Initializes the CPU, AHB and APB busses clocks
-//    */
-//    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE
-//                                       | RCC_OSCILLATORTYPE_LSE;
-//    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-//    RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-//    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-//    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-//    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-//    RCC_OscInitStruct.PLL.PLLM = 15;
-//    RCC_OscInitStruct.PLL.PLLN = 216;
-//    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-//    RCC_OscInitStruct.PLL.PLLQ = 8;
-//    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-//    {
-//        Error_Handler();
-//    }
-//    /**Activate the Over-Drive mode
-//    */
-//    if (HAL_PWREx_EnableOverDrive() != HAL_OK)
-//    {
-//        Error_Handler();
-//    }
-//    /**Initializes the CPU, AHB and APB busses clocks
-//    */
-//    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-//                                  | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-//    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-//    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-//    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-//    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+/* Private variables ---------------------------------------------------------*/
 
-//    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
-//    {
-//        Error_Handler();
-//    }
-//    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_LTDC | RCC_PERIPHCLK_RTC;
-//    PeriphClkInitStruct.PLLSAI.PLLSAIN = 60;
-//    PeriphClkInitStruct.PLLSAI.PLLSAIR = 2;
-//    PeriphClkInitStruct.PLLSAIDivR = RCC_PLLSAIDIVR_2;
-//    PeriphClkInitStruct.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-//    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-//    {
-//        Error_Handler();
-//    }
-//}
+/* Private function prototypes -----------------------------------------------*/
+#ifdef FINSH_IRQ_PRIORITY
+/**
+  * @brief  设置FINSH串口中断优先级
+  * @param  None
+  * @retval None
+  */
+static int Set_FINSH_IRQ(void)
+{
+  rt_err_t ret = RT_EOK;
+  /* 串口设备句柄 */
+  rt_device_t serial;
+  /* 查找串口设备 */
+  serial = rt_device_find(RT_CONSOLE_DEVICE_NAME);
+  if (!serial)
+  {
+      LOG_E("find %s failed!", RT_CONSOLE_DEVICE_NAME);
+      ret = -RT_ERROR;
+  }
+  struct stm32_uart *uart;
+
+  uart = rt_container_of(serial, struct stm32_uart, serial);
+  /* parameter check */
+  RT_ASSERT(uart != RT_NULL);
+  HAL_NVIC_SetPriority(uart->config->irq_type,FINSH_IRQ_PRIORITY, 0);
+  return ret;
+}
+INIT_COMPONENT_EXPORT(Set_FINSH_IRQ);
+#endif
