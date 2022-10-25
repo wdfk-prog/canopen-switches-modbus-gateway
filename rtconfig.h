@@ -86,7 +86,6 @@
 #define RT_USING_SERIAL_V2
 #define RT_SERIAL_USING_DMA
 #define RT_USING_HWTIMER
-#define RT_USING_PIN
 
 /* Using USB */
 
@@ -272,7 +271,6 @@
 
 /* On-chip Peripheral Drivers */
 
-#define BSP_USING_GPIO
 #define BSP_USING_UART
 #define BSP_USING_UART3
 #define BSP_UART3_RX_USING_DMA
