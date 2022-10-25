@@ -12,6 +12,7 @@ cwd = GetCurrentDir()
 # CubeMX_Config/Src/stm32f4xx_hal_msp.c
 # ''')
 src = Glob('CubeMX_Config/Src/*.c')
+src += Glob('board.c')
 
 if GetDepend(['BSP_USING_ETH']):
     src += Glob('ports/phy_reset.c')
