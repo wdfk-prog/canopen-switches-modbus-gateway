@@ -24,6 +24,7 @@ del *.iex /s
 del *.htm /s
 ::del *.sct /s ::不允许删除链接的设置
 del *.map /s
-::删除cubemx生成无用工程文件夹
-rd /s /q C:\Users\Administrator\Desktop\STM32F4_RTT-rttv4.1.1\board\CubeMX_Config\MDK-ARM
+::删除cubemx生成无用工程文件
+del C:\Users\Administrator\Desktop\STM32F4_RTT-rttv4.1.1\board\CubeMX_Config\MDK-ARM\CubeMX_Config.uvprojx
+del C:\Users\Administrator\Desktop\STM32F4_RTT-rttv4.1.1\board\CubeMX_Config\MDK-ARM\CubeMX_Config.uvoptx
 exit
