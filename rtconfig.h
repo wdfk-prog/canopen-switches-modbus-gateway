@@ -99,6 +99,7 @@
 #define RT_USING_SERIAL
 #define RT_USING_SERIAL_V2
 #define RT_SERIAL_USING_DMA
+#define RT_USING_CAN
 #define RT_USING_HWTIMER
 #define RT_USING_MTD_NOR
 #define RT_USING_RTC
@@ -311,6 +312,13 @@
 /* entertainment: terminal games and other interesting software packages */
 
 /* end of entertainment: terminal games and other interesting software packages */
+#define PKG_USING_CANFESTIVAL
+#define CANFESTIVAL_CAN_DEVICE_NAME "can1"
+#define CANFESTIVAL_TIMER_DEVICE_NAME "timer14"
+#define CANFESTIVAL_RECV_THREAD_PRIO 1
+#define CANFESTIVAL_TIMER_THREAD_PRIO 2
+#define CANFESTIVAL_USING_EG_MASTER402
+#define PKG_USING_CANFESTIVAL_LATEST_VERSION
 /* end of miscellaneous packages */
 
 /* Arduino libraries */
@@ -358,6 +366,10 @@
 #define BSP_USING_SPI5
 #define BSP_SPI5_TX_USING_DMA
 #define BSP_SPI5_RX_USING_DMA
+#define BSP_USING_CAN
+#define BSP_USING_CAN1
+#define BSP_USING_TIM
+#define BSP_USING_TIM14
 #define BSP_USING_ONCHIP_RTC
 #define BSP_RTC_USING_LSE
 #define BSP_USING_WDT
@@ -376,6 +388,7 @@
 
 /* CANFESTIVAL MASTER402 */
 
+#define CANFESTIVAL_USING_MASTER402
 /* end of CANFESTIVAL MASTER402 */
 
 /* FREEMODBUSV1.5.0 */

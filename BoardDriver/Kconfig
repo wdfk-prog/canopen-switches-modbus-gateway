@@ -11,6 +11,8 @@ menu "User Driver Config"	#Menu User driven configuration
 	        bool "Enable CANFESTIVAL MASTER402"
 			select PKG_USING_CANFESTIVAL   #选择此项自动开启这项
 			select BSP_USING_CAN
+			select BSP_USING_TIM
+			select BSP_USING_TIM14
 	        default n			#Selected by default
 	        help				#A prompt message is displayed after help is selected
 	        Start the DS402 driver
