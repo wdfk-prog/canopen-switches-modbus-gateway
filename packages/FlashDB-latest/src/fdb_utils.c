@@ -17,6 +17,7 @@
 #include <fdb_low_lvl.h>
 
 #define FDB_LOG_TAG "[utils]"
+
 static const uint32_t crc32_table[] =
 {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
