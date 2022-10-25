@@ -78,6 +78,14 @@
 #define MSH_USING_BUILT_IN_COMMANDS
 #define FINSH_USING_DESCRIPTION
 #define FINSH_ARG_MAX 10
+#define RT_USING_DFS
+#define DFS_USING_POSIX
+#define DFS_USING_WORKDIR
+#define DFS_FILESYSTEMS_MAX 4
+#define DFS_FILESYSTEM_TYPES_MAX 4
+#define DFS_FD_MAX 16
+#define RT_USING_DFS_DEVFS
+#define RT_USING_DFS_ROMFS
 #define RT_USING_FAL
 #define FAL_DEBUG_CONFIG
 #define FAL_DEBUG 1
@@ -221,6 +229,25 @@
 /* Micrium: Micrium software products porting for RT-Thread */
 
 /* end of Micrium: Micrium software products porting for RT-Thread */
+#define PKG_USING_FLASHDB
+#define FDB_USING_KVDB
+#define FDB_KV_AUTO_UPDATE
+#define FDB_USING_FAL_MODE
+#define FDB_WRITE_GRAN_8BITS
+#define FDB_WRITE_GRAN 8
+#define FDB_NOT_USING_FILE_MODE
+#define FDB_DEBUG_ENABLE
+#define PKG_USING_FLASHDB_LATEST_VERSION
+#define PKG_FLASHDB_VER_NUM 0x99999
+#define PKG_USING_LITTLEFS
+#define PKG_USING_LITTLEFS_LATEST_VERSION
+#define LFS_READ_SIZE 256
+#define LFS_PROG_SIZE 256
+#define LFS_BLOCK_SIZE 4096
+#define LFS_CACHE_SIZE 256
+#define LFS_BLOCK_CYCLES 100
+#define LFS_THREADSAFE
+#define LFS_LOOKAHEAD_MAX 128
 /* end of system packages */
 
 /* peripheral libraries and drivers */
