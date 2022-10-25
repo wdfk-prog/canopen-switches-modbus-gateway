@@ -25,24 +25,28 @@
 extern const struct fal_flash_dev stm32_onchip_flash_16k;
 extern const struct fal_flash_dev stm32_onchip_flash_64k;
 extern const struct fal_flash_dev stm32_onchip_flash_128k;
-
+extern       struct fal_flash_dev nor_flash0;
 /* flash device table */
 #define FAL_FLASH_DEV_TABLE                                          \
 {                                                                    \
     &stm32_onchip_flash_16k,                                         \
     &stm32_onchip_flash_64k,                                         \
     &stm32_onchip_flash_128k,                                        \
+    &nor_flash0,                                                     \
 }
 /* ====================== Partition Configuration ========================== */
 #ifdef FAL_PART_HAS_TABLE_CFG
-
-/* partition table */
+/* partition table  
+    NOR_FLASH0 ->W25Q128 16MB*/
 #define FAL_PART_TABLE                                                                                                     \
 {                                                                                                                          \
-    {FAL_PART_MAGIC_WROD, "bootloader", "onchip_flash_16k",  0 , FLASH_SIZE_GRANULARITY_16K , 0}, \
-    {FAL_PART_MAGIC_WROD, "param",      "onchip_flash_64k",  0 , FLASH_SIZE_GRANULARITY_64K , 0}, \
-    {FAL_PART_MAGIC_WROD, "app",        "onchip_flash_128k", 0 , FLASH_SIZE_GRANULARITY_128K, 0}, \
+    {FAL_PART_MAGIC_WROD, "bootloader", "onchip_flash_16k",  0             , FLASH_SIZE_GRANULARITY_16K , 0}, \
+    {FAL_PART_MAGIC_WROD, "param",      "onchip_flash_64k",  0             , FLASH_SIZE_GRANULARITY_64K , 0}, \
+    {FAL_PART_MAGIC_WROD, "app",        "onchip_flash_128k", 0             , 5 * 128 * 1024,              0}, \
+    {FAL_PART_MAGIC_WROD, "flashdb",    "onchip_flash_128k", 5 * 128 * 1024, 2 * 128 * 1024,              0}, \
+    {FAL_PART_MAGIC_WROD, "download",   "W25Q128",           0             ,    1024 * 1024,              0}, \
+    {FAL_PART_MAGIC_WROD, "factory",    "W25Q128",           1024 * 1024   ,    1024 * 1024,              0}, \
+    {FAL_PART_MAGIC_WROD, "filesystem", "W25Q128",     (1024 * 2) * 1024   ,(16-2)*1024*1024,             0}, \
 }
-
 #endif /* FAL_PART_HAS_TABLE_CFG */
 #endif /* _FAL_CFG_H_ */

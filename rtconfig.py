@@ -75,11 +75,11 @@ elif PLATFORM == 'armcc':
     AFLAGS = DEVICE + ' --apcs=interwork '
     LFLAGS = DEVICE + ' --scatter "board\linker_scripts\link.sct" --info sizes --info totals --info unused --info veneers --list rt-thread.map --strict'
     CFLAGS += ' -I' + EXEC_PATH + '/ARM/ARMCC/include'
-    LFLAGS += ' --libpath=' + EXEC_PATH + '/ARM/ARMCC/lib'
+#     LFLAGS += ' --libpath=' + EXEC_PATH + '/ARM/ARMCC/lib'
 
     CFLAGS += ' -D__MICROLIB '
     AFLAGS += ' --pd "__MICROLIB SETA 1" '
-    LFLAGS += ' --library_type=microlib '
+#     LFLAGS += ' --library_type=microlib '
     EXEC_PATH += '/ARM/ARMCC/bin/'
 
     if BUILD == 'debug':
@@ -89,7 +89,7 @@ elif PLATFORM == 'armcc':
         CFLAGS += ' -O2'
 
     CXXFLAGS = CFLAGS 
-    CFLAGS += ' -std=c99'
+#     CFLAGS += ' -std=c99'
 
     POST_ACTION = 'fromelf --bin $TARGET --output rtthread.bin \nfromelf -z $TARGET'
 
@@ -148,3 +148,4 @@ def dist_handle(BSP_ROOT, dist_dir):
     sys.path.append(os.path.join(os.path.dirname(BSP_ROOT), 'tools'))
     from sdk_dist import dist_do_building
     dist_do_building(BSP_ROOT, dist_dir)
+

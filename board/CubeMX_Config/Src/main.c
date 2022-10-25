@@ -68,8 +68,12 @@ static int Version(void);
   * @retval int
   * @note   None.
   */
+#include <fal.h>
+#include <fal_cfg.h>
 int main(void)
 {
+    /* ≥ı ºªØ fal */
+    fal_init();
     /* set LED0 pin mode to output */
     Version();
     while (1)
