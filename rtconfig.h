@@ -86,6 +86,7 @@
 #define RT_USING_SERIAL_V2
 #define RT_SERIAL_USING_DMA
 #define RT_USING_HWTIMER
+#define RT_USING_RTC
 
 /* Using USB */
 
@@ -119,7 +120,7 @@
 #define ULOG_OUTPUT_LVL 7
 #define ULOG_USING_ISR_LOG
 #define ULOG_ASSERT_ENABLE
-#define ULOG_LINE_BUF_SIZE 128
+#define ULOG_LINE_BUF_SIZE 256
 #define ULOG_USING_ASYNC_OUTPUT
 #define ULOG_ASYNC_OUTPUT_BUF_SIZE 2048
 #define ULOG_ASYNC_OUTPUT_BY_THREAD
@@ -128,8 +129,10 @@
 
 /* log format */
 
+#define ULOG_OUTPUT_FLOAT
 #define ULOG_USING_COLOR
 #define ULOG_OUTPUT_TIME
+#define ULOG_TIME_USING_TIMESTAMP
 #define ULOG_OUTPUT_LEVEL
 #define ULOG_OUTPUT_TAG
 /* end of log format */
@@ -196,6 +199,8 @@
 
 /* enhanced kernel services */
 
+#define PKG_USING_RT_VSNPRINTF_FULL
+#define PKG_USING_RT_VSNPRINTF_FULL_LATEST_VERSION
 /* end of enhanced kernel services */
 
 /* acceleration: Assembly language or algorithmic acceleration packages */
@@ -276,6 +281,8 @@
 #define BSP_UART3_RX_USING_DMA
 #define BSP_UART3_RX_BUFSIZE 256
 #define BSP_UART3_TX_BUFSIZE 0
+#define BSP_USING_ONCHIP_RTC
+#define BSP_RTC_USING_LSE
 /* end of On-chip Peripheral Drivers */
 
 /* Board extended module Drivers */
