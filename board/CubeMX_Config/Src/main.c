@@ -134,7 +134,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-#ifdef CUBU_ERROR
+#ifdef CUBE_ERROR
 /* USER CODE END 4 */
 
 /**

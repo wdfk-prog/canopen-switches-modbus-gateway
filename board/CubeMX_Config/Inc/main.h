@@ -89,7 +89,7 @@ extern "C" {
 #define MINUTE ((__TIME__ [3] - '0') * 10 + (__TIME__ [4] - '0'))
 #define SEC    ((__TIME__ [6] - '0') * 10 + (__TIME__ [7] - '0'))
 #define BURN_TIME 15
-#ifdef CUBU_ERROR
+#ifdef CUBE_ERROR
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
