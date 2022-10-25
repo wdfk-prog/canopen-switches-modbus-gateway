@@ -52,7 +52,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <rtthread.h>
+#include <rtdevice.h>
+#include <board.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

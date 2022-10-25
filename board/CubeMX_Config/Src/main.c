@@ -34,6 +34,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+/* defined the LED0 pin: PH10 */
+#define LED0_PIN    GET_PIN(D, 12)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -56,6 +58,20 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+int main(void)
+{
+    /* set LED0 pin mode to output */
+    rt_pin_mode(LED0_PIN, PIN_MODE_OUTPUT);
+
+    while (1)
+    {
+        rt_pin_write(LED0_PIN, PIN_HIGH);
+        rt_thread_mdelay(500);
+        rt_pin_write(LED0_PIN, PIN_LOW);
+        rt_thread_mdelay(500);
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -116,7 +132,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+#ifdef CUBU_ERROR
 /* USER CODE END 4 */
 
 /**
@@ -127,10 +143,19 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+#endif
+/**
+  * @brief  获取编译版本
+  * @param  None
+  * @retval None
+  */
+static int Version(void)
+{
+//  /* 获取编译版本*/
+//  LOG_I(" \\ | /");
+//  LOG_W("- HLY -    Version FULL V%s",VERSION);
+//  LOG_E(" / | \\     build %s %s",__DATE__,__TIME__);
+  return RT_EOK;
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -146,7 +171,8 @@ void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+//  LOG_E("Wrong parameters value: file %s on line %d\r\n", file, line);
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

@@ -7,7 +7,6 @@ cwd = GetCurrentDir()
 # The set of source files associated with this SConscript file.
 
 src = Split('''
-CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c
 STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
 STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c
 STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c
