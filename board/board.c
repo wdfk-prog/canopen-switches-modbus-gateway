@@ -31,7 +31,7 @@
 /* Private define ------------------------------------------------------------*/
 #define RTC_NAME       "rtc"
 /*串口中断优先级设置*/
-#define FINSH_IRQ_PRIORITY  4
+//#define FINSH_IRQ_PRIORITY  
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
