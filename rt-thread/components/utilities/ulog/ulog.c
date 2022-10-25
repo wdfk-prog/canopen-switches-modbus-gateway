@@ -9,6 +9,7 @@
  */
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include "ulog.h"
 #include "rthw.h"
 
@@ -50,7 +51,7 @@
 
 /* output log default color definition */
 #ifndef ULOG_COLOR_DEBUG
-#define ULOG_COLOR_DEBUG               RT_NULL
+#define ULOG_COLOR_DEBUG               (F_WHITE)//RT_NULL
 #endif
 #ifndef ULOG_COLOR_INFO
 #define ULOG_COLOR_INFO                (F_GREEN)
@@ -423,7 +424,7 @@ RT_WEAK rt_size_t ulog_formater(char *log_buf, rt_uint32_t level, const char *ta
     return log_len;
 }
 
-static void ulog_output_to_all_backend(rt_uint32_t level, const char *tag, rt_bool_t is_raw, const char *log, rt_size_t len)
+static void ulog_output_to_all_backend(rt_uint8_t log_id,rt_uint32_t level, const char *tag, rt_bool_t is_raw, const char *log, rt_size_t len)
 {
     rt_slist_t *node;
     ulog_backend_t backend;
@@ -456,7 +457,7 @@ static void ulog_output_to_all_backend(rt_uint32_t level, const char *tag, rt_bo
         }
         if (backend->support_color || is_raw)
         {
-            backend->output(backend, level, tag, is_raw, log, len);
+            backend->output(backend,log_id, level, tag, is_raw, log, len);
         }
         else
         {
@@ -474,13 +475,13 @@ static void ulog_output_to_all_backend(rt_uint32_t level, const char *tag, rt_bo
                 output_log += color_hdr_len;
                 output_len -= (color_hdr_len + (sizeof(CSI_END) - 1));
             }
-            backend->output(backend, level, tag, is_raw, output_log, output_len);
+            backend->output(backend,log_id, level, tag, is_raw, output_log, output_len);
         }
 #endif /* !defined(ULOG_USING_COLOR) || defined(ULOG_USING_SYSLOG) */
     }
 }
 
-static void do_output(rt_uint32_t level, const char *tag, rt_bool_t is_raw, const char *log_buf, rt_size_t log_len)
+static void do_output(rt_uint8_t log_id,rt_uint32_t level, const char *tag, rt_bool_t is_raw, const char *log_buf, rt_size_t log_len)
 {
 #ifdef ULOG_USING_ASYNC_OUTPUT
     rt_size_t log_buf_size = log_len + sizeof((char)'\0');
@@ -501,6 +502,7 @@ static void do_output(rt_uint32_t level, const char *tag, rt_bool_t is_raw, cons
             log_frame->level = level;
             log_frame->log_len = log_len;
             log_frame->tag = tag;
+            log_frame->id = log_id;
             log_frame->log = (const char *)log_blk->buf + sizeof(struct ulog_frame);
             /* copy log data */
             rt_strncpy((char *)(log_blk->buf + sizeof(struct ulog_frame)), log_buf, log_buf_size);
@@ -555,7 +557,7 @@ static void do_output(rt_uint32_t level, const char *tag, rt_bool_t is_raw, cons
  * @param format output format
  * @param args variable argument list
  */
-void ulog_voutput(rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, va_list args)
+void ulog_voutput(rt_uint8_t log_id,rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, va_list args)
 {
     static rt_bool_t ulog_voutput_recursion = RT_FALSE;
     char *log_buf = RT_NULL;
@@ -640,7 +642,7 @@ void ulog_voutput(rt_uint32_t level, const char *tag, rt_bool_t newline, const c
     }
 #endif /* ULOG_USING_FILTER */
     /* do log output */
-    do_output(level, tag, RT_FALSE, log_buf, log_len);
+    do_output(log_id,level, tag, RT_FALSE, log_buf, log_len);
 
     ulog_voutput_recursion = RT_FALSE;
 
@@ -657,14 +659,14 @@ void ulog_voutput(rt_uint32_t level, const char *tag, rt_bool_t newline, const c
  * @param format output format
  * @param ... args
  */
-void ulog_output(rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, ...)
+void ulog_output(rt_uint8_t log_id,rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, ...)
 {
     va_list args;
 
     /* args point to the first variable parameter */
     va_start(args, format);
 
-    ulog_voutput(level, tag, newline, format, args);
+    ulog_voutput(log_id,level, tag, newline, format, args);
 
     va_end(args);
 }
@@ -675,7 +677,7 @@ void ulog_output(rt_uint32_t level, const char *tag, rt_bool_t newline, const ch
  * @param format output format
  * @param ... args
  */
-void ulog_raw(const char *format, ...)
+void ulog_raw(rt_uint8_t log_id, const char *format, ...)
 {
     rt_size_t log_len = 0;
     char *log_buf = RT_NULL;
@@ -713,7 +715,7 @@ void ulog_raw(const char *format, ...)
     }
 
     /* do log output */
-    do_output(LOG_LVL_DBG, "", RT_TRUE, log_buf, log_len);
+    do_output(log_id,LOG_LVL_DBG, "", RT_TRUE, log_buf, log_len);
 
     /* unlock output */
     output_unlock();
@@ -727,7 +729,7 @@ void ulog_raw(const char *format, ...)
  * @param buf hex buffer
  * @param size buffer size
  */
-void ulog_hexdump(const char *tag, rt_size_t width, rt_uint8_t *buf, rt_size_t size)
+void ulog_hexdump(rt_uint8_t log_id, const char *tag, rt_size_t width, rt_uint8_t *buf, rt_size_t size)
 {
 #define __is_print(ch)       ((unsigned int)((ch) - ' ') < 127u - ' ')
 
@@ -867,7 +869,7 @@ void ulog_hexdump(const char *tag, rt_size_t width, rt_uint8_t *buf, rt_size_t s
         /*add string end sign*/
         log_buf[log_len] = '\0';
         /* do log output */
-        do_output(LOG_LVL_DBG, RT_NULL, RT_TRUE, log_buf, log_len);
+        do_output(log_id,LOG_LVL_DBG, RT_NULL, RT_TRUE, log_buf, log_len);
     }
     /* unlock output */
     output_unlock();
@@ -1393,7 +1395,7 @@ void ulog_async_output(void)
         if (log_frame->magic == ULOG_FRAME_MAGIC)
         {
             /* output to all backends */
-            ulog_output_to_all_backend(log_frame->level, log_frame->tag, log_frame->is_raw, log_frame->log,
+            ulog_output_to_all_backend(log_frame->id,log_frame->level, log_frame->tag, log_frame->is_raw, log_frame->log,
                     log_frame->log_len);
         }
         rt_rbb_blk_free(ulog.async_rbb, log_blk);
@@ -1407,7 +1409,7 @@ void ulog_async_output(void)
         {
             rt_size_t len = rt_ringbuffer_get(ulog.async_rb, (rt_uint8_t *)log, log_len);
             log[log_len] = '\0';
-            ulog_output_to_all_backend(LOG_LVL_DBG, "", RT_TRUE, log, len);
+            ulog_output_to_all_backend(log_frame->id,LOG_LVL_DBG, "", RT_TRUE, log, len);
             rt_free(log);
         }
     }
