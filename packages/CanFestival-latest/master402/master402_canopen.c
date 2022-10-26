@@ -52,7 +52,7 @@ struct servo_config_state
 #define SYNC_ENANBLE(NodeID) ((1 << 30) | (NodeID))
 /* Private variables ---------------------------------------------------------*/
 CO_Data *OD_Data = &master402_Data;
-s_BOARD agv_board  = {"0", "1M"};//没用
+s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
 static struct servo_config_state servo_conf[MAX_SERVO_COUNT + 1];//配置状态
 /* Private function prototypes -----------------------------------------------*/
 static void config_servo_param(uint8_t nodeId, struct servo_config_state *conf);
