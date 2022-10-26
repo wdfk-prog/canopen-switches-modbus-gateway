@@ -15,11 +15,17 @@
 /* Includes ------------------------------------------------------------------*/
 #include "master402_od.h"
 /* Exported types ------------------------------------------------------------*/
-
+/** 
+  * @brief  节点ID
+  */  
+typedef enum
+{
+  SERVO_NODEID_1 = 0x02,
+//  SERVO_NODEID_2,
+  MAX_NODE_COUNT,         //最大节点数量
+}NODEID_NUM;
 /* Exported constants --------------------------------------------------------*/
-#define MAX_NODE_COUNT        1//最大节点数量
 #define CONTROLLER_NODEID 	  1//控制器ID
-#define SERVO_NODEID_1 		    2//伺服ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
 
 #define SDO_REPLY_TIMEOUT     50//5秒等待超时

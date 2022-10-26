@@ -54,9 +54,10 @@ typedef struct
 /* Private variables ---------------------------------------------------------*/
 CO_Data *OD_Data = &master402_Data;
 s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
-static servo_config_state servo_conf[MAX_NODE_COUNT] = 
+static servo_config_state servo_conf[MAX_NODE_COUNT - 2] = 
 {
   {SERVO_NODEID_1,},
+//  {SERVO_NODEID_2,},
 };//配置状态
 /* Private function prototypes -----------------------------------------------*/
 static void config_servo_param(uint8_t nodeId, servo_config_state *conf);
@@ -392,7 +393,7 @@ void canopen_start_thread_entry(void *parameter)
 	UNS32 consumer_heartbeat_time;
   UNS8 nodeId = 0;
   /*写入节点字典*/
-  for (UNS8 i = 0; i < MAX_NODE_COUNT; i++)
+  for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
     nodeId = servo_conf[i].nodeID;
     Write_SLAVE_control_word(nodeId,0x80);//初始化进行错误重置
@@ -466,10 +467,10 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         UNS8 subIndex, UNS32 count, UNS8 dataType, void *data, UNS8 useBlockMode) 
 {
 
-    if(nodeId < 1 || nodeId > MAX_NODE_COUNT + 1) 
+    if(nodeId < 1 || nodeId > MAX_NODE_COUNT - 1) 
     {
-      LOG_W("invalid nodeId:%d, should between 1 and %d",nodeId,MAX_NODE_COUNT + 1);
-        return false;
+      LOG_W("invalid nodeId:%d, should between 2 and %d",nodeId,MAX_NODE_COUNT-1);
+      return false;
     }
 
     int try_cnt = 3;
