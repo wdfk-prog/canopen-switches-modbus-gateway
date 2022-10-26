@@ -170,6 +170,19 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                        { RW, uint8, sizeof (UNS8), (void*)&master402_obj1280_Node_ID_of_the_SDO_Server, NULL }
                      };
 
+/* index 0x1281 :   Client SDO 2 Parameter. */
+                    UNS8 master402_highestSubIndex_obj1281 = 3; /* number of subindex - 1*/
+                    UNS32 master402_obj1281_COB_ID_Client_to_Server_Transmit_SDO = 0x603;	/* 1539 */
+                    UNS32 master402_obj1281_COB_ID_Server_to_Client_Receive_SDO = 0x583;	/* 1411 */
+                    UNS8 master402_obj1281_Node_ID_of_the_SDO_Server = 0x3;	/* 3 */
+                    subindex master402_Index1281[] = 
+                     {
+                       { RO, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1281, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1281_COB_ID_Client_to_Server_Transmit_SDO, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1281_COB_ID_Server_to_Client_Receive_SDO, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1281_Node_ID_of_the_SDO_Server, NULL }
+                     };
+
 /* index 0x1400 :   Receive PDO 1 Parameter. */
                     UNS8 master402_highestSubIndex_obj1400 = 6; /* number of subindex - 1*/
                     UNS32 master402_obj1400_COB_ID_used_by_PDO = 0x182;	/* 386 */
@@ -208,6 +221,44 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                        { RW, uint8, sizeof (UNS8), (void*)&master402_obj1401_SYNC_start_value, NULL }
                      };
 
+/* index 0x1402 :   Receive PDO 3 Parameter. */
+                    UNS8 master402_highestSubIndex_obj1402 = 6; /* number of subindex - 1*/
+                    UNS32 master402_obj1402_COB_ID_used_by_PDO = 0x183;	/* 387 */
+                    UNS8 master402_obj1402_Transmission_Type = 0x1;	/* 1 */
+                    UNS16 master402_obj1402_Inhibit_Time = 0x0;	/* 0 */
+                    UNS8 master402_obj1402_Compatibility_Entry = 0x0;	/* 0 */
+                    UNS16 master402_obj1402_Event_Timer = 0x0;	/* 0 */
+                    UNS8 master402_obj1402_SYNC_start_value = 0x0;	/* 0 */
+                    subindex master402_Index1402[] = 
+                     {
+                       { RO, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1402, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1402_COB_ID_used_by_PDO, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1402_Transmission_Type, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1402_Inhibit_Time, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1402_Compatibility_Entry, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1402_Event_Timer, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1402_SYNC_start_value, NULL }
+                     };
+
+/* index 0x1403 :   Receive PDO 4 Parameter. */
+                    UNS8 master402_highestSubIndex_obj1403 = 6; /* number of subindex - 1*/
+                    UNS32 master402_obj1403_COB_ID_used_by_PDO = 0x283;	/* 643 */
+                    UNS8 master402_obj1403_Transmission_Type = 0x1;	/* 1 */
+                    UNS16 master402_obj1403_Inhibit_Time = 0x0;	/* 0 */
+                    UNS8 master402_obj1403_Compatibility_Entry = 0x0;	/* 0 */
+                    UNS16 master402_obj1403_Event_Timer = 0x0;	/* 0 */
+                    UNS8 master402_obj1403_SYNC_start_value = 0x0;	/* 0 */
+                    subindex master402_Index1403[] = 
+                     {
+                       { RO, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1403, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1403_COB_ID_used_by_PDO, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1403_Transmission_Type, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1403_Inhibit_Time, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1403_Compatibility_Entry, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1403_Event_Timer, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1403_SYNC_start_value, NULL }
+                     };
+
 /* index 0x1600 :   Receive PDO 1 Mapping. */
                     UNS8 master402_highestSubIndex_obj1600 = 2; /* number of subindex - 1*/
                     UNS32 master402_obj1600[] = 
@@ -232,6 +283,32 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                      {
                        { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1601, NULL },
                        { RW, uint32, sizeof (UNS32), (void*)&master402_obj1601[0], NULL }
+                     };
+
+/* index 0x1602 :   Receive PDO 3 Mapping. */
+                    UNS8 master402_highestSubIndex_obj1602 = 2; /* number of subindex - 1*/
+                    UNS32 master402_obj1602[] = 
+                    {
+                      0x60640020,	/* 1617166368 */
+                      0x606C0020	/* 1617690656 */
+                    };
+                    subindex master402_Index1602[] = 
+                     {
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1602, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1602[0], NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1602[1], NULL }
+                     };
+
+/* index 0x1603 :   Receive PDO 4 Mapping. */
+                    UNS8 master402_highestSubIndex_obj1603 = 1; /* number of subindex - 1*/
+                    UNS32 master402_obj1603[] = 
+                    {
+                      0x60410010	/* 1614872592 */
+                    };
+                    subindex master402_Index1603[] = 
+                     {
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1603, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1603[0], NULL }
                      };
 
 /* index 0x1800 :   Transmit PDO 1 Parameter. */
@@ -272,6 +349,44 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                        { RW, uint8, sizeof (UNS8), (void*)&master402_obj1801_SYNC_start_value, NULL }
                      };
 
+/* index 0x1802 :   Transmit PDO 3 Parameter. */
+                    UNS8 master402_highestSubIndex_obj1802 = 6; /* number of subindex - 1*/
+                    UNS32 master402_obj1802_COB_ID_used_by_PDO = 0x303;	/* 771 */
+                    UNS8 master402_obj1802_Transmission_Type = 0x1;	/* 1 */
+                    UNS16 master402_obj1802_Inhibit_Time = 0x0;	/* 0 */
+                    UNS8 master402_obj1802_Compatibility_Entry = 0x0;	/* 0 */
+                    UNS16 master402_obj1802_Event_Timer = 0x0;	/* 0 */
+                    UNS8 master402_obj1802_SYNC_start_value = 0x0;	/* 0 */
+                    subindex master402_Index1802[] = 
+                     {
+                       { RO, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1802, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1802_COB_ID_used_by_PDO, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1802_Transmission_Type, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1802_Inhibit_Time, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1802_Compatibility_Entry, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1802_Event_Timer, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1802_SYNC_start_value, NULL }
+                     };
+
+/* index 0x1803 :   Transmit PDO 4 Parameter. */
+                    UNS8 master402_highestSubIndex_obj1803 = 6; /* number of subindex - 1*/
+                    UNS32 master402_obj1803_COB_ID_used_by_PDO = 0x503;	/* 1283 */
+                    UNS8 master402_obj1803_Transmission_Type = 0x1;	/* 1 */
+                    UNS16 master402_obj1803_Inhibit_Time = 0x0;	/* 0 */
+                    UNS8 master402_obj1803_Compatibility_Entry = 0x0;	/* 0 */
+                    UNS16 master402_obj1803_Event_Timer = 0x0;	/* 0 */
+                    UNS8 master402_obj1803_SYNC_start_value = 0x0;	/* 0 */
+                    subindex master402_Index1803[] = 
+                     {
+                       { RO, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1803, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1803_COB_ID_used_by_PDO, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1803_Transmission_Type, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1803_Inhibit_Time, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1803_Compatibility_Entry, NULL },
+                       { RW, uint16, sizeof (UNS16), (void*)&master402_obj1803_Event_Timer, NULL },
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_obj1803_SYNC_start_value, NULL }
+                     };
+
 /* index 0x1A00 :   Transmit PDO 1 Mapping. */
                     UNS8 master402_highestSubIndex_obj1A00 = 2; /* number of subindex - 1*/
                     UNS32 master402_obj1A00[] = 
@@ -296,6 +411,32 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                      {
                        { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1A01, NULL },
                        { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A01[0], NULL }
+                     };
+
+/* index 0x1A02 :   Transmit PDO 3 Mapping. */
+                    UNS8 master402_highestSubIndex_obj1A02 = 2; /* number of subindex - 1*/
+                    UNS32 master402_obj1A02[] = 
+                    {
+                      0x607A0020,	/* 1618608160 */
+                      0x60FF0020	/* 1627324448 */
+                    };
+                    subindex master402_Index1A02[] = 
+                     {
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1A02, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A02[0], NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A02[1], NULL }
+                     };
+
+/* index 0x1A03 :   Transmit PDO 4 Mapping. */
+                    UNS8 master402_highestSubIndex_obj1A03 = 1; /* number of subindex - 1*/
+                    UNS32 master402_obj1A03[] = 
+                    {
+                      0x60C10120	/* 1623261472 */
+                    };
+                    subindex master402_Index1A03[] = 
+                     {
+                       { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1A03, NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A03[0], NULL }
                      };
 
 /* index 0x2124 :   Mapped variable S_move */
@@ -406,14 +547,23 @@ const indextable master402_objdict[] =
   { (subindex*)master402_Index1018,sizeof(master402_Index1018)/sizeof(master402_Index1018[0]), 0x1018},
   { (subindex*)master402_Index1200,sizeof(master402_Index1200)/sizeof(master402_Index1200[0]), 0x1200},
   { (subindex*)master402_Index1280,sizeof(master402_Index1280)/sizeof(master402_Index1280[0]), 0x1280},
+  { (subindex*)master402_Index1281,sizeof(master402_Index1281)/sizeof(master402_Index1281[0]), 0x1281},
   { (subindex*)master402_Index1400,sizeof(master402_Index1400)/sizeof(master402_Index1400[0]), 0x1400},
   { (subindex*)master402_Index1401,sizeof(master402_Index1401)/sizeof(master402_Index1401[0]), 0x1401},
+  { (subindex*)master402_Index1402,sizeof(master402_Index1402)/sizeof(master402_Index1402[0]), 0x1402},
+  { (subindex*)master402_Index1403,sizeof(master402_Index1403)/sizeof(master402_Index1403[0]), 0x1403},
   { (subindex*)master402_Index1600,sizeof(master402_Index1600)/sizeof(master402_Index1600[0]), 0x1600},
   { (subindex*)master402_Index1601,sizeof(master402_Index1601)/sizeof(master402_Index1601[0]), 0x1601},
+  { (subindex*)master402_Index1602,sizeof(master402_Index1602)/sizeof(master402_Index1602[0]), 0x1602},
+  { (subindex*)master402_Index1603,sizeof(master402_Index1603)/sizeof(master402_Index1603[0]), 0x1603},
   { (subindex*)master402_Index1800,sizeof(master402_Index1800)/sizeof(master402_Index1800[0]), 0x1800},
   { (subindex*)master402_Index1801,sizeof(master402_Index1801)/sizeof(master402_Index1801[0]), 0x1801},
+  { (subindex*)master402_Index1802,sizeof(master402_Index1802)/sizeof(master402_Index1802[0]), 0x1802},
+  { (subindex*)master402_Index1803,sizeof(master402_Index1803)/sizeof(master402_Index1803[0]), 0x1803},
   { (subindex*)master402_Index1A00,sizeof(master402_Index1A00)/sizeof(master402_Index1A00[0]), 0x1A00},
   { (subindex*)master402_Index1A01,sizeof(master402_Index1A01)/sizeof(master402_Index1A01[0]), 0x1A01},
+  { (subindex*)master402_Index1A02,sizeof(master402_Index1A02)/sizeof(master402_Index1A02[0]), 0x1A02},
+  { (subindex*)master402_Index1A03,sizeof(master402_Index1A03)/sizeof(master402_Index1A03[0]), 0x1A03},
   { (subindex*)master402_Index2124,sizeof(master402_Index2124)/sizeof(master402_Index2124[0]), 0x2124},
   { (subindex*)master402_Index6040,sizeof(master402_Index6040)/sizeof(master402_Index6040[0]), 0x6040},
   { (subindex*)master402_Index6041,sizeof(master402_Index6041)/sizeof(master402_Index6041[0]), 0x6041},
@@ -445,28 +595,37 @@ const indextable * master402_scanIndexOD (CO_Data *d, UNS16 wIndex, UNS32 * erro
 		case 0x1018: i = 7;break;
 		case 0x1200: i = 8;break;
 		case 0x1280: i = 9;break;
-		case 0x1400: i = 10;break;
-		case 0x1401: i = 11;break;
-		case 0x1600: i = 12;break;
-		case 0x1601: i = 13;break;
-		case 0x1800: i = 14;break;
-		case 0x1801: i = 15;break;
-		case 0x1A00: i = 16;break;
-		case 0x1A01: i = 17;break;
-		case 0x2124: i = 18;break;
-		case 0x6040: i = 19;break;
-		case 0x6041: i = 20;break;
-		case 0x6060: i = 21;break;
-		case 0x6064: i = 22;break;
-		case 0x606C: i = 23;break;
-		case 0x607A: i = 24;break;
-		case 0x607C: i = 25;break;
-		case 0x6081: i = 26;break;
-		case 0x6098: i = 27;break;
-		case 0x6099: i = 28;break;
-		case 0x60C1: i = 29;break;
-		case 0x60C2: i = 30;break;
-		case 0x60FF: i = 31;break;
+		case 0x1281: i = 10;break;
+		case 0x1400: i = 11;break;
+		case 0x1401: i = 12;break;
+		case 0x1402: i = 13;break;
+		case 0x1403: i = 14;break;
+		case 0x1600: i = 15;break;
+		case 0x1601: i = 16;break;
+		case 0x1602: i = 17;break;
+		case 0x1603: i = 18;break;
+		case 0x1800: i = 19;break;
+		case 0x1801: i = 20;break;
+		case 0x1802: i = 21;break;
+		case 0x1803: i = 22;break;
+		case 0x1A00: i = 23;break;
+		case 0x1A01: i = 24;break;
+		case 0x1A02: i = 25;break;
+		case 0x1A03: i = 26;break;
+		case 0x2124: i = 27;break;
+		case 0x6040: i = 28;break;
+		case 0x6041: i = 29;break;
+		case 0x6060: i = 30;break;
+		case 0x6064: i = 31;break;
+		case 0x606C: i = 32;break;
+		case 0x607A: i = 33;break;
+		case 0x607C: i = 34;break;
+		case 0x6081: i = 35;break;
+		case 0x6098: i = 36;break;
+		case 0x6099: i = 37;break;
+		case 0x60C1: i = 38;break;
+		case 0x60C2: i = 39;break;
+		case 0x60FF: i = 40;break;
 		default:
 			*errorCode = OD_NO_SUCH_OBJECT;
 			return NULL;
@@ -480,24 +639,24 @@ const indextable * master402_scanIndexOD (CO_Data *d, UNS16 wIndex, UNS32 * erro
  * Even if no pdoTransmit are defined, at least one entry is computed
  * for compilations issues.
  */
-s_PDO_status master402_PDO_status[2] = {s_PDO_status_Initializer,s_PDO_status_Initializer};
+s_PDO_status master402_PDO_status[4] = {s_PDO_status_Initializer,s_PDO_status_Initializer,s_PDO_status_Initializer,s_PDO_status_Initializer};
 
 const quick_index master402_firstIndex = {
   8, /* SDO_SVR */
   9, /* SDO_CLT */
-  10, /* PDO_RCV */
-  12, /* PDO_RCV_MAP */
-  14, /* PDO_TRS */
-  16 /* PDO_TRS_MAP */
+  11, /* PDO_RCV */
+  15, /* PDO_RCV_MAP */
+  19, /* PDO_TRS */
+  23 /* PDO_TRS_MAP */
 };
 
 const quick_index master402_lastIndex = {
   8, /* SDO_SVR */
-  9, /* SDO_CLT */
-  11, /* PDO_RCV */
-  13, /* PDO_RCV_MAP */
-  15, /* PDO_TRS */
-  17 /* PDO_TRS_MAP */
+  10, /* SDO_CLT */
+  14, /* PDO_RCV */
+  18, /* PDO_RCV_MAP */
+  22, /* PDO_TRS */
+  26 /* PDO_TRS_MAP */
 };
 
 const UNS16 master402_ObjdictSize = sizeof(master402_objdict)/sizeof(master402_objdict[0]); 
