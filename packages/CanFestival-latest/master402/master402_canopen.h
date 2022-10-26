@@ -17,9 +17,9 @@
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-#define MAX_SERVO_COUNT       1//最大节点数量
+#define MAX_NODE_COUNT        1//最大节点数量
 #define CONTROLLER_NODEID 	  1//控制器ID
-#define SERVO_NODEID 		      2//伺服ID
+#define SERVO_NODEID_1 		    2//伺服ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
 
 #define SDO_REPLY_TIMEOUT     50//5秒等待超时

@@ -119,7 +119,8 @@ void master402_preOperational(CO_Data* d)
 {
 	rt_thread_t tid;
 	LOG_I("canfestival enter preOperational state");
-	tid = rt_thread_create("co_cfg", canopen_start_thread_entry, RT_NULL, 2048, 12, 2);
+	tid = rt_thread_create("co_cfg", canopen_start_thread_entry, (void *)(int)d,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
+                        2048, 12, 2);
 	if(tid == RT_NULL)
 	{
 		LOG_E("canfestival config thread start failed!");

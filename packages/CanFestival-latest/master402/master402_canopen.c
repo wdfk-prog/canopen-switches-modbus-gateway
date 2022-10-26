@@ -25,13 +25,14 @@
 #include "canopen_callback.h"
 #include "timers_driver.h"
 /* Private typedef -----------------------------------------------------------*/
-struct servo_config_state
+typedef struct 
 {
+  uint8_t nodeID;
 	uint8_t state;
 	uint8_t try_cnt;
   uint8_t err_code;//配置参数错误代码 0xff,配置未发送,本地字典出错。 0x03,配置回复未响应，节点字典出错
 	struct rt_semaphore finish_sem;
-};
+}servo_config_state;
 /* Private define ------------------------------------------------------------*/
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,9 +54,12 @@ struct servo_config_state
 /* Private variables ---------------------------------------------------------*/
 CO_Data *OD_Data = &master402_Data;
 s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
-static struct servo_config_state servo_conf[MAX_SERVO_COUNT + 1];//配置状态
+static servo_config_state servo_conf[MAX_NODE_COUNT] = 
+{
+  {SERVO_NODEID_1,},
+};//配置状态
 /* Private function prototypes -----------------------------------------------*/
-static void config_servo_param(uint8_t nodeId, struct servo_config_state *conf);
+static void config_servo_param(uint8_t nodeId, servo_config_state *conf);
 /***********************初始化操作状态函数**************************************************/
 /**
   * @brief  初始节点
@@ -293,7 +297,7 @@ static void config_servo_param_cb(CO_Data* d, UNS8 nodeId)
 {
 	UNS32 abortCode;
 	UNS8 res;
-	struct servo_config_state *conf;
+	servo_config_state *conf;
 
 	conf = &servo_conf[nodeId - 2];
 	res = getWriteResultNetworkDict(OD_Data, nodeId, &abortCode);
@@ -382,34 +386,44 @@ static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 */
 void canopen_start_thread_entry(void *parameter)
 {
+  assert(parameter);
 	UNS32 sync_id, size;
 	UNS8 data_type, sub_cnt;
 	UNS32 consumer_heartbeat_time;
-  Write_SLAVE_control_word(SERVO_NODEID,0x80);//初始化进行错误重置
-  
-  rt_thread_delay(200);
-	config_servo(SERVO_NODEID);
-  if(servo_conf[SERVO_NODEID - 2].err_code != 0X00)//因配置错误导致的退出
+  UNS8 nodeId = 0;
+  /*写入节点字典*/
+  for (UNS8 i = 0; i < MAX_NODE_COUNT; i++)
   {
-    if(servo_conf[SERVO_NODEID - 2].err_code == 0XFF)
+    nodeId = servo_conf[i].nodeID;
+    Write_SLAVE_control_word(nodeId,0x80);//初始化进行错误重置
+    
+    rt_thread_delay(200);
+    config_servo(nodeId);
+    if(servo_conf[i].err_code != 0X00)//因配置错误导致的退出
     {
-      LOG_E("The configuration was not sent because the local dictionary failed");
+      LOG_E("Failed to configure the dictionary for node %d",nodeId);
+      if(servo_conf[i].err_code == 0XFF)
+      {
+        LOG_E("The configuration was not sent because the local dictionary failed");
+      }
+      else if(servo_conf[i].err_code == 0X03)
+      {
+        LOG_E("The configuration reply did not respond, and the node dictionary failed");
+      }
+      LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
+      master402_fix_config_err(nodeId);
+      return; //退出线程
     }
-    else if(servo_conf[SERVO_NODEID - 2].err_code == 0X03)
-    {
-      LOG_E("The configuration reply did not respond, and the node dictionary failed");
-    }
-    LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
-    master402_fix_config_err(SERVO_NODEID);
-    return; //退出线程
   }
+  LOG_I("Node configuration Complete");
+  /*写入本地字典*/
 	OD_Data->post_SlaveBootup = slaveBootupHdl;
   /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
   /**有格式定义，字典工具没有支持，需要自己写入**/
-	consumer_heartbeat_time = HEARTBEAT_FORMAT(SERVO_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
+	consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
 	size = 4;
 	writeLocalDict(OD_Data, 0x1016, 1, &consumer_heartbeat_time, &size, 0);
-	consumer_heartbeat_time = HEARTBEAT_FORMAT(SERVO_NODEID + 1,CONSUMER_HEARTBEAT_TIME);//写入节点3的心跳时间,没有节点即跳过
+	consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId + 1,CONSUMER_HEARTBEAT_TIME);//写入节点3的心跳时间,没有节点即跳过
 	writeLocalDict(OD_Data, 0x1016, 2, &consumer_heartbeat_time, &size, 0);
 	sub_cnt = 2;
 	size = 1;
@@ -422,7 +436,7 @@ void canopen_start_thread_entry(void *parameter)
   /**有格式定义，字典工具没有支持，需要自己写入**/
 	data_type = uint32;
 	setState(OD_Data, Operational);
-	masterSendNMTstateChange(OD_Data, SERVO_NODEID, NMT_Start_Node);
+	masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
 	size = 4;
 	readLocalDict(OD_Data, 0x1005, 0, &sync_id, &size, &data_type, 0);
 	sync_id = SYNC_ENANBLE(sync_id);//DS301 30位置1 ，启用CANopen设备生成同步消息
@@ -438,7 +452,7 @@ void canopen_start_thread_entry(void *parameter)
 */
 static void writeNetworkDictSyncCb(CO_Data* d, UNS8 nodeId) 
 {
-    struct servo_config_state *conf = &servo_conf[nodeId - 2];
+    servo_config_state *conf = &servo_conf[nodeId - 2];
     rt_sem_release(&conf->finish_sem);
 }
 /**
@@ -452,14 +466,14 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         UNS8 subIndex, UNS32 count, UNS8 dataType, void *data, UNS8 useBlockMode) 
 {
 
-    if(nodeId < 1 || nodeId > MAX_SERVO_COUNT + 1) 
+    if(nodeId < 1 || nodeId > MAX_NODE_COUNT + 1) 
     {
-      LOG_W("invalid nodeId:%d, should between 1 and %d",nodeId,MAX_SERVO_COUNT + 1);
+      LOG_W("invalid nodeId:%d, should between 1 and %d",nodeId,MAX_NODE_COUNT + 1);
         return false;
     }
 
     int try_cnt = 3;
-    struct servo_config_state* conf = &servo_conf[nodeId - 2];
+    servo_config_state* conf = &servo_conf[nodeId - 2];
     rt_sem_init(&conf->finish_sem, "servocnf", 0, RT_IPC_FLAG_FIFO);
     
     while(try_cnt--) 
@@ -939,7 +953,7 @@ static UNS8 Write_SLAVE_S_Move(uint8_t nodeId)
 /*****************************结束设置参数操作*********************************/
 static UNS8 MotorCFG_Done(uint8_t nodeId)
 {
-	struct servo_config_state *conf;
+	servo_config_state *conf;
 	conf = &servo_conf[nodeId - 2];
   rt_sem_release(&(conf->finish_sem));
   return 0;
@@ -999,7 +1013,7 @@ static UNS8 (*MotorCFG_Operation[])(uint8_t nodeId) =
   * @retval None
   * @note   None
 */
-static void config_servo_param(uint8_t nodeId, struct servo_config_state *conf)
+static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
 {
   //判断数据越界 指针无法判断指向内容大小
   //https://bbs.csdn.net/topics/80323809

@@ -50,10 +50,11 @@
   2. 设定节点 ID，将 P3.000范围设为 01h ~ 7Fh。 
   3. 将参数 P3.001设为 0403h，P3.001.Z设定鲍率 1 Mbps (0：125 Kbps； 
   1：250 Kbps；2：500 Kbps；3：750 Kbps；4：1 Mbps)。 
-  4. 建议将 P3.012.Z设定为 1，以实现将下表参数断电保持的功能。 
+  4. 建议将 P3.012设定为0x0100，以实现将下表参数断电保持的功能。 
   在驱动器重新上下电或是进行通讯重置后，下表的 P参数会维持本来的设定，
   不会加载 CANopen / DMCNET / EtherCAT参数的数值。
   5. 建议开启动态抱闸功能，P1.032 = 0x0000。
+  6. 重新设置电子齿轮比 16777216 / 100000
   ******************************************************************************
   */
 /* USER CODE END Header */
@@ -373,7 +374,7 @@ static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,
 
   Target_position  = position;
   SYNC_DELAY;
-  FAILED_EXIT(Write_SLAVE_profile_position_speed_set(SERVO_NODEID,speed));
+  FAILED_EXIT(Write_SLAVE_profile_position_speed_set(nodeId,speed));
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
 
@@ -557,6 +558,7 @@ static void motor_state(void)
 	LOG_I("current speed %.1f RPM", Velocity_actual_value / 10.0f);//注意单位为0.1rpm
 }
 #ifdef RT_USING_MSH
+#define DEFAULT_NODE SERVO_NODEID_1//MSH命令默认操作节点
 /**
   * @brief  MSH控制电机运动
   * @param  None
@@ -607,7 +609,7 @@ static void cmd_motor(uint8_t argc, char **argv)
           }
           if (!strcmp(argv[2], "pp"))
           {
-            UNS8 nodeId = SERVO_NODEID;
+            UNS8 nodeId = DEFAULT_NODE;
             if(argc > 3) 
             {
               nodeId = atoi(argv[3]);
@@ -616,7 +618,7 @@ static void cmd_motor(uint8_t argc, char **argv)
           }
           else if (!strcmp(argv[2], "ip"))
           {
-            UNS8 nodeId = SERVO_NODEID;
+            UNS8 nodeId = DEFAULT_NODE;
             if(argc > 3) 
             {
               nodeId = atoi(argv[3]);
@@ -629,7 +631,7 @@ static void cmd_motor(uint8_t argc, char **argv)
             uint8_t method = 34;//34 起始点往右寻找Z脉冲 33 起始点往左寻找Z脉冲 
             float switch_speed = 100;//单位RPM
             float zero_speed = 20;//单位RPM
-            UNS8 nodeId = SERVO_NODEID;
+            UNS8 nodeId = DEFAULT_NODE;
 
             if(argc <= 3) 
             {
@@ -660,7 +662,7 @@ static void cmd_motor(uint8_t argc, char **argv)
           }
           else if (!strcmp(argv[2], "pv"))
           {
-            UNS8 nodeId = SERVO_NODEID;
+            UNS8 nodeId = DEFAULT_NODE;
             if(argc > 3) 
             {
               nodeId = atoi(argv[3]);
@@ -675,7 +677,7 @@ static void cmd_motor(uint8_t argc, char **argv)
         }
         else if (!strcmp(operator, "off"))
         {
-            UNS8 nodeId = SERVO_NODEID;
+            UNS8 nodeId = DEFAULT_NODE;
             if(argc > 3) 
             {
               nodeId = atoi(argv[3]);
@@ -692,7 +694,7 @@ static void cmd_motor(uint8_t argc, char **argv)
             int32_t speed = 60;//RPM:60
             bool immediately = false;
             bool abs_rel     = false;
-            UNS8 nodeId = SERVO_NODEID;
+            UNS8 nodeId = DEFAULT_NODE;
             if(argc <= 2) 
             {
                 rt_kprintf("Usage: motor pp_move [position] <speed> <0:abs/1:rel> <immediately> <nodeId>\n");
@@ -722,7 +724,7 @@ static void cmd_motor(uint8_t argc, char **argv)
         }
         else if (!strcmp(operator, "ip_move"))
         {
-          UNS8 nodeId = SERVO_NODEID;
+          UNS8 nodeId = DEFAULT_NODE;
           if(argc > 2) 
           {
             nodeId = atoi(argv[2]);
@@ -732,7 +734,7 @@ static void cmd_motor(uint8_t argc, char **argv)
         else if (!strcmp(operator, "hm_move"))
         {
             bool zero_flag = false;
-            UNS16 nodeId = SERVO_NODEID;
+            UNS16 nodeId = DEFAULT_NODE;
             if(argc <= 2) 
             {
                 rt_kprintf("Usage: motor hm_move [zero] <nodeId> --homing move zero:1,run zero postion\n");
@@ -748,7 +750,7 @@ static void cmd_motor(uint8_t argc, char **argv)
         else if (!strcmp(operator, "pv_move"))
         {
           int32_t speed = 0;//RPM:0
-          UNS8 nodeId = SERVO_NODEID;
+          UNS8 nodeId = DEFAULT_NODE;
           if(argc <= 2) 
           {
             rt_kprintf("Usage: motor pv_move [speed] <nodeId>\n");
@@ -800,7 +802,7 @@ static void cmd_CONTROL_WORD(uint8_t argc, char **argv)
     }
     else
     {
-        UNS8 nodeId = SERVO_NODEID;
+        UNS8 nodeId = DEFAULT_NODE;
         if(argc > 1) 
         {
             nodeId = atoi(argv[1]);
