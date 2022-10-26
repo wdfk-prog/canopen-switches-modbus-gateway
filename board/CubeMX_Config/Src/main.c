@@ -71,18 +71,22 @@ static int Version(void);
   * @retval int
   * @note   None.
   */
-#include <fal.h>
-#include <fal_cfg.h>
 int main(void)
 {
-    /* 初始化 fal */
-    fal_init();
-    /* set LED0 pin mode to output */
-    Version();
-    while (1)
-    {
-      rt_thread_mdelay(500);
-    }
+/* 硬件 BSP 初始化*/
+/***********************调试模式下禁用独立看门狗IWDG**********************************/
+  __HAL_DBGMCU_FREEZE_IWDG();	  //调试模式下，冻结看门狗计数器时钟
+  __HAL_DBGMCU_FREEZE_WWDG();
+  __HAL_DBGMCU_FREEZE_CAN1();
+  __HAL_DBGMCU_FREEZE_CAN2();
+/*********************调试模式下使能独立看门狗IWDG**********************************/
+//__HAL_DBGMCU_UNFREEZE_IWDG();	  //调试模式下，使能看门狗计数器时钟
+  /* set LED0 pin mode to output */
+  Version();
+#if(OUT_FILE_ENABLE == 1 && MV_MONITOR_ENABLE == 1)
+  mv_log_timer_init();
+  mv_log_timer_start();
+#endif
 }
 /* USER CODE END 0 */
 
