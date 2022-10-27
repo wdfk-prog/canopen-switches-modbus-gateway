@@ -52,8 +52,9 @@ typedef struct
   NodeID  : 节点*/
 #define SYNC_ENANBLE(NodeID) ((1 << 30) | (NodeID))
 /* Private variables ---------------------------------------------------------*/
+static s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
 CO_Data *OD_Data = &master402_Data;
-s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
+
 static servo_config_state servo_conf[MAX_NODE_COUNT - 2] = 
 {
   {SERVO_NODEID_1,},
@@ -391,6 +392,7 @@ void canopen_start_thread_entry(void *parameter)
 	UNS32 sync_id, size;
 	UNS8 data_type, sub_cnt;
 	UNS32 consumer_heartbeat_time;
+  CO_Data *d = (CO_Data *)parameter;
   UNS8 nodeId = 0;
   /*写入节点字典*/
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
@@ -412,36 +414,36 @@ void canopen_start_thread_entry(void *parameter)
         LOG_E("The configuration reply did not respond, and the node dictionary failed");
       }
       LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
-      master402_fix_config_err(nodeId);
+      master402_fix_config_err(d,nodeId);
       return; //退出线程
     }
   }
   LOG_I("Node configuration Complete");
   /*写入本地字典*/
-	OD_Data->post_SlaveBootup = slaveBootupHdl;
+	d->post_SlaveBootup = slaveBootupHdl;
   /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
   /**有格式定义，字典工具没有支持，需要自己写入**/
 	consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
 	size = 4;
-	writeLocalDict(OD_Data, 0x1016, 1, &consumer_heartbeat_time, &size, 0);
+	writeLocalDict(d, 0x1016, 1, &consumer_heartbeat_time, &size, 0);
 	consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId + 1,CONSUMER_HEARTBEAT_TIME);//写入节点3的心跳时间,没有节点即跳过
-	writeLocalDict(OD_Data, 0x1016, 2, &consumer_heartbeat_time, &size, 0);
+	writeLocalDict(d, 0x1016, 2, &consumer_heartbeat_time, &size, 0);
 	sub_cnt = 2;
 	size = 1;
-	writeLocalDict(OD_Data, 0x1016, 0, &sub_cnt, &size, 0);
+	writeLocalDict(d, 0x1016, 0, &sub_cnt, &size, 0);
   /**写入主机生成者/发送端心跳发送时间  DS301定义**/
   UNS16 producer_heartbeat_time;
 	producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
 	size = 2;
-	writeLocalDict(OD_Data, 0x1017, 0, &producer_heartbeat_time, &size, 0);
+	writeLocalDict(d, 0x1017, 0, &producer_heartbeat_time, &size, 0);
   /**有格式定义，字典工具没有支持，需要自己写入**/
 	data_type = uint32;
-	setState(OD_Data, Operational);
-	masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
+	setState(d, Operational);
+	masterSendNMTstateChange(d, nodeId, NMT_Start_Node);
 	size = 4;
-	readLocalDict(OD_Data, 0x1005, 0, &sync_id, &size, &data_type, 0);
+	readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);
 	sync_id = SYNC_ENANBLE(sync_id);//DS301 30位置1 ，启用CANopen设备生成同步消息
-	writeLocalDict(OD_Data, 0x1005, 0, &sync_id, &size, 0);
+	writeLocalDict(d, 0x1005, 0, &sync_id, &size, 0);
 }
 /******************************写入节点字典操作函数**********************************/
 /**
@@ -483,20 +485,20 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
                 count, dataType, data, writeNetworkDictSyncCb, useBlockMode) != 0)
         {
             LOG_W("write SDO failed!  nodeId = %d, index: %d, subIndex: %d", nodeId, index, subIndex);
-            closeSDOtransfer(OD_Data, nodeId, SDO_CLIENT);
+            closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }
 
         if(rt_sem_take(&conf->finish_sem, SDO_REPLY_TIMEOUT) != RT_EOK) 
         {
             LOG_W("write SDO timeout!  nodeId = %d, index: %d, subIndex: %d", nodeId, index, subIndex);
-            closeSDOtransfer(OD_Data, nodeId, SDO_CLIENT);
+            closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }
 
         UNS32 abortCode = 0;
-        UNS8 res = getWriteResultNetworkDict(OD_Data, nodeId, &abortCode);
-        closeSDOtransfer(OD_Data, nodeId, SDO_CLIENT);
+        UNS8 res = getWriteResultNetworkDict(d, nodeId, &abortCode);
+        closeSDOtransfer(d, nodeId, SDO_CLIENT);
 
         if(res != SDO_FINISHED)
         {

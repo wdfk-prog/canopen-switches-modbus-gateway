@@ -228,9 +228,8 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
           能够接收到此错误代码，证明通信恢复正常。此错误可以通过重置NMT清除。
           从机进入pre状态，不可进行操作
           切换从机进入start状态*/
-        LOG_W("ErrorCode: %4.4x :Node protection error or heartbeat error",errCode);
         masterSendNMTstateChange(d,nodeID,NMT_Start_Node);
-        LOG_W("Determine the line recovery and switch the slave machine into operation mode");
+        LOG_I("The last node error is not cleared. Do not worry");
       }
   }
 }
@@ -280,7 +279,7 @@ static void master402_fix_node_Disconnected(void* parameter)
           setState(OD_Data, Operational);//转入Operational状态
         }
 				masterSendNMTstateChange(OD_Data,heartbeatID,NMT_Start_Node);
-				LOG_W("Determine the line recovery and switch the slave machine into operation mode,def ThreadFinished");
+				LOG_I("Determine the line recovery and switch the slave machine into operation mode,def ThreadFinished");
         node.lock = 0;
 				return;//退出线程
 			}
@@ -345,11 +344,11 @@ static void master402_fix_config_err_thread_entry(void* parameter)
   * @retval None.
   * @note   None.
 */
-void master402_fix_config_err(UNS8 nodeId)
+void master402_fix_config_err(CO_Data *d,UNS8 nodeId)
 {
   if(++cfg.try_cnt <= 3)
   {
-    setState(OD_Data, Stopped);
+    setState(d, Stopped);
     LOG_I("Enabling the repair thread,Repair times = %d",cfg.try_cnt);
     rt_thread_t tid = rt_thread_create("fix_config_err", master402_fix_config_err_thread_entry,
                       (void *)(int)nodeId,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
