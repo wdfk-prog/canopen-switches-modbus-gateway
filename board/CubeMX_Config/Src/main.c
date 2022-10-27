@@ -82,11 +82,12 @@ int main(void)
 /*********************调试模式下使能独立看门狗IWDG**********************************/
 //__HAL_DBGMCU_UNFREEZE_IWDG();	  //调试模式下，使能看门狗计数器时钟
   /* set LED0 pin mode to output */
-  Version();
 #if(OUT_FILE_ENABLE == 1 && MV_MONITOR_ENABLE == 1)
   mv_log_timer_init();
   mv_log_timer_start();
 #endif
+  rt_thread_mdelay(500);//延时后不会在初始化日志中间产生
+  Version();
 }
 /* USER CODE END 0 */
 
