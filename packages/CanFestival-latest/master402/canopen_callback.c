@@ -217,19 +217,26 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
 {
   if(errCode != 0)//应急错误代码
   {
-      LOG_E("received EMCY message. Node: %2.2x  ErrorCode: %4.4x  ErrorRegister: %2.2x", nodeID, errCode, errReg);
-      if(errSpec[0]+errSpec[1]+errSpec[2]+errSpec[3]+errSpec[4])
+      if(d->nodeState == Pre_operational && d->NMTable[nodeID] == Unknown_state)
       {
-        LOG_E("Manufacturer Specific: 0X%X %2.2X %2.2X %2.2X %2.2X",errSpec[0],errSpec[1],errSpec[2],errSpec[3],errSpec[4]);
+        LOG_D("The last node error is not cleared. Do not worry");
       }
-      if(errCode == 0x8130)//节点保护错误或者心跳错误
+      else
       {
-        /*产生此错误代码原因：从机掉线或者can信号线异常、掉线
-          能够接收到此错误代码，证明通信恢复正常。此错误可以通过重置NMT清除。
-          从机进入pre状态，不可进行操作
-          切换从机进入start状态*/
-        masterSendNMTstateChange(d,nodeID,NMT_Start_Node);
-        LOG_I("The last node error is not cleared. Do not worry");
+        LOG_E("received EMCY message. Node: %2.2x  ErrorCode: %4.4x  ErrorRegister: %2.2x", nodeID, errCode, errReg);
+        if(errSpec[0]+errSpec[1]+errSpec[2]+errSpec[3]+errSpec[4])
+        {
+          LOG_E("Manufacturer Specific: 0X%X %2.2X %2.2X %2.2X %2.2X",errSpec[0],errSpec[1],errSpec[2],errSpec[3],errSpec[4]);
+        }
+        if(errCode == 0x8130)//节点保护错误或者心跳错误
+        {
+          /*产生此错误代码原因：从机掉线或者can信号线异常、掉线
+            能够接收到此错误代码，证明通信恢复正常。此错误可以通过重置NMT清除。
+            从机进入pre状态，不可进行操作
+            切换从机进入start状态*/
+          masterSendNMTstateChange(d,nodeID,NMT_Start_Node);
+          LOG_I("The ability to receive this error code indicates that communication is back to normal.");
+        }
       }
   }
 }
@@ -279,7 +286,7 @@ static void master402_fix_node_Disconnected(void* parameter)
           setState(OD_Data, Operational);//转入Operational状态
         }
 				masterSendNMTstateChange(OD_Data,heartbeatID,NMT_Start_Node);
-				LOG_I("Determine the line recovery and switch the slave machine into operation mode,def ThreadFinished");
+				LOG_I("Determines that the line is restored and switches the slave machine to operation mode, deleting the current thread");
         node.lock = 0;
 				return;//退出线程
 			}
