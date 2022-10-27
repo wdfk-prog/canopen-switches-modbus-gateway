@@ -32,7 +32,7 @@ typedef struct
 	uint8_t try_cnt;
   uint8_t err_code;//配置参数错误代码 0xff,配置未发送,本地字典出错。 0x03,配置回复未响应，节点字典出错
 	struct rt_semaphore finish_sem;
-}servo_config_state;
+}node_config_state;
 /* Private define ------------------------------------------------------------*/
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,15 +53,14 @@ typedef struct
 #define SYNC_ENANBLE(NodeID) ((1 << 30) | (NodeID))
 /* Private variables ---------------------------------------------------------*/
 static s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
-CO_Data *OD_Data = &master402_Data;
-
-static servo_config_state servo_conf[MAX_NODE_COUNT - 2] = 
+static node_config_state node_conf[MAX_NODE_COUNT - 2] = 
 {
   {SERVO_NODEID_1,},
 //  {SERVO_NODEID_2,},
 };//配置状态
+CO_Data *OD_Data = &master402_Data;
 /* Private function prototypes -----------------------------------------------*/
-static void config_servo_param(uint8_t nodeId, servo_config_state *conf);
+static void config_node_param(uint8_t nodeId, node_config_state *conf);
 /***********************初始化操作状态函数**************************************************/
 /**
   * @brief  初始节点
@@ -295,13 +294,13 @@ MSH_CMD_EXPORT_ALIAS(cmd_canopen_nmt,canopen_nmt,canoepn nmt cmd.);
   * @retval None
   * @note   None
 */
-static void config_servo_param_cb(CO_Data* d, UNS8 nodeId)
+static void config_node_param_cb(CO_Data* d, UNS8 nodeId)
 {
 	UNS32 abortCode;
 	UNS8 res;
-	servo_config_state *conf;
+	node_config_state *conf;
 
-	conf = &servo_conf[nodeId - 2];
+	conf = &node_conf[nodeId - 2];
 	res = getWriteResultNetworkDict(OD_Data, nodeId, &abortCode);
 	closeSDOtransfer(OD_Data, nodeId, SDO_CLIENT);
 	if(res != SDO_FINISHED)
@@ -310,7 +309,7 @@ static void config_servo_param_cb(CO_Data* d, UNS8 nodeId)
 		if(conf->try_cnt < 3)
 		{
       LOG_W(" write SDO failed!  nodeId = %d, abortCode = 0x%08X,step = %d", nodeId, abortCode,conf->state - 1);
-			config_servo_param(nodeId, conf);
+			config_node_param(nodeId, conf);
 		}
 		else
 		{
@@ -326,7 +325,7 @@ static void config_servo_param_cb(CO_Data* d, UNS8 nodeId)
     conf->err_code = 0;
 		conf->state++;
 		conf->try_cnt = 0;
-		config_servo_param(nodeId, conf);
+		config_node_param(nodeId, conf);
 	}
 }
 /**
@@ -335,17 +334,17 @@ static void config_servo_param_cb(CO_Data* d, UNS8 nodeId)
   * @retval None
   * @note   互斥量等待配置完成
 */
-static void config_servo(uint8_t nodeId)
+static void config_node(uint8_t nodeId)
 {
-	servo_conf[nodeId - 2].state = 0;
-	servo_conf[nodeId - 2].try_cnt = 0;
-	rt_sem_init(&(servo_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
+	node_conf[nodeId - 2].state = 0;
+	node_conf[nodeId - 2].try_cnt = 0;
+	rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
 
 	EnterMutex();
-	config_servo_param(nodeId, &servo_conf[nodeId - 2]);
+	config_node_param(nodeId, &node_conf[nodeId - 2]);
 	LeaveMutex();
-	rt_sem_take(&(servo_conf[nodeId - 2].finish_sem), RT_WAITING_FOREVER);
-	rt_sem_detach(&(servo_conf[nodeId - 2].finish_sem));
+	rt_sem_take(&(node_conf[nodeId - 2].finish_sem), RT_WAITING_FOREVER);
+	rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
 }
 /**
   * @brief  None
@@ -353,11 +352,11 @@ static void config_servo(uint8_t nodeId)
   * @retval None
   * @note   None
 */
-static void config_single_servo(void *parameter)
+static void config_single_node(void *parameter)
 {
 	uint32_t nodeId;
 	nodeId = (uint32_t)parameter;
-	config_servo(nodeId);
+	config_node(nodeId);
 	masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
 }
 /**
@@ -370,7 +369,7 @@ static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 {
 	rt_thread_t tid;
 
-	tid = rt_thread_create("co_cfg", config_single_servo, (void *)(int)nodeId, 1024, 12 + nodeId, 2);
+	tid = rt_thread_create("co_cfg", config_single_node, (void *)(int)nodeId, 1024, 12 + nodeId, 2);
 	if(tid == RT_NULL)
 	{
 		LOG_E("canopen config thread start failed!");
@@ -397,19 +396,19 @@ void canopen_start_thread_entry(void *parameter)
   /*写入节点字典*/
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
-    nodeId = servo_conf[i].nodeID;
+    nodeId = node_conf[i].nodeID;
     Write_SLAVE_control_word(nodeId,0x80);//初始化进行错误重置
     
     rt_thread_delay(200);
-    config_servo(nodeId);
-    if(servo_conf[i].err_code != 0X00)//因配置错误导致的退出
+    config_node(nodeId);
+    if(node_conf[i].err_code != 0X00)//因配置错误导致的退出
     {
       LOG_E("Failed to configure the dictionary for node %d",nodeId);
-      if(servo_conf[i].err_code == 0XFF)
+      if(node_conf[i].err_code == 0XFF)
       {
         LOG_E("The configuration was not sent because the local dictionary failed");
       }
-      else if(servo_conf[i].err_code == 0X03)
+      else if(node_conf[i].err_code == 0X03)
       {
         LOG_E("The configuration reply did not respond, and the node dictionary failed");
       }
@@ -455,7 +454,7 @@ void canopen_start_thread_entry(void *parameter)
 */
 static void writeNetworkDictSyncCb(CO_Data* d, UNS8 nodeId) 
 {
-    servo_config_state *conf = &servo_conf[nodeId - 2];
+    node_config_state *conf = &node_conf[nodeId - 2];
     rt_sem_release(&conf->finish_sem);
 }
 /**
@@ -476,7 +475,7 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
     }
 
     int try_cnt = 3;
-    servo_config_state* conf = &servo_conf[nodeId - 2];
+    node_config_state* conf = &node_conf[nodeId - 2];
     rt_sem_init(&conf->finish_sem, "servocnf", 0, RT_IPC_FLAG_FIFO);
     
     while(try_cnt--) 
@@ -572,7 +571,7 @@ static UNS8 local_od_send(UNS16 index,UNS8 subIndex,uint8_t nodeId)
   }
   else
   {
-    return writeNetworkDictCallBack(OD_Data,nodeId,index,subIndex,size,dataType,&pdo_map_val,config_servo_param_cb,0);
+    return writeNetworkDictCallBack(OD_Data,nodeId,index,subIndex,size,dataType,&pdo_map_val,config_node_param_cb,0);
   }
 }
 /******************************SDO设置参数操作**********************************/
@@ -755,19 +754,19 @@ static UNS8 DIS_SLAVE_TPDO1(uint8_t nodeId)
 // disable Slave's TPDO，关闭从机TPDO1发送用来写入参数
   UNS32 TPDO_COBId = PDO_DISANBLE(0x00000180,nodeId);//0x80000180 + nodeId;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1800, 1, 
-    4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_TPDO1_Type(uint8_t nodeId)
 {
   UNS8 trans_type = PDO_TRANSMISSION_TYPE;//写入类型
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1800, 2, 
-    1, uint8, &trans_type, config_servo_param_cb, 0);
+    1, uint8, &trans_type, config_node_param_cb, 0);
 }
 static UNS8 Clear_SLAVE_TPDO1_Cnt(uint8_t nodeId)
 {
   UNS8 pdo_map_cnt = 0;//清除从机遗留索引数
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1A00, 0, 
-    1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+    1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_TPDO1_Sub1(uint8_t nodeId)
 {
@@ -786,7 +785,7 @@ static UNS8 EN_SLAVE_TPDO1(uint8_t nodeId)
 //enable Slave's TPDO1 使能从机发送PDO1
   UNS32 TPDO_COBId = PDO_ENANBLE(0x00000180,nodeId);
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1800, 1, 
-    4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 }
 /******************************TPDO2 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
@@ -803,19 +802,19 @@ static UNS8 DIS_SLAVE_TPDO2(uint8_t nodeId)
  //disable Slave's TPDO 关闭从机TPDO2发送用来写入参数
   UNS32 TPDO_COBId = PDO_DISANBLE(0x00000280,nodeId);//0x80000280 + nodeId;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1801, 1, 
-    4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_TPDO2_Type(uint8_t nodeId)
 {
   UNS8 trans_type = PDO_TRANSMISSION_TYPE;//写入类型
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1801, 2, 
-    1, uint8, &trans_type, config_servo_param_cb, 0);
+    1, uint8, &trans_type, config_node_param_cb, 0);
 }
 static UNS8 Clear_SLAVE_TPDO2_Cnt(uint8_t nodeId)
 {
   UNS8 pdo_map_cnt = 0;//清除从机遗留索引数
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1A01, 0, 
-    1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+    1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_TPDO2_Sub1(uint8_t nodeId)
 {
@@ -830,7 +829,7 @@ static UNS8 EN_SLAVE_TPDO2(uint8_t nodeId)
 //enable Slave's TPDO1 使能从机发送PDO1
   UNS32 TPDO_COBId = PDO_ENANBLE(0x00000280,nodeId);
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1801, 1, 
-    4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 }
 /******************************RPDO1 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
@@ -848,19 +847,19 @@ static UNS8 DIS_SLAVE_RPDO1(uint8_t nodeId)
 // disable Slave's RPDO
   UNS32 RPDO_COBId = PDO_DISANBLE(0x80000200,nodeId);;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1400, 1, 
-    4, uint32, &RPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &RPDO_COBId, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_RPDO1_Type(uint8_t nodeId)
 {
   UNS8 trans_type = PDO_TRANSMISSION_TYPE;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1400, 2, 
-    1, uint8, &trans_type, config_servo_param_cb, 0);
+    1, uint8, &trans_type, config_node_param_cb, 0);
 }
 static UNS8 Clear_SLAVE_RPDO1_Cnt(uint8_t nodeId)
 {
   UNS8 pdo_map_cnt = 0;//清除索引
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1600, 0, 
-    1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+    1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_RPDO1_Sub1(uint8_t nodeId)
 {
@@ -879,7 +878,7 @@ static UNS8 EN_SLAVE_RPDO1(uint8_t nodeId)
 // enable Slave's RPDO
   UNS32 RPDO_COBId = PDO_ENANBLE(0x00000200,nodeId);
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1400, 1, 
-    4, uint32, &RPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &RPDO_COBId, config_node_param_cb, 0);
 }
 /******************************RPDO2 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
@@ -896,19 +895,19 @@ static UNS8 DIS_SLAVE_RPDO2(uint8_t nodeId)
 // disable Slave's RPDO
   UNS32 RPDO_COBId = PDO_DISANBLE(0x80000300,nodeId);;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1401, 1, 
-    4, uint32, &RPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &RPDO_COBId, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_RPDO2_Type(uint8_t nodeId)
 {
   UNS8 trans_type = PDO_TRANSMISSION_TYPE;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1401, 2, 
-    1, uint8, &trans_type, config_servo_param_cb, 0);
+    1, uint8, &trans_type, config_node_param_cb, 0);
 }
 static UNS8 Clear_SLAVE_RPDO2_Cnt(uint8_t nodeId)
 {
   UNS8 pdo_map_cnt = 0;//清除索引
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1601, 0, 
-    1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+    1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_RPDO2_Sub1(uint8_t nodeId)
 {
@@ -923,21 +922,21 @@ static UNS8 EN_SLAVE_RPDO2(uint8_t nodeId)
 // enable Slave's RPDO
   UNS32 TPDO_COBId = PDO_ENANBLE(0x00000300,nodeId);
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1401, 1, 
-    4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+    4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 }
 /******************************心跳时间 设置参数操作*********************************/
 static UNS8 Write_SLAVE_P_heartbeat(uint8_t nodeId)
 {
   UNS16 producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1017, 0, 
-    2, uint16, &producer_heartbeat_time, config_servo_param_cb, 0);
+    2, uint16, &producer_heartbeat_time, config_node_param_cb, 0);
 }
 static UNS8 Write_SLAVE_C_heartbeat(uint8_t nodeId)
 {
   //需要本地字典写入生产者心跳时间，不然驱动器报错
   UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(CONTROLLER_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点1的心跳时间
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1016, 1, 
-    4, uint16, &consumer_heartbeat_time, config_servo_param_cb, 0);
+    4, uint16, &consumer_heartbeat_time, config_node_param_cb, 0);
 }
 /*****************************其他参数操作*********************************/
 /**
@@ -951,13 +950,13 @@ static UNS8 Write_SLAVE_S_Move(uint8_t nodeId)
   extern subindex master402_Index2124;
   S_move = TRUE;
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x2124, 0, 
-    master402_Index2124.size, master402_Index2124.bDataType, &S_move, config_servo_param_cb, 0);
+    master402_Index2124.size, master402_Index2124.bDataType, &S_move, config_node_param_cb, 0);
 }
 /*****************************结束设置参数操作*********************************/
 static UNS8 MotorCFG_Done(uint8_t nodeId)
 {
-	servo_config_state *conf;
-	conf = &servo_conf[nodeId - 2];
+	node_config_state *conf;
+	conf = &node_conf[nodeId - 2];
   rt_sem_release(&(conf->finish_sem));
   return 0;
 }
@@ -1016,7 +1015,7 @@ static UNS8 (*MotorCFG_Operation[])(uint8_t nodeId) =
   * @retval None
   * @note   None
 */
-static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
+static void config_node_param(uint8_t nodeId, node_config_state *conf)
 {
   //判断数据越界 指针无法判断指向内容大小
   //https://bbs.csdn.net/topics/80323809
@@ -1049,21 +1048,21 @@ static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
 		{ // disable Slave's TPDO，关闭从机TPDO1发送用来写入参数
 			UNS32 TPDO_COBId = PDO_DISANBLE(0x00000180,nodeId);//0x80000180 + nodeId;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1800, 1, 
-				4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 1:
 		{
 			UNS8 trans_type = PDO_TRANSMISSION_TYPE;//写入类型
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1800, 2, 
-				1, uint8, &trans_type, config_servo_param_cb, 0);
+				1, uint8, &trans_type, config_node_param_cb, 0);
 		}
 		break;
 	case 2:
 		{
 			UNS8 pdo_map_cnt = 0;//清除从机遗留索引数
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1A00, 0, 
-				1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+				1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 		}
 		break;
 	case 3:
@@ -1079,28 +1078,28 @@ static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
 		{ // enable Slave's TPDO1 使能从机发送PDO1
 			UNS32 TPDO_COBId = PDO_ENANBLE(0x00000180,nodeId);
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1800, 1, 
-				4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 7:
 		{ // disable Slave's TPDO 关闭从机TPDO2发送用来写入参数
 			UNS32 TPDO_COBId = 0x80000280 + nodeId;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1801, 1, 
-				4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 8:
 		{
 			UNS8 trans_type = PDO_TRANSMISSION_TYPE;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1801, 2, 
-				1, uint8, &trans_type, config_servo_param_cb, 0);
+				1, uint8, &trans_type, config_node_param_cb, 0);
 		}
 		break;
 	case 9:
 		{
 			UNS8 pdo_map_cnt = 0;//清除索引
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1A01, 0, 
-				1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+				1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 		}
 		break;
 	case 10:
@@ -1113,28 +1112,28 @@ static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
 		{ // enable Slave's TPDO
 			UNS32 TPDO_COBId =PDO_ENANBLE(0x00000280,nodeId);
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1801, 1, 
-				4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 13:
 		{ // disable Slave's RPDO
 			UNS32 RPDO_COBId = PDO_DISANBLE(0x80000200,nodeId);;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1400, 1, 
-				4, uint32, &RPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &RPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 14:
 		{
 			UNS8 trans_type = PDO_TRANSMISSION_TYPE;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1400, 2, 
-				1, uint8, &trans_type, config_servo_param_cb, 0);
+				1, uint8, &trans_type, config_node_param_cb, 0);
 		}
 		break;
 	case 15:
 		{
 			UNS8 pdo_map_cnt = 0;//清除索引
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1600, 0, 
-				1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+				1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 		}
 		break;
 	case 16:
@@ -1150,28 +1149,28 @@ static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
 		{ // enable Slave's RPDO
 			UNS32 RPDO_COBId = PDO_ENANBLE(0x00000200,nodeId);
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1400, 1, 
-				4, uint32, &RPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &RPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 20:
 		{ // disable Slave's RPDO
 			UNS32 RPDO_COBId =PDO_DISANBLE(0x80000300,nodeId);
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1401, 1, 
-				4, uint32, &RPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &RPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 21:
 		{
 			UNS8 trans_type = PDO_TRANSMISSION_TYPE;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1401, 2, 
-				1, uint8, &trans_type, config_servo_param_cb, 0);
+				1, uint8, &trans_type, config_node_param_cb, 0);
 		}
 		break;
 	case 22:
 		{
 			UNS8 pdo_map_cnt = 0;//清除索引
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1601, 0, 
-				1, uint8, &pdo_map_cnt, config_servo_param_cb, 0);
+				1, uint8, &pdo_map_cnt, config_node_param_cb, 0);
 		}
 		break;
 	case 23:
@@ -1187,14 +1186,14 @@ static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
 		{ // enable Slave's RPDO
 			UNS32 TPDO_COBId = PDO_ENANBLE(0x00000300,nodeId);
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1401, 1, 
-				4, uint32, &TPDO_COBId, config_servo_param_cb, 0);
+				4, uint32, &TPDO_COBId, config_node_param_cb, 0);
 		}
 		break;
 	case 27:
 		{
 			UNS16 producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
 			writeNetworkDictCallBack(OD_Data, nodeId, 0x1017, 0, 
-				2, uint16, &producer_heartbeat_time, config_servo_param_cb, 0);
+				2, uint16, &producer_heartbeat_time, config_node_param_cb, 0);
 		}
 		break;
 	case 28:
@@ -1202,7 +1201,7 @@ static void config_servo_param(uint8_t nodeId, servo_config_state *conf)
       //需要本地字典写入生产者心跳时间，不然驱动器报错
 			UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(MASTER_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点1的心跳时间
       writeNetworkDictCallBack(OD_Data, nodeId, 0x1016, 1, 
-				4, uint16, &consumer_heartbeat_time, config_servo_param_cb, 0);
+				4, uint16, &consumer_heartbeat_time, config_node_param_cb, 0);
 		}
 		break;
 	case 29:

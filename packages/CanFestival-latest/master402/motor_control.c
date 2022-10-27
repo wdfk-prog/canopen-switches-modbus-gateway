@@ -285,7 +285,7 @@ static UNS8 motor_on_interpolated_position(UNS8 nodeId)
   /*State Transition 1: NO IP-MODE SELECTED => IP-MODE INACTIVE
   Event: Enter in the state OPERATION ENABLE with controlword and select ip 
   mode with modes of operation*/
-//FAILED_EXIT(Write_SLAVE_control_word(SERVO_NODEID,CONTROL_WORD_ENABLE_OPERATION));
+//FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
   return 0X00;
 }
 /**
