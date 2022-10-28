@@ -44,7 +44,7 @@
 #endif
 
 #ifndef SYSWATCH_THREAD_STK_SIZE
-#define SYSWATCH_THREAD_STK_SIZE        512//stack size of system watcher
+#define SYSWATCH_THREAD_STK_SIZE        1024//stack size of system watcher
 #endif
 
 #ifndef SYSWATCH_THREAD_NAME
