@@ -33,13 +33,6 @@ extern "C" {
 #define LOG_FILTER_LVL_ALL            255
 #endif /* ULOG_USING_SYSLOG */
 
-#define LOG_MV_OUTPUT(LOG_ID, TAG, ...)           ulog_output(LOG_ID, LOG_LVL_DBG, TAG, RT_TRUE, __VA_ARGS__)
-enum _LOG_ID
-{
-    LOG_SYS_ID = 0x00,//系统信息
-    LOG_MV_ID,        //运动信息
-    LOG_MAX_ID,
-};
 /* compatible for rtdbg */
 #undef LOG_D
 #undef LOG_I
@@ -58,7 +51,7 @@ enum _LOG_ID
 #define dbg_log(level, ...)                                \
     if ((level) <= LOG_LVL)                                \
     {                                                      \
-        ulog_output(LOG_SYS_ID,level, LOG_TAG, RT_FALSE, __VA_ARGS__);\
+        ulog_output(level, LOG_TAG, RT_FALSE, __VA_ARGS__);\
     }
 
 #if !defined(LOG_TAG)
@@ -84,41 +77,41 @@ enum _LOG_ID
 #endif /* !defined(LOG_LVL) */
 
 #if (LOG_LVL >= LOG_LVL_DBG) && (ULOG_OUTPUT_LVL >= LOG_LVL_DBG)
-    #define ulog_d(LOG_ID, TAG, ...)           ulog_output(LOG_ID, LOG_LVL_DBG, TAG, RT_TRUE, __VA_ARGS__)
+    #define ulog_d(TAG, ...)           ulog_output(LOG_LVL_DBG, TAG, RT_TRUE, __VA_ARGS__)
 #else
-    #define ulog_d(LOG_ID, TAG, ...)
+    #define ulog_d(TAG, ...)
 #endif /* (LOG_LVL >= LOG_LVL_DBG) && (ULOG_OUTPUT_LVL >= LOG_LVL_DBG) */
 
 #if (LOG_LVL >= LOG_LVL_INFO) && (ULOG_OUTPUT_LVL >= LOG_LVL_INFO)
-    #define ulog_i(LOG_ID, TAG, ...)           ulog_output(LOG_ID, LOG_LVL_INFO, TAG, RT_TRUE, __VA_ARGS__)
+    #define ulog_i(TAG, ...)           ulog_output(LOG_LVL_INFO, TAG, RT_TRUE, __VA_ARGS__)
 #else
-    #define ulog_i(LOG_ID, TAG, ...)
+    #define ulog_i(TAG, ...)
 #endif /* (LOG_LVL >= LOG_LVL_INFO) && (ULOG_OUTPUT_LVL >= LOG_LVL_INFO) */
 
 #if (LOG_LVL >= LOG_LVL_WARNING) && (ULOG_OUTPUT_LVL >= LOG_LVL_WARNING)
-    #define ulog_w(LOG_ID, TAG, ...)           ulog_output(LOG_ID, LOG_LVL_WARNING, TAG, RT_TRUE, __VA_ARGS__)
+    #define ulog_w(TAG, ...)           ulog_output(LOG_LVL_WARNING, TAG, RT_TRUE, __VA_ARGS__)
 #else
-    #define ulog_w(LOG_ID, TAG, ...)
+    #define ulog_w(TAG, ...)
 #endif /* (LOG_LVL >= LOG_LVL_WARNING) && (ULOG_OUTPUT_LVL >= LOG_LVL_WARNING) */
 
 #if (LOG_LVL >= LOG_LVL_ERROR) && (ULOG_OUTPUT_LVL >= LOG_LVL_ERROR)
-    #define ulog_e(LOG_ID, TAG, ...)           ulog_output(LOG_ID, LOG_LVL_ERROR, TAG, RT_TRUE, __VA_ARGS__)
+    #define ulog_e(TAG, ...)           ulog_output(LOG_LVL_ERROR, TAG, RT_TRUE, __VA_ARGS__)
 #else
-    #define ulog_e(LOG_ID, TAG, ...)
+    #define ulog_e(TAG, ...)
 #endif /* (LOG_LVL >= LOG_LVL_ERROR) && (ULOG_OUTPUT_LVL >= LOG_LVL_ERROR) */
 
 #if (LOG_LVL >= LOG_LVL_DBG) && (ULOG_OUTPUT_LVL >= LOG_LVL_DBG)
-    #define ulog_hex(LOG_ID, TAG, width, buf, size)     ulog_hexdump(LOG_ID, TAG, width, buf, size)
+    #define ulog_hex(TAG, width, buf, size)     ulog_hexdump(TAG, width, buf, size)
 #else
-    #define ulog_hex(LOG_ID, TAG, width, buf, size)
-#endif /* (LOG_LVL >= LOG_LVL_DBG) && (ULOG_OUTPUT_LVL >= LOG_LVL_DBG) */    
+    #define ulog_hex(TAG, width, buf, size)
+#endif /* (LOG_LVL >= LOG_LVL_DBG) && (ULOG_OUTPUT_LVL >= LOG_LVL_DBG) */
 
 /* assert for developer. */
 #ifdef ULOG_ASSERT_ENABLE
     #define ULOG_ASSERT(EXPR)                                                 \
     if (!(EXPR))                                                              \
     {                                                                         \
-        ulog_output(LOG_SYS_ID, LOG_LVL_ASSERT, LOG_TAG, RT_TRUE, "(%s) has assert failed at %s:%ld.", #EXPR, __FUNCTION__, __LINE__); \
+        ulog_output(LOG_LVL_ASSERT, LOG_TAG, RT_TRUE, "(%s) has assert failed at %s:%ld.", #EXPR, __FUNCTION__, __LINE__); \
         ulog_flush();                                                         \
         while (1);                                                            \
     }
@@ -201,7 +194,6 @@ struct ulog_frame
     rt_uint32_t is_raw:1;
     rt_uint32_t log_len:23;
     rt_uint32_t level;
-    rt_uint8_t id;  /* 增加ID属性 */
     const char *log;
     const char *tag;
 };
@@ -213,7 +205,7 @@ struct ulog_backend
     rt_bool_t support_color;
     rt_uint32_t out_level;
     void (*init)  (struct ulog_backend *backend);
-    void (*output)(struct ulog_backend *backend,rt_uint8_t log_id, rt_uint32_t level, const char *tag, rt_bool_t is_raw, const char *log, rt_size_t len);
+    void (*output)(struct ulog_backend *backend, rt_uint32_t level, const char *tag, rt_bool_t is_raw, const char *log, rt_size_t len);
     void (*flush) (struct ulog_backend *backend);
     void (*deinit)(struct ulog_backend *backend);
     /* The filter will be call before output. It will return TRUE when the filter condition is math. */

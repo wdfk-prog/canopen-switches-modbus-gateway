@@ -40,14 +40,12 @@ void ulog_deinit(void);
  * LOG_D("this is a debug log!");
  * LOG_E("this is a error log!");
  */
-#define LOG_E(...)                      ulog_e(LOG_SYS_ID,LOG_TAG, __VA_ARGS__)
-#define LOG_W(...)                      ulog_w(LOG_SYS_ID,LOG_TAG, __VA_ARGS__)
-#define LOG_I(...)                      ulog_i(LOG_SYS_ID,LOG_TAG, __VA_ARGS__)
-#define LOG_D(...)                      ulog_d(LOG_SYS_ID,LOG_TAG, __VA_ARGS__)
-#define LOG_RAW(...)                    ulog_raw(LOG_SYS_ID,__VA_ARGS__)
-#define LOG_HEX(name, width, buf, size) ulog_hex(LOG_SYS_ID,name, width, buf, size)
-
-#define LOG_MV(...)                     LOG_MV_OUTPUT(LOG_MV_ID, LOG_TAG, __VA_ARGS__)
+#define LOG_E(...)                      ulog_e(LOG_TAG, __VA_ARGS__)
+#define LOG_W(...)                      ulog_w(LOG_TAG, __VA_ARGS__)
+#define LOG_I(...)                      ulog_i(LOG_TAG, __VA_ARGS__)
+#define LOG_D(...)                      ulog_d(LOG_TAG, __VA_ARGS__)
+#define LOG_RAW(...)                    ulog_raw(__VA_ARGS__)
+#define LOG_HEX(name, width, buf, size) ulog_hex(name, width, buf, size)
 
 /*
  * backend register and unregister
@@ -89,14 +87,13 @@ rt_err_t ulog_async_waiting_log(rt_int32_t time);
 /*
  * dump the hex format data to log
  */
-void ulog_hexdump(rt_uint8_t log_id,const char *tag, rt_size_t width, rt_uint8_t *buf, rt_size_t size);
+void ulog_hexdump(const char *tag, rt_size_t width, const rt_uint8_t *buf, rt_size_t size, ...);
 
 /*
  * Another log output API. This API is more difficult to use than LOG_X API.
  */
-void ulog_voutput(rt_uint8_t log_id, rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, va_list args);
-void ulog_output(rt_uint8_t log_id, rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, ...);
-void ulog_raw(rt_uint8_t log_id, const char *format, ...);
+void ulog_output(rt_uint32_t level, const char *tag, rt_bool_t newline, const char *format, ...);
+void ulog_raw(const char *format, ...);
 
 #ifdef __cplusplus
 }
