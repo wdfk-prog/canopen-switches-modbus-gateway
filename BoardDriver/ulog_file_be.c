@@ -1,281 +1,249 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : 
+  * @brief          : 
+  * @date           :
+  ******************************************************************************
+  * @attention
+  * @author
+  ******************************************************************************
+  */
+/* USER CODE END Header */
+/* Includes ------------------------------------------------------------------*/
+#include "ulog_file_be.h"
+#include <ulog_be.h>
+/* Private includes ----------------------------------------------------------*/
+#include "main.h"
+/* Private typedef -----------------------------------------------------------*/
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
- *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Change Logs:
- * Date           Author       Notes
- * 2021-01-07     ChenYong     first version
- * 2021-12-20     armink       add multi-instance version
- */
-
-#include <rtthread.h>
-#include <dfs_file.h>
-#include <unistd.h>
-
-#include <ulog.h>
-
-#if defined(ULOG_ASYNC_OUTPUT_THREAD_STACK) && (ULOG_ASYNC_OUTPUT_THREAD_STACK < 2048)
-#error "The value of ULOG_ASYNC_OUTPUT_THREAD_STACK must be greater than 2048."
-#endif
-
-#define LOG_FILE_NAME_MAX              50
-
+* 后端注册表
+*/
 struct _log_file
 {
-    const rt_uint8_t id;
-    rt_int32_t file_fd;
-    const char *root_path;
-    const char *log_path;
-    const char *log_name;
-    const char *file_type;
-    const rt_uint32_t file_size;
-    const rt_uint32_t file_num;
+  const char *name; 
+  const char *dir_path; 
+  rt_size_t max_num;
+  rt_size_t max_size;
+  rt_size_t buf_size;
 };
-
-static struct _log_file _log_file_tbl[] =
+/*
+* 文件后端标识
+*/
+typedef enum 
 {
-    { LOG_SYS_ID, -1, "/", "/flash/log/", "sys", ".log", 512 * 1024, 10 },
-    { LOG_MV_ID,  -1, "/", "/flash/log/", "mv",  ".log", 512 * 1024, 5 },
+  sys_id,
+  motion_id,
+}ulog_file_be_name;
+/* Private define ------------------------------------------------------------*/
+#define ROOT_PATH "/flash/log"
+#define FILE_SIZE 512 * 1024
+#define BUFF_SIZE 512
+/* Private macro -------------------------------------------------------------*/
+
+/* Private variables ---------------------------------------------------------*/
+static struct ulog_backend sys_log_backend;
+static struct ulog_file_be sys_log_file;
+static struct ulog_backend motion_log_backend;
+static struct ulog_file_be motion_log_file;
+
+static struct _log_file table[] =
+{
+  {"sys"      ,ROOT_PATH,10,FILE_SIZE,BUFF_SIZE},
+  {"motion"   ,ROOT_PATH,5,FILE_SIZE,BUFF_SIZE},
 };
-
-static struct ulog_backend ulog_file;
-
-static struct rt_mutex log_file_lock;
-
-static rt_bool_t check_file_path(const char *root_path, const char *file_path)
+/* Private function prototypes -----------------------------------------------*/
+/************************系统日志文件后端操作函数*****************************************/
+/**
+  * @brief  系统日志文件后端滤波器设置.
+  * @param  None.
+  * @retval The filter will be call before output. It will return TRUE when the filter condition is math.
+  * @note   None.
+*/
+static rt_bool_t sys_log_file_backend_filter(struct ulog_backend *backend, rt_uint32_t level, const char *tag, rt_bool_t is_raw, 
+                                      const char *log, rt_size_t len)
 {
-    if (root_path == NULL || file_path == NULL)
-    {
-        rt_kprintf("check_file_path: error! the root path is %s, file path is %s\n", root_path, file_path);
-        return RT_FALSE;
-    }
+    if (rt_strncmp(tag,MOTION_TAG, sizeof(MOTION_TAG)) == 0)//排除带有"MOVE"标签输出
+      return RT_FALSE;
+    else
+      return RT_TRUE;
+}
+/**
+  * @brief  系统日志文件后端初始化.
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+void sys_log_file_backend_init(void)
+{
+    struct ulog_file_be *file_be = &sys_log_file;
+    uint8_t id = sys_id;
+    file_be->parent = sys_log_backend;
+    ulog_backend_filter_t filter = sys_log_file_backend_filter;
 
-    if (access(root_path, 0) != 0)
-    {
-        rt_kprintf("check_file_path: error! the root path %s does not exist\n", root_path);
-        return RT_FALSE;
-    }
+    ulog_file_backend_init( file_be, 
+                            table[id].name,
+                            table[id].dir_path,
+                            table[id].max_num,
+                            table[id].max_size,
+                            table[id].buf_size);
+    
+    ulog_file_backend_enable(file_be);
 
-    if (access(file_path, 0) != 0)
-    {
-        if (mkdir(file_path, 0777) == -1)
-        {
-            rt_kprintf("check_file_path: error! the file_path path %s does not exist\n", file_path);
-            return RT_FALSE;
-        }
-    }
-    return RT_TRUE;
+    ulog_backend_set_filter(&file_be->parent,filter);
+}
+/************************运动日志文件后端操作函数*****************************************/
+/**
+  * @brief  运动日志文件后端滤波器设置.
+  * @param  None.
+  * @retval The filter will be call before output. It will return TRUE when the filter condition is math.
+  * @note   None.
+*/
+static rt_bool_t motion_log_file_backend_filter(struct ulog_backend *backend, rt_uint32_t level, const char *tag, rt_bool_t is_raw, 
+                                      const char *log, rt_size_t len)
+{
+    if (rt_strncmp(tag,MOTION_TAG, sizeof(MOTION_TAG)) == 0)//带有"MOVE"标签输出
+      return RT_TRUE;
+    else
+      return RT_FALSE;
 }
 
-static rt_bool_t check_file_handle(int fd)
+/**
+  * @brief  运动日志文件后端初始化.
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+void motion_log_file_backend_init(void)
 {
-    if (fd >= 0)
-        return RT_TRUE;
-    return RT_FALSE;
+    struct ulog_file_be *file_be = &motion_log_file;
+    uint8_t id = motion_id;
+    file_be->parent = motion_log_backend;
+    ulog_backend_filter_t filter = motion_log_file_backend_filter;
+
+    ulog_file_backend_init( file_be, 
+                            table[id].name,
+                            table[id].dir_path,
+                            table[id].max_num,
+                            table[id].max_size,
+                            table[id].buf_size);
+    
+    ulog_file_backend_enable(file_be);
+
+    ulog_backend_set_filter(&file_be->parent,filter);
 }
-
-/* get log file fd */
-int get_file_handle(rt_uint8_t log_id)
+/************************MSH命令*****************************************/
+#ifdef RT_USING_MSH
+/**
+  * @brief  控制台后端滤波器设置.
+  * @param  None.
+  * @retval The filter will be call before output. It will return TRUE when the filter condition is math.
+  * @note   None.
+*/
+rt_bool_t ulog_console_backend_filter(struct ulog_backend *backend, rt_uint32_t level, const char *tag, rt_bool_t is_raw, 
+                                      const char *log, rt_size_t len)
 {
-    char file_name[LOG_FILE_NAME_MAX] = {0};
-    rt_bool_t result = RT_FALSE;
-    static rt_bool_t check_dir = RT_FALSE;
-
-    if (!check_dir)
-    {
-        result = check_file_path(_log_file_tbl[log_id].root_path,
-            _log_file_tbl[log_id].log_path);
-        if (result == RT_FALSE)
-        {
-            rt_kprintf ("log path is not exsit\n");
-            return -1;
-        }
-        check_dir = RT_TRUE;
-    }
-
-    rt_mutex_take(&log_file_lock, RT_WAITING_FOREVER);
-
-    if (!check_file_handle(_log_file_tbl[log_id].file_fd))
-    {
-        rt_snprintf(file_name, LOG_FILE_NAME_MAX - 1, "%s%s%s",
-            _log_file_tbl[log_id].log_path,
-            _log_file_tbl[log_id].log_name,
-            _log_file_tbl[log_id].file_type);
-
-        _log_file_tbl[log_id].file_fd = open(file_name, O_CREAT | O_RDWR | O_APPEND);
-
-        if(_log_file_tbl[log_id].file_fd < 0)
-        {
-            rt_kprintf ("log file open error,fd=%d!!\n", _log_file_tbl[log_id].file_fd);
-        }
-    }
-
-    rt_mutex_release(&log_file_lock);
-
-    return _log_file_tbl[log_id].file_fd;
+    if (rt_strncmp(tag,MOTION_TAG, sizeof(MOTION_TAG)) == 0)//排除带有"MOVE"标签输出
+      return RT_FALSE;
+    else
+      return RT_TRUE;
 }
-
-int get_log_file_number(rt_uint8_t log_id, const int number, const char *path)
+/**
+  * @brief  日志文件后端卸载
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+static void log_file_backend_deinit(uint8_t argc, char **argv)
 {
-    char file_name[LOG_FILE_NAME_MAX] = {0};
-    int status = -1;
-    int file_num = 0;
-
-    for (int32_t i = number; i > 0; i--)
+    const char *operator = argv[1];
+    if (argc < 2)
     {
-        rt_memset(file_name, 0, LOG_FILE_NAME_MAX);
-        rt_snprintf(file_name, LOG_FILE_NAME_MAX - 1, "%s%s_%d%s",
-            path, _log_file_tbl[log_id].log_name, i,
-            _log_file_tbl[log_id].file_type);
-
-        status = access(file_name, 0);
-        /* get file max log number */
-        if (status == 0)
-        {
-            file_num = i;
-            break;
-        }
-    }
-    return file_num;
-}
-
-int log_file_rename(rt_uint8_t log_id, int max_index, const char *path, const int max_number, const char *file_name)
-{
-    int32_t i = 0;
-    int ret = 0;
-    char old_file_name[LOG_FILE_NAME_MAX] = {0};
-    char new_file_name[LOG_FILE_NAME_MAX] = {0};
-
-    if (max_index >= max_number)
-    {
-        char max_index_file[LOG_FILE_NAME_MAX] = {0};
-        rt_snprintf(max_index_file, LOG_FILE_NAME_MAX - 1, "%s%s_%d%s",
-            path, _log_file_tbl[log_id].log_name, max_number,
-            _log_file_tbl[log_id].file_type);
-        unlink(max_index_file);
+        rt_kprintf("Usage:\n");
+        rt_kprintf("Deinit ulog file backend [name]\n");
+        return;
     }
     else
     {
-        max_index++;
-    }
-
-    for (i = max_index; i > 1; i--)
-    {
-        rt_memset(old_file_name, 0, LOG_FILE_NAME_MAX);
-        rt_memset(new_file_name, 0, LOG_FILE_NAME_MAX);
-        rt_snprintf(new_file_name, LOG_FILE_NAME_MAX - 1, "%s%s_%d%s",
-            path, _log_file_tbl[log_id].log_name, i, _log_file_tbl[log_id].file_type);
-
-        rt_snprintf(old_file_name, LOG_FILE_NAME_MAX - 1, "%s%s_%d%s",
-            path, _log_file_tbl[log_id].log_name, i - 1, _log_file_tbl[log_id].file_type);
-
-        ret = rename(old_file_name, new_file_name);
-
-        if(ret != 0)
-        {
-            rt_kprintf ("file rename error:%s\n",old_file_name);
-        }
-    }
-
-    rt_memset(old_file_name, 0, LOG_FILE_NAME_MAX);
-    rt_memset(new_file_name, 0, LOG_FILE_NAME_MAX);
-    rt_snprintf(old_file_name, LOG_FILE_NAME_MAX - 1, "%s", file_name);
-    rt_snprintf(new_file_name, LOG_FILE_NAME_MAX - 1, "%s%s_%d%s",
-        path, _log_file_tbl[log_id].log_name, i,
-        _log_file_tbl[log_id].file_type);
-
-    ret = rename(old_file_name, new_file_name);
-    if(ret != 0)
-    {
-      rt_kprintf ("file rename error:%s\n",old_file_name);
-    }
-    return ret;
-}
-
-void log_file_rename_all(rt_uint8_t log_id, const char *path, const int32_t max_number)
-{
-    char file_name[LOG_FILE_NAME_MAX] = {0};
-    int32_t max_index = 0;
-
-    max_index = get_log_file_number(log_id, max_number, path);
-    rt_snprintf(file_name, LOG_FILE_NAME_MAX - 1, "%s%s%s",
-        path, _log_file_tbl[log_id].log_name,
-        _log_file_tbl[LOG_SYS_ID].file_type);
-
-    log_file_rename(log_id, max_index, path, max_number, file_name);
-}
-
-void close_log_file_handle(rt_uint8_t log_id)
-{
-    if (check_file_handle(_log_file_tbl[log_id].file_fd))
-    {
-        close(_log_file_tbl[log_id].file_fd);
-        _log_file_tbl[log_id].file_fd = -1;
+      if(!rt_strcmp(operator,"motion"))
+      {
+        ulog_file_backend_deinit(&motion_log_file);
+        ulog_file_backend_disable(&motion_log_file);
+        rt_kprintf("The file backend %s is deinit\n",operator);
+      }
+      else if(!rt_strcmp(operator,"sys"))
+      {
+        ulog_file_backend_deinit(&sys_log_file);
+        ulog_file_backend_disable(&sys_log_file);
+        rt_kprintf("The file backend %s is deinit\n",operator);
+      }
+      else
+      {
+        rt_kprintf("Usage:\n");
+        rt_kprintf("Deinit ulog file backend [name]\n");
+        return;
+      }
     }
 }
-
-void log_file_handle_update(rt_uint8_t log_id, int fd)
+MSH_CMD_EXPORT_ALIAS(log_file_backend_deinit,ulog_be_deinit,Deinit ulog file backend);
+/**
+  * @brief  日志文件后端控制
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+static void log_file_backend_control(uint8_t argc, char **argv)
 {
-    _log_file_tbl[log_id].file_fd = fd;
-}
-
-void ulog_file_backend_output(struct ulog_backend *backend, rt_uint8_t log_id, rt_uint32_t level,
-    const char *tag, rt_bool_t is_raw, const char *log, size_t len)
-{
-    off_t file_size = 0;
-    int fd = -1;
-    int32_t buf_len = 0;
-    int32_t offset = 0;
-
-    fd = get_file_handle(log_id);
-
-    if (fd < 0)
+    const char *operator = argv[1];
+    const char *flag = argv[2];
+    if (argc < 3)
     {
-        rt_kprintf ("get_file_handle fail: %d.\n", fd);
+        rt_kprintf("Usage:\n");
+        rt_kprintf("control ulog file backend [name] [enable/disable]\n");
         return;
     }
-    for (buf_len = len; buf_len > 0; buf_len -= ULOG_LINE_BUF_SIZE)
+    else if(!rt_strcmp(operator,table[sys_id].name))
     {
-        file_size = lseek(fd, 0, SEEK_END);
-        if (file_size > _log_file_tbl[log_id].file_size) /* log file max size check*/
-        {
-            close(fd);
-            fd = -1;
-            log_file_handle_update(log_id, fd);
-            log_file_rename_all(log_id, _log_file_tbl[log_id].log_path,
-                _log_file_tbl[log_id].file_num);
-        }
-
-        if (fd < 0)
-        {
-            fd = get_file_handle(log_id);
-            if (fd < 0)
-            {
-                rt_kprintf("new file get_file_fd fail: %d.\n", fd);
-                return;
-            }
-        }
-
-        if (buf_len < ULOG_LINE_BUF_SIZE)
-        {
-            write(fd, log + offset, buf_len);
-            offset += buf_len;
-        }
-        else
-        {
-            write(fd, log + offset, ULOG_LINE_BUF_SIZE);
-            offset += ULOG_LINE_BUF_SIZE;
-        }
-        fsync(fd);
+      if(!rt_strcmp(flag,"disable"))
+      {
+        ulog_file_backend_disable(&sys_log_file);
+        rt_kprintf("The file backend %s is disabled\n",operator);
+      }
+      else if(!rt_strcmp(flag,"enable"))
+      {
+        ulog_file_backend_enable(&sys_log_file);
+        rt_kprintf("The file backend %s is enable\n",operator);
+      }
+      else
+      {
+        rt_kprintf("Usage:\n");
+        rt_kprintf("control ulog file backend [name] [enable/disable]\n");
+        return;
+      }
+    }
+    else if(!rt_strcmp(operator,table[motion_id].name))
+    {
+      if(!rt_strcmp(flag,"disable"))
+      {
+        ulog_file_backend_disable(&motion_log_file);
+        rt_kprintf("The file backend %s is disabled\n",operator);
+      }
+      else if(!rt_strcmp(flag,"enable"))
+      {
+        ulog_file_backend_enable(&motion_log_file);
+        rt_kprintf("The file backend %s is enable\n",operator);
+      }
+      else
+      {
+        rt_kprintf("Usage:\n");
+        rt_kprintf("control ulog file backend [name] [enable/disable]\n");
+        return;
+      }
+    }
+    else
+    {
+      rt_kprintf("Failed to find the file backend:%s\n",operator);
     }
 }
-
-int ulog_file_backend_init(void)
-{
-    /* create device filesystem lock */
-    rt_mutex_init(&log_file_lock, "logfile", RT_IPC_FLAG_FIFO);
-    ulog_file.output = ulog_file_backend_output;
-    ulog_backend_register(&ulog_file, "file", RT_FALSE);
-    return 0;
-}
+MSH_CMD_EXPORT_ALIAS(log_file_backend_control,ulog_be_ctrl,control ulog file backend [name] [enable:disable]);
+#endif
