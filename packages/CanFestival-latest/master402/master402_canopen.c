@@ -439,7 +439,12 @@ void canopen_start_thread_entry(void *parameter)
   /**有格式定义，字典工具没有支持，需要自己写入**/
 	data_type = uint32;
 	setState(d, Operational);
-	masterSendNMTstateChange(d, nodeId, NMT_Start_Node);
+
+  for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
+  {
+    nodeId = node_conf[i].nodeID;
+	  masterSendNMTstateChange(d, nodeId, NMT_Start_Node);
+  }
 	size = 4;
 	readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);
 	sync_id = SYNC_ENANBLE(sync_id);//DS301 30位置1 ，启用CANopen设备生成同步消息
