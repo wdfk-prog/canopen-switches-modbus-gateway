@@ -21,7 +21,7 @@
 typedef enum
 {
   SERVO_NODEID_1 = 0x02,
-//  SERVO_NODEID_2,
+  SERVO_NODEID_2,
   MAX_NODE_COUNT,         //最大节点数量
 }NODEID_NUM;
 /* Exported constants --------------------------------------------------------*/

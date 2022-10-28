@@ -56,9 +56,10 @@ static s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//Ã»ÓÃ,¼æÈÝCANFES
 static node_config_state node_conf[MAX_NODE_COUNT - 2] = 
 {
   {SERVO_NODEID_1,},
-//  {SERVO_NODEID_2,},
+  {SERVO_NODEID_2,},
 };//ÅäÖÃ×´Ì¬
 CO_Data *OD_Data = &master402_Data;
+
 /* Private function prototypes -----------------------------------------------*/
 static void config_node_param(uint8_t nodeId, node_config_state *conf);
 /***********************³õÊ¼»¯²Ù×÷×´Ì¬º¯Êý**************************************************/
@@ -483,7 +484,7 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         if(writeNetworkDictCallBack(d, nodeId, index, subIndex,
                 count, dataType, data, writeNetworkDictSyncCb, useBlockMode) != 0)
         {
-            LOG_W("write SDO failed!  nodeId = %d, index: %d, subIndex: %d", nodeId, index, subIndex);
+            LOG_W("write SDO failed!  nodeId = %d, index: %x, subIndex: %x", nodeId, index, subIndex);
             closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }

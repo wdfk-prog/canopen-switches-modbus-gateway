@@ -75,7 +75,7 @@ static int Version(void);
   */
 int main(void)
 {
-  rt_thread_mdelay(500);//延时后不会在初始化日志中间产生
+  rt_thread_mdelay(1000);//延时后不会在初始化日志中间产生
   Version();
 //  while(1)
 //  {
