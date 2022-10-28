@@ -31,6 +31,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <rtconfig.h>
+#include "ulog_file_be.h"
 /*ulog include*/
 #define LOG_TAG              "main" 
 #define LOG_LVL              DBG_INFO
@@ -55,7 +56,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+volatile float set_angle,get_angle,get_speed, vaule;
+volatile int set_speed;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,21 +75,22 @@ static int Version(void);
   */
 int main(void)
 {
-/* 硬件 BSP 初始化*/
-/***********************调试模式下禁用独立看门狗IWDG**********************************/
-  __HAL_DBGMCU_FREEZE_IWDG();	  //调试模式下，冻结看门狗计数器时钟
-  __HAL_DBGMCU_FREEZE_WWDG();
-  __HAL_DBGMCU_FREEZE_CAN1();
-  __HAL_DBGMCU_FREEZE_CAN2();
-/*********************调试模式下使能独立看门狗IWDG**********************************/
-//__HAL_DBGMCU_UNFREEZE_IWDG();	  //调试模式下，使能看门狗计数器时钟
-  /* set LED0 pin mode to output */
-#if(OUT_FILE_ENABLE == 1 && MV_MONITOR_ENABLE == 1)
-  mv_log_timer_init();
-  mv_log_timer_start();
-#endif
   rt_thread_mdelay(500);//延时后不会在初始化日志中间产生
   Version();
+//  while(1)
+//  {
+//      set_angle += 0.1;
+//      get_angle -= 0.1;
+//      set_speed += 1;
+//      get_speed -=1;
+//      vaule += 3.14;
+
+//      LOG_MV("%f %f %d %f %f", 
+//          set_angle,get_angle,set_speed,
+//          get_speed,vaule);
+
+//     rt_thread_mdelay(500);
+//  } 
 }
 /* USER CODE END 0 */
 

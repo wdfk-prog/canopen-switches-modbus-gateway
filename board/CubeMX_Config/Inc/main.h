@@ -72,8 +72,6 @@ extern "C" {
 #define VERSION "0.0.2"
 
 #define BEEP_ENABLE 0
-#define OUT_FILE_ENABLE 0 //使能文件后端输出
-#define MV_MONITOR_ENABLE 0//使能运动监视文件后端
 
 #define YEAR ((((__DATE__ [7] - '0') * 10 + (__DATE__ [8] - '0')) * 10 \
     + (__DATE__ [9] - '0')) * 10 + (__DATE__ [10] - '0'))
