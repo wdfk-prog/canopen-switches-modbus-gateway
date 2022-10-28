@@ -31,7 +31,6 @@
   * @author 
   ******************************************************************************
   */
-/* Includes ------------------------------------------------------------------*/
 /*
 msh /flash/logs>fal bench 4096
 DANGER: It will erase full chip or partition! Please run 'fal bench 4096 yes'.
@@ -61,13 +60,14 @@ pwd	打印出当前目录地址
 mkdir	创建文件夹
 mkfs	格式化文件系统
 */
-/* Private includes ----------------------------------------------------------*/
-//必要的头文件
+/* Includes ------------------------------------------------------------------*/
 #include <fal.h>
 #include <dfs_fs.h>
 #include <dfs_romfs.h>
 #include <fal_cfg.h>
 #include <flashdb.h>
+/* Private includes ----------------------------------------------------------*/
+#include "ulog_file_be.h"
 #include "main.h"
 //#include "mb_handler.h"
 /* 添加 DEBUG 头文件 */
@@ -261,6 +261,12 @@ static int FileSystem_Init(void)
   {
       LOG_E("ROM file system initializate failed!");
   }
+  #if(OUT_FILE_ENABLE == 1)
+  extern void sys_log_file_backend_init(void);
+  sys_log_file_backend_init();
+  extern void motion_log_file_backend_init(void);
+  motion_log_file_backend_init();
+  #endif
   /*数据库初始化*/
   Flash_KVDB_Init();
   return RT_EOK;
