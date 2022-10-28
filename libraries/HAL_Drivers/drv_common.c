@@ -195,7 +195,6 @@ RT_WEAK void rt_hw_board_init(void)
     MX_GPIO_Init();
 #endif
 
-
     /* USART driver initialization is open by default */
 #ifdef RT_USING_SERIAL
     rt_hw_usart_init();
@@ -210,5 +209,13 @@ RT_WEAK void rt_hw_board_init(void)
 #ifdef RT_USING_COMPONENTS_INIT
     rt_components_board_init();
 #endif
+/* 硬件 BSP 初始化*/
+/***********************调试模式下禁用独立看门狗IWDG**********************************/
+  __HAL_DBGMCU_FREEZE_IWDG();	  //调试模式下，冻结看门狗计数器时钟
+  __HAL_DBGMCU_FREEZE_WWDG();
+  __HAL_DBGMCU_FREEZE_CAN1();
+  __HAL_DBGMCU_FREEZE_CAN2();
+/*********************调试模式下使能独立看门狗IWDG**********************************/
+//__HAL_DBGMCU_UNFREEZE_IWDG();	  //调试模式下，使能看门狗计数器时钟
 }
 
