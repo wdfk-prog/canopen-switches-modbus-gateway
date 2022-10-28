@@ -15,19 +15,18 @@
 #include <rtthread.h>
 #include <stdio.h>
 #include <cm_backtrace.h>
-#include "main.h"
+
 //#define CMB_USING_FAL_FLASH_LOG
 //#define CMB_USING_FAL_BACKUP_LOG_TO_FILE
 
 #if defined(CMB_USING_FAL_FLASH_LOG)
 
-#if !defined(RT_USING_FAL) || !defined(RT_USING_DFS)
+#if !defined(PKG_USING_FAL) || !defined(RT_USING_DFS)
 #error "please enable the FAL package and DFS component"
 #endif
 
 #include <fal.h>
-#include <unistd.h>
-#include <dfs_file.h>
+#include <dfs_posix.h>
 
 #ifndef CMB_FAL_FLASH_LOG_PART
 #define CMB_FAL_FLASH_LOG_PART         "cmb_log"
@@ -83,7 +82,7 @@ void cmb_flash_log_write(const char *log, size_t len)
 
 #if defined(RT_USING_ULOG)
 
-static void ulog_cmb_flash_log_backend_output(struct ulog_backend *backend,rt_uint8_t log_id, rt_uint32_t level, const char *tag, rt_bool_t is_raw,
+static void ulog_cmb_flash_log_backend_output(struct ulog_backend *backend, rt_uint32_t level, const char *tag, rt_bool_t is_raw,
         const char *log, size_t len)
 {
     if (!rt_strcmp(tag, CMB_LOG_TAG))
@@ -133,44 +132,45 @@ void cmb_flash_log_println(const char *fmt, ...)
 
 
 #ifdef CMB_USING_FAL_BACKUP_LOG_TO_FILE
-#if(OUT_FILE_ENABLE == 1)
 int cmb_backup_flash_log_to_file(void)
 {
-  //使能文件后端输出
-extern int ulog_file_backend_init(void);
-  ulog_file_backend_init();
-  LOG_I("Enable the log file back end");
-  
     cmb_log_part = fal_partition_find(CMB_FAL_FLASH_LOG_PART);
     RT_ASSERT(cmb_log_part != NULL);
 
-    size_t len = 8;
+    size_t len;
     uint32_t addr = 0;
     rt_bool_t has_read_log = RT_FALSE;
     int log_fd = -1;
 
     while (1)
     {
-      char log_buf[ULOG_LINE_BUF_SIZE];
+        fal_partition_read(cmb_log_part, addr, (uint8_t *)&len, sizeof(size_t));
+        if (len != 0xFFFFFFFF)
+        {
+            char log_buf[ULOG_LINE_BUF_SIZE];
 
-      if (!has_read_log)
-      {
-          has_read_log = RT_TRUE;
-          LOG_I("An CmBacktrace log was found on flash. Now will backup it to file ("CMB_LOG_FILE_PATH").");
-          //TODO check the folder
-          log_fd = open(CMB_LOG_FILE_PATH, O_WRONLY | O_CREAT | O_APPEND);
-          if (log_fd < 0) {
-              LOG_E("Open file ("CMB_LOG_FILE_PATH") failed.");
-              break;
-          }
-      }
-      addr += CMB_LOG_LEN_SIZE;
-      /* read log content */
-      fal_partition_read(cmb_log_part, addr, (uint8_t *)log_buf, MIN(ULOG_LINE_BUF_SIZE, len));
-      addr += RT_ALIGN(len, CMB_FLASH_LOG_PART_WG);
-      /* backup log to file */
-      write(log_fd, log_buf, MIN(ULOG_LINE_BUF_SIZE, len));
-      break;
+            if (!has_read_log)
+            {
+                has_read_log = RT_TRUE;
+                LOG_I("An CmBacktrace log was found on flash. Now will backup it to file ("CMB_LOG_FILE_PATH").");
+                //TODO check the folder
+                log_fd = open(CMB_LOG_FILE_PATH, O_WRONLY | O_CREAT | O_APPEND);
+                if (log_fd < 0) {
+                    LOG_E("Open file ("CMB_LOG_FILE_PATH") failed.");
+                    break;
+                }
+            }
+            addr += CMB_LOG_LEN_SIZE;
+            /* read log content */
+            fal_partition_read(cmb_log_part, addr, (uint8_t *)log_buf, MIN(ULOG_LINE_BUF_SIZE, len));
+            addr += RT_ALIGN(len, CMB_FLASH_LOG_PART_WG);
+            /* backup log to file */
+            write(log_fd, log_buf, MIN(ULOG_LINE_BUF_SIZE, len));
+        }
+        else
+        {
+            break;
+        }
     }
 
     if (has_read_log)
@@ -178,16 +178,14 @@ extern int ulog_file_backend_init(void);
         if (log_fd >= 0)
         {
             LOG_I("Backup the CmBacktrace flash log to file ("CMB_LOG_FILE_PATH") successful.");
-            close(log_fd); 
-            log_fd = open(CMB_LOG_FILE_PATH, O_WRONLY | O_TRUNC | O_APPEND);
-            close(log_fd); 
+            close(log_fd);
+            fal_partition_erase_all(cmb_log_part);
         }
     }
 
     return 0;
 }
 INIT_APP_EXPORT(cmb_backup_flash_log_to_file);
-#endif
 #endif /* CMB_USING_FAL_BACKUP_LOG_TO_FILE */
 
 #endif /* defined(CMB_USING_FLASH_LOG_BACKUP) */
