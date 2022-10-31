@@ -24,6 +24,8 @@
 #include "canfestival.h"
 #include "canopen_callback.h"
 #include "timers_driver.h"
+
+#include "motor_control.h"
 /* Private typedef -----------------------------------------------------------*/
 typedef struct 
 {
@@ -667,7 +669,7 @@ UNS8 Write_SLAVE_control_word(UNS8 nodeId,UNS16 value)
 {
   UNS8 errcode = 0;
   //参数写入本地字典
-  Controlword = value;
+  *Controlword_Node[nodeId - 2] = value;
 
   //参数发送节点字典
   if(Read_local_Send_Node(OD_Data,nodeId,0x6040,0x00) == 0XFF)
@@ -1068,8 +1070,8 @@ static UNS8 (*NODECFG_Operation_2[])(uint8_t nodeId) =
 /******************************TPDO1 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
 /**
-  * 分析仪显示PDO1发送 , 帧ID0X182 DLC:8
-  * 字典工具：0x1400 Receive PDO 1 Parameter:COB ID used by PDO:0x00000182
+  * 分析仪显示PDO1发送 , 帧ID0X183 DLC:8
+  * 字典工具：0x1400 Receive PDO 1 Parameter:COB ID used by PDO:0x00000183
   * 字典工具：0x1600 Receive PDO 1 Mapping.填入需要发送数据
   * 为从机发送通道TPDO1,即主机接收通道RPDO1
   * PDO DATA:0x50 06 4E C3 00 00 00 00  小端模式.
@@ -1118,8 +1120,8 @@ static UNS8 NODE3_EN_SLAVE_TPDO1(uint8_t nodeId)
 /******************************TPDO2 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
 /**
-  * 分析仪显示PDO2发送 , 帧ID0X282 DLC:4
-  * 字典工具：0x1401 Receive PDO 2 Parameter:COB ID used by PDO:0x00000282
+  * 分析仪显示PDO2发送 , 帧ID0X283 DLC:4
+  * 字典工具：0x1401 Receive PDO 2 Parameter:COB ID used by PDO:0x00000283
   * 字典工具：0x1601 Receive PDO 2 Mapping.填入需要发送数据
   * 为从机发送通道TPDO2,即主机接收通道RPDO2
   * PDO DATA:0x37 16   小端模式.

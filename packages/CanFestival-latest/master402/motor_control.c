@@ -59,7 +59,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-
+#include "motor_control.h"
 /* Private includes ----------------------------------------------------------*/
 #include <stdbool.h>
 #include <stdlib.h>
@@ -190,7 +190,8 @@ if(CODE != 0X00)            \
    return 0XFF;             \
 }
 /* Private variables ---------------------------------------------------------*/
-
+UNS16 *Controlword_Node[] = {&Controlword,&NODE3_Controlword_6040};		/* Mapped at index 0x6040, subindex 0x00*/
+UNS16 *Statusword_Node[] = {&Statusword,&NODE3_Statusword_6041};		/* Mapped at index 0x6041, subindex 0x00 */
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  阻塞线程查询值特定位是否置一
@@ -443,7 +444,7 @@ static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | NEW_SET_POINT));//由于命令触发是正缘触发，Bit 4切为再切至 on。 
   LOG_I("Motor runing homing");
-  if(block_query_BIT_change(&Statusword,HOMING_ATTAINED,5000,1) != 0x00)
+  if(block_query_BIT_change(Statusword_Node[nodeId - 2],HOMING_ATTAINED,5000,1) != 0x00)
   {
     LOG_W("Motor runing homing time out");
     return 0XFF;
@@ -459,7 +460,7 @@ static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
     motor_on_profile_position(nodeId);
     FAILED_EXIT(motor_profile_position(0,60,0,0,nodeId));
 
-    if(block_query_BIT_change(&Statusword,TARGET_REACHED,5000,1) != 0x00)
+    if(block_query_BIT_change(Statusword_Node[nodeId - 2],TARGET_REACHED,5000,1) != 0x00)
     {
       LOG_W("Motor runing zero time out");
     }
@@ -522,27 +523,27 @@ static UNS8 motor_off(UNS8 nodeId)
               AL022 主回路电源异常[驱动器掉电]
               AL009 位置控制误差过大 [不要乱发位置命令]
 */
-static void motor_state(void)
+static void motor_state(UNS8 nodeId)
 {
   LOG_I("Mode operation:%d",Modes_of_operation);
-	LOG_I("ControlWord 0x%0X", Controlword);
-  LOG_I("StatusWord 0x%0X", Statusword);
+	LOG_I("ControlWord 0x%0X", *Controlword_Node[nodeId - 2]);
+  LOG_I("StatusWord 0x%0X", *Statusword_Node[nodeId - 2]);
   
-  if(CANOPEN_GET_BIT(Statusword , FAULT))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , FAULT))
     LOG_E("motor fault!");
-  if(CANOPEN_GET_BIT(Statusword , WARNING))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , WARNING))
     LOG_W("motor warning!");
-  if(CANOPEN_GET_BIT(Statusword , FOLLOWING_ERROR))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , FOLLOWING_ERROR))
   {
     if(Modes_of_operation == PROFILE_POSITION_MODE)
       LOG_E("motor following error!");
   }
-  if(CANOPEN_GET_BIT(Statusword , POSITIVE_LIMIT))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , POSITIVE_LIMIT))
     LOG_W("motor touch  positive limit!");
-  if(!CANOPEN_GET_BIT(Statusword , TARGET_REACHED))
+  if(!CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , TARGET_REACHED))
     LOG_W("The node did not receive the target arrival command!");
   
-  if(CANOPEN_GET_BIT(Statusword , 13))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , 13))
   {
     if(Modes_of_operation == PROFILE_POSITION_MODE)
     {
@@ -686,7 +687,12 @@ static void cmd_motor(uint8_t argc, char **argv)
         }
         else if (!strcmp(operator, "state"))
         {
-            motor_state();
+            UNS8 nodeId = DEFAULT_NODE;
+            if(argc > 2) 
+            {
+              nodeId = atoi(argv[2]);
+            }
+            motor_state(nodeId);
         }
         else if (!strcmp(operator, "pp_move"))
         {
