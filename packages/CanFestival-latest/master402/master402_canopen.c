@@ -796,8 +796,8 @@ UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float switch_sp
 /******************************TPDO1 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
 /**
-  * 分析仪显示PDO1发送 , 帧ID0X182 DLC:8
-  * 字典工具：0x1400 Receive PDO 1 Parameter:COB ID used by PDO:0x00000182
+  * 分析仪显示PDO1发送 , 帧ID0X183 DLC:8
+  * 字典工具：0x1400 Receive PDO 1 Parameter:COB ID used by PDO:0x00000183
   * 字典工具：0x1600 Receive PDO 1 Mapping.填入需要发送数据
   * 为从机发送通道TPDO1,即主机接收通道RPDO1
   * PDO DATA:0x50 06 4E C3 00 00 00 00  小端模式.
@@ -845,8 +845,8 @@ static UNS8 NODE2_EN_SLAVE_TPDO1(uint8_t nodeId)
 /******************************TPDO2 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
 /**
-  * 分析仪显示PDO2发送 , 帧ID0X282 DLC:4
-  * 字典工具：0x1401 Receive PDO 2 Parameter:COB ID used by PDO:0x00000282
+  * 分析仪显示PDO2发送 , 帧ID0X283 DLC:4
+  * 字典工具：0x1401 Receive PDO 2 Parameter:COB ID used by PDO:0x00000283
   * 字典工具：0x1601 Receive PDO 2 Mapping.填入需要发送数据
   * 为从机发送通道TPDO2,即主机接收通道RPDO2
   * PDO DATA:0x37 16   小端模式.
@@ -889,8 +889,8 @@ static UNS8 NODE2_EN_SLAVE_TPDO2(uint8_t nodeId)
 /******************************RPDO1 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
 /**
-  * 分析仪显示PDO1接收 , 帧ID0X202 DLC:8
-  * 字典工具：0x1800 Transmit PDO 1 Parameter:COB ID used by PDO:0x00000202
+  * 分析仪显示PDO1接收 , 帧ID0X203 DLC:8
+  * 字典工具：0x1800 Transmit PDO 1 Parameter:COB ID used by PDO:0x00000203
   * 字典工具：0x1A00 Transmit PDO 1 Mapping.填入需要发送数据
   * 为从机接收通道RPDO1,即主机发送通道TPDO1
   * PDO DATA:0x00 00 01 00 00 00 00   小端模式.
@@ -938,8 +938,8 @@ static UNS8 NODE2_EN_SLAVE_RPDO1(uint8_t nodeId)
 /******************************RPDO2 设置参数操作
                                数据长度被限制为 1~8 字节*********************************/
 /**
-  * 分析仪显示PDO2接收 , 帧ID0X302 DLC:4
-  * 字典工具：0x1801 Transmit PDO 2 Parameter:COB ID used by PDO:0x00000302
+  * 分析仪显示PDO2接收 , 帧ID0X303 DLC:4
+  * 字典工具：0x1801 Transmit PDO 2 Parameter:COB ID used by PDO:0x00000303
   * 字典工具：0x1A01 Transmit PDO 2 Mapping.填入需要发送数据
   * 为从机接收通道RPDO2,即主机发送通道TPDO2
   * PDO DATA:0x50 C3 00 00  小端模式.
