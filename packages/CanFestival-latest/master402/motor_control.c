@@ -678,9 +678,9 @@ static void cmd_motor(uint8_t argc, char **argv)
         else if (!strcmp(operator, "off"))
         {
             UNS8 nodeId = DEFAULT_NODE;
-            if(argc > 3) 
+            if(argc > 2) 
             {
-              nodeId = atoi(argv[3]);
+              nodeId = atoi(argv[2]);
             }   
             motor_off(nodeId);
         }
