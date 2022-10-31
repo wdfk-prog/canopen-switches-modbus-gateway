@@ -12,6 +12,13 @@ const indextable * master402_scanIndexOD (CO_Data *d, UNS16 wIndex, UNS32 * erro
 
 /* Master node data struct */
 extern CO_Data master402_Data;
+extern UNS16 NODE3_Controlword_6040;		/* Mapped at index 0x2001, subindex 0x00*/
+extern UNS16 NODE3_Statusword_6041;		/* Mapped at index 0x2002, subindex 0x00*/
+extern INTEGER8 NODE3_Modes_of_operation_6060;		/* Mapped at index 0x2003, subindex 0x00*/
+extern INTEGER32 NODE3_Position_actual_value_6064;		/* Mapped at index 0x2004, subindex 0x00*/
+extern UNS8 NODE3_Velocity_actual_value_607A;		/* Mapped at index 0x2005, subindex 0x00*/
+extern INTEGER32 NODE3_Target_position_607A;		/* Mapped at index 0x2006, subindex 0x00*/
+extern INTEGER32 NODE3_Target_velocity_60FF;		/* Mapped at index 0x2007, subindex 0x00*/
 extern UNS16 S_move;		/* Mapped at index 0x2124, subindex 0x00*/
 extern UNS16 Controlword;		/* Mapped at index 0x6040, subindex 0x00*/
 extern UNS16 Statusword;		/* Mapped at index 0x6041, subindex 0x00*/
