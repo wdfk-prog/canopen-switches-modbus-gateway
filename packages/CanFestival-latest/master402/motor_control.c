@@ -190,39 +190,28 @@ if(CODE != 0X00)            \
    return 0XFF;             \
 }
 /* Private variables ---------------------------------------------------------*/
-UNS16 *Controlword_Node[] = {&Controlword,&NODE3_Controlword_6040};		/* Mapped at index 0x6040, subindex 0x00*/
-UNS16 *Statusword_Node[] = {&Statusword,&NODE3_Statusword_6041};		/* Mapped at index 0x6041, subindex 0x00 */
+Map_Val_UNS16 Controlword_Node[] = {
+{&Controlword           ,0x6040},
+{&NODE3_Controlword_6040,0x2001},};		/* Mapped at index 0x6040, subindex 0x00*/
+Map_Val_UNS16 Statusword_Node[] =  {
+{&Statusword            ,0x6041},
+{&NODE3_Statusword_6041 ,0x2002},};		/* Mapped at index 0x6041, subindex 0x00 */
+Map_Val_INTEGER8 Modes_of_operation_Node[] = {
+{&Modes_of_operation    ,0x6060},
+{&NODE3_Modes_of_operation_6060 ,0x2003},};		/* Mapped at index 0x6060, subindex 0x00 */
+Map_Val_INTEGER32 Target_position_Node[] = {
+{&Target_position,0x607A},
+{&NODE3_Target_position_607A,0x2006},};		/* Mapped at index 0x607A, subindex 0x00 */
+Map_Val_INTEGER32 Target_velocity_Node[] = {
+{&Target_velocity,0x60FF},
+{&NODE3_Target_velocity_60FF,0x2007},};		/* Mapped at index 0x60FF, subindex 0x00 */
+Map_Val_INTEGER32 Position_actual_value_Node[] = {
+{&Position_actual_value,0x6064},
+{&NODE3_Position_actual_value_6064,0x2004},};		/* Mapped at index 0x6064, subindex 0x00*/
+Map_Val_INTEGER32 Velocity_actual_value_Node[] = {
+{&Velocity_actual_value,0x6064},
+{&NODE3_Velocity_actual_value_0x606C,0x2005},};		/* Mapped at index 0x606C, subindex 0x00 */
 /* Private function prototypes -----------------------------------------------*/
-/**
-  * @brief  阻塞线程查询值特定位是否置一
-  * @param  value:需要查询的变量
-  * @param  expect:预期值
-  * @param  timeout:超时退出时间，单位ms
-  * @param  block_time:阻塞时间，单位ms
-  * @retval None
-  * @note   阻塞查询
-  *         仅判断特定位是否置一，并不判断值是否相等。
-  *         防止其他情况下，其他位置一无法判断为改变成功
-*/
-/*static UNS8 block_query_change(UNS16 *value,UNS16 expect,uint16_t timeout,uint16_t block_time)
-{
-  uint16_t cnt = 0;
-
-  while((*value & expect) != expect)
-  {
-    if((cnt * block_time) < timeout)
-    {
-      cnt++;
-      rt_thread_mdelay(block_time);
-    }
-    else
-    {
-      return 0xFF;
-    }
-  }
-  return 0x00;
-}
-*/
 /**
   * @brief  阻塞线程查询值特定位是否置一
   * @param  value:需要查询的变量
@@ -261,7 +250,7 @@ static UNS8 block_query_BIT_change(UNS16 *value,UNS8 bit,uint16_t timeout,uint16
 */
 static UNS8 motor_on_profile_position(UNS8 nodeId)
 {
-  Target_position = 0;
+  *Target_position_Node[nodeId - 2].map_val = 0;
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,PROFILE_POSITION_MODE));
   FAILED_EXIT(Write_SLAVE_profile_position_speed_set(nodeId,0));
@@ -327,7 +316,7 @@ rfg use ref     0     Ramp input value is set to zero.
                 1     Ramp input value accords to ramp reference.*/
 static UNS8 motor_on_profile_velocity(UNS8 nodeId)
 {
-  Target_velocity = 0;
+  *Target_velocity_Node[nodeId - 2].map_val = 0;
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,PROFILE_VELOCITY_MODE));
   FAILED_EXIT(Write_SLAVE_profile_position_speed_set(nodeId,0));
@@ -367,13 +356,13 @@ static UNS8 motor_on_profile_velocity(UNS8 nodeId)
 static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,bool immediately,UNS8 nodeId)
 {
   UNS16 value = 0;
-  if(Modes_of_operation != PROFILE_POSITION_MODE)
+  if(*Modes_of_operation_Node[nodeId - 2].map_val != PROFILE_POSITION_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",Modes_of_operation);
+    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
 
-  Target_position  = position;
+  *Target_position_Node[nodeId - 2].map_val = position;
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_profile_position_speed_set(nodeId,speed));
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
@@ -409,9 +398,9 @@ static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,
 */
 static UNS8 motor_interpolation_position (UNS8 nodeId)
 {
-  if(Modes_of_operation != INTERPOLATED_POSITION_MODE)
+  if(*Modes_of_operation_Node[nodeId - 2].map_val != INTERPOLATED_POSITION_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",Modes_of_operation);
+    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
   /* State Transition 3: IP-MODE INACTIVE => IP-MODE ACTIVE
@@ -435,16 +424,16 @@ static UNS8 motor_interpolation_position (UNS8 nodeId)
 */
 static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
 {
-  if(Modes_of_operation != HOMING_MODE)
+  if(*Modes_of_operation_Node[nodeId - 2].map_val != HOMING_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",Modes_of_operation);
+    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0xFF;
   }
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | NEW_SET_POINT));//由于命令触发是正缘触发，Bit 4切为再切至 on。 
   LOG_I("Motor runing homing");
-  if(block_query_BIT_change(Statusword_Node[nodeId - 2],HOMING_ATTAINED,5000,1) != 0x00)
+  if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,HOMING_ATTAINED,5000,1) != 0x00)
   {
     LOG_W("Motor runing homing time out");
     return 0XFF;
@@ -460,7 +449,7 @@ static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
     motor_on_profile_position(nodeId);
     FAILED_EXIT(motor_profile_position(0,60,0,0,nodeId));
 
-    if(block_query_BIT_change(Statusword_Node[nodeId - 2],TARGET_REACHED,5000,1) != 0x00)
+    if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,5000,1) != 0x00)
     {
       LOG_W("Motor runing zero time out");
     }
@@ -482,13 +471,13 @@ static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
 static UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
 {
   UNS16 value = 0;
-  if(Modes_of_operation != PROFILE_VELOCITY_MODE)
+  if(*Modes_of_operation_Node[nodeId - 2].map_val != PROFILE_VELOCITY_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",Modes_of_operation);
+    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
 
-  Target_velocity  = speed * 10;//Target_velocity 单位为0.1 rpm,需要*10
+  *Target_velocity_Node[nodeId - 2].map_val  = speed * 10;//Target_velocity 单位为0.1 rpm,需要*10
 
   return 0X00;
 }
@@ -504,7 +493,7 @@ static UNS8 motor_off(UNS8 nodeId)
 {
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_DISABLE_VOLTAGE));
-  
+  FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,0));//清除模式选择
   return 0x00;
 }
 /**
@@ -525,38 +514,38 @@ static UNS8 motor_off(UNS8 nodeId)
 */
 static void motor_state(UNS8 nodeId)
 {
-  LOG_I("Mode operation:%d",Modes_of_operation);
-	LOG_I("ControlWord 0x%0X", *Controlword_Node[nodeId - 2]);
-  LOG_I("StatusWord 0x%0X", *Statusword_Node[nodeId - 2]);
+  LOG_I("Mode operation:%d",*Modes_of_operation_Node[nodeId - 2].map_val);
+	LOG_I("ControlWord 0x%0X", *Controlword_Node[nodeId - 2].map_val);
+  LOG_I("StatusWord 0x%0X", *Statusword_Node[nodeId - 2].map_val);
   
-  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , FAULT))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , FAULT))
     LOG_E("motor fault!");
-  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , WARNING))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , WARNING))
     LOG_W("motor warning!");
-  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , FOLLOWING_ERROR))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , FOLLOWING_ERROR))
   {
-    if(Modes_of_operation == PROFILE_POSITION_MODE)
+    if(*Modes_of_operation_Node[nodeId - 2].map_val == PROFILE_POSITION_MODE)
       LOG_E("motor following error!");
   }
-  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , POSITIVE_LIMIT))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , POSITIVE_LIMIT))
     LOG_W("motor touch  positive limit!");
-  if(!CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , TARGET_REACHED))
+  if(!CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , TARGET_REACHED))
     LOG_W("The node did not receive the target arrival command!");
   
-  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2] , 13))
+  if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , 13))
   {
-    if(Modes_of_operation == PROFILE_POSITION_MODE)
+    if(*Modes_of_operation_Node[nodeId - 2].map_val == PROFILE_POSITION_MODE)
     {
       LOG_E("motor following error!");
     }
-    else if(Modes_of_operation == HOMING_MODE)
+    else if(*Modes_of_operation_Node[nodeId - 2].map_val == HOMING_MODE)
     {
       LOG_E("motor Homing error occurred!");
     }
   }
 
-	LOG_I("current position %d PUU", Position_actual_value);  //注意为0X6064，0X6063为增量式位置
-	LOG_I("current speed %.1f RPM", Velocity_actual_value / 10.0f);//注意单位为0.1rpm
+	LOG_I("current position %d PUU", *Position_actual_value_Node[nodeId - 2].map_val);  //注意为0X6064，0X6063为增量式位置
+	LOG_I("current speed %.1f RPM",  *Velocity_actual_value_Node[nodeId - 2].map_val / 10.0f);//注意单位为0.1rpm
 }
 #ifdef RT_USING_MSH
 #define DEFAULT_NODE SERVO_NODEID_1//MSH命令默认操作节点
@@ -636,28 +625,27 @@ static void cmd_motor(uint8_t argc, char **argv)
 
             if(argc <= 3) 
             {
-                rt_kprintf("Usage: motor on hm [offset] <switch_speed> <zero_speed> <method> <nodeId>\n");
+                rt_kprintf("Usage: motor on hm [offset] <nodeId> <switch_speed> <zero_speed> <method> \n");
                 return;
             }
             offset = atoi(argv[3]);
             
             if(argc > 4) 
             {
-              switch_speed = atoi(argv[4]);
-            }
+              nodeId = atoi(argv[4]);
+            }   
             if(argc > 5) 
-            {zero_speed = atoi(argv[5]);
+            {
+              switch_speed = atoi(argv[5]);
             }
             if(argc > 6) 
-            {
-              method = atoi(argv[6]);
+            {zero_speed = atoi(argv[6]);
             }
-            
             if(argc > 7) 
             {
-              nodeId = atoi(argv[7]);
-            }   
-            rt_kprintf("homing mode set offset: %d, method: %d\n", offset, method);
+              method = atoi(argv[7]);
+            }
+            rt_kprintf("homing mode set offset: %d, nodeId: %d, method: %d\n", offset, nodeId, method);
             rt_kprintf("switch_speed: %.1f, zero_speed: %.1f\n", switch_speed, zero_speed);
             motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeId);
           }
@@ -703,27 +691,28 @@ static void cmd_motor(uint8_t argc, char **argv)
             UNS8 nodeId = DEFAULT_NODE;
             if(argc <= 2) 
             {
-                rt_kprintf("Usage: motor pp_move [position] <speed> <0:abs/1:rel> <immediately> <nodeId>\n");
+                rt_kprintf("Usage: motor pp_move [position] <nodeId> <speed> <0:abs/1:rel> <immediately> \n");
                 return;
             }
 
             position = atoi(argv[2]);
             if(argc > 3) 
             {
-                speed = atoi(argv[3]);
-            }
+              nodeId = atoi(argv[3]);
+            }  
             if(argc > 4) 
             {
-                abs_rel = atoi(argv[4]);
+                speed = atoi(argv[4]);
             }
             if(argc > 5) 
             {
-                immediately = atoi(argv[5]);
+                abs_rel = atoi(argv[5]);
             }
             if(argc > 6) 
             {
-              nodeId = atoi(argv[6]);
-            }  
+                immediately = atoi(argv[6]);
+            }
+
             rt_kprintf("move to position: %d, speed: %d\n", position, speed);
             rt_kprintf("abs_rel: %d, immediately: %d\n", abs_rel, immediately);
             motor_profile_position(position,speed,abs_rel,immediately,nodeId);

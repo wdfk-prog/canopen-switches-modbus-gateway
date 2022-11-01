@@ -15,13 +15,45 @@
 /* Includes ------------------------------------------------------------------*/
 #include "canfestival.h"
 /* Exported types ------------------------------------------------------------*/
-
+/*
+ * INTEGER8地图变量结构体
+*/
+typedef struct
+{
+  INTEGER8 *map_val; //变量地址
+  UNS16 index;   //变量索引
+}Map_Val_INTEGER8;
+/*
+ * UNS16地图变量结构体
+*/
+typedef struct
+{
+  UNS16 *map_val; //变量地址
+  UNS16 index;   //变量索引
+}Map_Val_UNS16;
+/*
+ * UNS32地图变量结构体
+*/
+typedef struct
+{
+  UNS32 *map_val; //变量地址
+  UNS16 index;   //变量索引
+}Map_Val_UNS32;
+/*
+ * INTEGER32地图变量结构体
+*/
+typedef struct
+{
+  INTEGER32 *map_val; //变量地址
+  UNS16 index;   //变量索引
+}Map_Val_INTEGER32;
 /* Exported constants --------------------------------------------------------*/
 
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported variables ---------------------------------------------------------*/
-extern UNS16 *Controlword_Node[];
+extern Map_Val_UNS16 Controlword_Node[];
+extern Map_Val_INTEGER8 Modes_of_operation_Node[];
 /* Exported functions prototypes ---------------------------------------------*/
  
 #endif /* __MOTOR_CONTROL_H */

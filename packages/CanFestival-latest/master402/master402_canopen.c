@@ -401,7 +401,12 @@ void canopen_start_thread_entry(void *parameter)
 //  UNS8 i = 0;//调试取消注释这行，注释上行。用来单节点初始化
   {
     nodeId = node_conf[i].nodeID;
-    Write_SLAVE_control_word(nodeId,0x80);//初始化进行错误重置
+    if(Write_SLAVE_control_word(nodeId,0x80) == 0xFF)//初始化进行错误重置
+    {
+        LOG_E("Failed to clear error. Log out of thread");
+        return;
+    }
+      
     rt_thread_mdelay(200);//确保错误重置完成
 
     config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
@@ -523,28 +528,30 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
 /**
   * @brief  读取本地字典参数并写入节点字典
   * @param  d:字典结构体
-  * @param  nodeId：节点ID
-  * @param  index:索引
-  * @param  subIndex:子索引
+  * @param  nodeId:节点ID
+  * @param  local_index:本地索引
+  * @param  local_subIndex:本地子索引
+  * @param  slave_Index:从机索引
+  * @param  slave_subIndex:从机子索引
   * @retval None
   * @note   None
 */
-static UNS8 Read_local_Send_Node(CO_Data* d,UNS8 nodeId,UNS16 index,UNS8  subIndex)
+static UNS8 Read_local_Send_Node(CO_Data* d,UNS8 nodeId,UNS16 local_index,UNS8 local_subIndex,UNS16 slave_index,UNS8 slave_subIndex)
 {
   UNS32  size = SDO_MAX_LENGTH_TRANSFER;
   UNS32 pdo_map_val = 0,errorCode = 0; 
   UNS8  dataType = 0;
 
-  errorCode = readLocalDict(d,index,subIndex,(void *)&pdo_map_val,&size,&dataType,0);
+  errorCode = readLocalDict(d,local_index,local_subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%X",index,subIndex,errorCode);
+    LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%X",local_index,local_subIndex,errorCode);
     return 0xFF;
   }
-  errorCode = writeNetworkDictSync(d,nodeId,index,subIndex,size,dataType,&pdo_map_val,0);
+  errorCode = writeNetworkDictSync(d,nodeId,slave_index,slave_subIndex,size,dataType,&pdo_map_val,0);
   if(errorCode != true)
   {
-    LOG_E("index:0X%X,subIndex:0X%X,write slave Dict false",index,subIndex);
+    LOG_E("index:0X%X,subIndex:0X%X,write slave Dict false",slave_index,slave_subIndex);
     return 0xFF;
   }
   return 0x00;
@@ -643,19 +650,21 @@ static UNS8 local_cfg_od_send(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_
 UNS8 Write_SLAVE_Modes_of_operation(UNS8 nodeId,INTEGER8 mode)
 {
   UNS8 errcode = 0;
-  if(0 <= Modes_of_operation && Modes_of_operation <= 10)
+  if(0 <= *Modes_of_operation_Node[nodeId - 2].map_val && *Modes_of_operation_Node[nodeId - 2].map_val <= 10)
   {
     //参数写入本地字典
-    Modes_of_operation = mode;
+    *Modes_of_operation_Node[nodeId - 2].map_val = mode;
   }
   else
   {
-    LOG_E("The Modes_of_operation is out of range. Select a value from 0 to 10");
+    LOG_E("The Modes_of_operation : %d is out of range. Select a value from 0 to 10",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,0x6060,0x00) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,
+                          Modes_of_operation_Node[nodeId - 2].index,0x00,//读取本地变量
+                          0x6060,0x00) == 0XFF)//发送至从机变量
     return 0XFF;
 
   return 0X00;
@@ -671,10 +680,12 @@ UNS8 Write_SLAVE_control_word(UNS8 nodeId,UNS16 value)
 {
   UNS8 errcode = 0;
   //参数写入本地字典
-  *Controlword_Node[nodeId - 2] = value;
+  *Controlword_Node[nodeId - 2].map_val = value;
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,0x6040,0x00) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,
+                          Controlword_Node[nodeId - 2].index,0x00,//读取本地变量
+                          0x6040,0x00) == 0XFF)//发送至从机变量
     return 0XFF;
 
   return 0X00;
@@ -699,8 +710,10 @@ UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,UNS32 speed)
   }
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6081,0x00) == 0XFF)
-    return 0XFF;
+  if(Read_local_Send_Node(OD_Data,nodeId,
+                          0x6081,0x00,//读取本地变量
+                          0x6081,0x00) == 0XFF)//发送至从机变量
+        return 0XFF;
 
   return 0X00;
 }
@@ -731,9 +744,9 @@ UNS8 Write_SLAVE_Interpolation_time_period(UNS8 nodeId)
   Interpolation_time_period_Interpolation_time_index = (Bit_Int_2(pdo_map_val) - 1) - 6;//十的次方数 = 10^(n-6)
   Interpolation_time_period_Interpolation_time_units = pdo_map_val / pow(10,(Bit_Int_2(pdo_map_val) - 1));//插补周期时间常数
   
-  if(Read_local_Send_Node(OD_Data,nodeId,0X60C2,0x01) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,0X60C2,0x01,0X60C2,0x01) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X60C2,0x02) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,0X60C2,0x02,0X60C2,0x02) == 0XFF)
     return 0XFF;
 
   return 0x00;
@@ -785,13 +798,13 @@ UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float switch_sp
   }
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,0X607C,0x00) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,0X607C,0x00,0X607C,0x00) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6098,0x00) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,0X6098,0x00,0X6098,0x00) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6099,0x01) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,0X6099,0x01,0X6099,0x01) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6099,0x02) == 0XFF)
+  if(Read_local_Send_Node(OD_Data,nodeId,0X6099,0x02,0X6099,0x02) == 0XFF)
     return 0XFF;
 
   return 0X00;
