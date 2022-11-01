@@ -398,6 +398,7 @@ void canopen_start_thread_entry(void *parameter)
   UNS8 nodeId = 0;
   /*写入节点字典*/
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
+//  UNS8 i = 0;//调试取消注释这行，注释上行。用来单节点初始化
   {
     nodeId = node_conf[i].nodeID;
     Write_SLAVE_control_word(nodeId,0x80);//初始化进行错误重置
@@ -445,7 +446,8 @@ void canopen_start_thread_entry(void *parameter)
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
     nodeId = node_conf[i].nodeID;
-	  masterSendNMTstateChange(d, nodeId, NMT_Start_Node);
+	  masterSendNMTstateChange(d, nodeId, NMT_Start_Node);//等待进入操作模式再开始算心跳超时
+    rt_thread_mdelay(200);//确保NMT命令下发成功
   }
 	size = 4;
 	readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);

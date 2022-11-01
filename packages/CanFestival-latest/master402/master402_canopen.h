@@ -28,7 +28,7 @@ typedef enum
 #define CONTROLLER_NODEID 	  1//控制器ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
 
-#define SDO_REPLY_TIMEOUT     50//5秒等待超时
+#define SDO_REPLY_TIMEOUT     50//50ms等待超时
 #define PRODUCER_HEARTBEAT_TIME 500 //生产者心跳间隔
 #define CONSUMER_HEARTBEAT_TIME 1000//消费者心跳间隔
 
