@@ -140,7 +140,7 @@ static rt_err_t _can_config(struct rt_can_device *can, struct can_configure *cfg
     drv_can->CanHandle.Init.TimeTriggeredMode = DISABLE;
     drv_can->CanHandle.Init.AutoBusOff = ENABLE;
     drv_can->CanHandle.Init.AutoWakeUp = DISABLE;
-    drv_can->CanHandle.Init.AutoRetransmission = DISABLE;
+    drv_can->CanHandle.Init.AutoRetransmission = ENABLE;
     drv_can->CanHandle.Init.ReceiveFifoLocked = DISABLE;
     drv_can->CanHandle.Init.TransmitFifoPriority = ENABLE;
 
