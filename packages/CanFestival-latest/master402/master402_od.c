@@ -10,7 +10,7 @@ UNS16 NODE3_Controlword_6040 = 0x0;		/* Mapped at index 0x2001, subindex 0x00 */
 UNS16 NODE3_Statusword_6041 = 0x0;		/* Mapped at index 0x2002, subindex 0x00 */
 INTEGER8 NODE3_Modes_of_operation_6060 = 0x0;		/* Mapped at index 0x2003, subindex 0x00 */
 INTEGER32 NODE3_Position_actual_value_6064 = 0x0;		/* Mapped at index 0x2004, subindex 0x00 */
-UNS8 NODE3_Velocity_actual_value_607A = 0x0;		/* Mapped at index 0x2005, subindex 0x00 */
+UNS8 NODE3_Velocity_actual_value_0x606C = 0x0;		/* Mapped at index 0x2005, subindex 0x00 */
 INTEGER32 NODE3_Target_position_607A = 0x0;		/* Mapped at index 0x2006, subindex 0x00 */
 INTEGER32 NODE3_Target_velocity_60FF = 0x0;		/* Mapped at index 0x2007, subindex 0x00 */
 UNS16 S_move = 0x0;		/* Mapped at index 0x2124, subindex 0x00 */
@@ -470,10 +470,10 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                        { RW, int32, sizeof (INTEGER32), (void*)&NODE3_Position_actual_value_6064, NULL }
                      };
 
-/* index 0x2005 :   Mapped variable NODE3_Velocity_actual_value_607A */
+/* index 0x2005 :   Mapped variable NODE3_Velocity_actual_value_0x606C */
                     subindex master402_Index2005[] = 
                      {
-                       { RW, uint8, sizeof (UNS8), (void*)&NODE3_Velocity_actual_value_607A, NULL }
+                       { RW, uint8, sizeof (UNS8), (void*)&NODE3_Velocity_actual_value_0x606C, NULL }
                      };
 
 /* index 0x2006 :   Mapped variable NODE3_Target_position_607A */
