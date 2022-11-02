@@ -28,12 +28,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   ******************************************************************************
   * @attention
   * 异常处理
+  * 
+  * CAN线短路，阻塞当前线程，等待短路恢复
+  * 
+  * 单节点状态
   * MCU 初始化时:CAN总线断开[已处理] 节点掉线[已处理]
   * MCU 预操作时:CAN总线断开[已处理] 节点掉线[已处理]
   * MCU 操作态时:CAN总线断开[已处理] 节点掉线[已处理]
-
+  * 
   * 多节点状态
-  * MCU 初始化时:单节点掉线[已处理] 多节点掉线[已处理]
+  * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理]
   * @author
   ******************************************************************************
   */
@@ -282,10 +286,10 @@ static void master402_fix_node_Disconnected(void* parameter)
             TIMEVAL time = *OD_Data->ProducerHeartBeatTime;
             extern void ProducerHeartbeatAlarm(CO_Data* d, UNS32 id);
             //设置生产者时间定时器，并设置定时回调
-            LOG_W("nodeID:%d,Restart the producer heartbeat",heartbeatID);
+            LOG_W("Restart the producer heartbeat");
             OD_Data->ProducerHeartBeatTimer = SetAlarm(OD_Data, 0, &ProducerHeartbeatAlarm, MS_TO_TIMEVAL(time), MS_TO_TIMEVAL(time));
           }
-          LOG_W("nodeID:%d,The master station enters the operation state from the stop state",heartbeatID);
+          LOG_W("The master station enters the operation state from the stop state");
           setState(OD_Data, Operational);//转入Operational状态
         }
 				masterSendNMTstateChange(OD_Data,heartbeatID,NMT_Start_Node);
