@@ -33,7 +33,8 @@ typedef struct
 	uint8_t state;
 	uint8_t try_cnt;
   uint8_t err_code;//配置参数错误代码 0xff,配置未发送,本地字典出错。 0x03,配置回复未响应，节点字典出错
-	struct rt_semaphore finish_sem;
+	uint8_t enable; //使能或禁用该节点
+  struct rt_semaphore finish_sem;
 }node_config_state;
 /* Private define ------------------------------------------------------------*/
 
@@ -406,27 +407,30 @@ void canopen_start_thread_entry(void *parameter)
     nodeId = node_conf[i].nodeID;
     if(Write_SLAVE_control_word(nodeId,0x80) == 0xFF)//初始化进行错误重置
     {
-        LOG_E("Failed to clear error. Log out of thread");
-        return;
+        LOG_E("nodeId:%d,Failed to clear error.The current node is not in operation",nodeId);
+        node_conf[i].enable = 0;
     }
-      
-    rt_thread_mdelay(200);//确保错误重置完成
-
-    config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
-    if(node_conf[i].err_code != 0X00)//因配置错误导致的退出
+    else
     {
-      LOG_E("Failed to configure the dictionary for node %d",nodeId);
-      if(node_conf[i].err_code == 0XFF)
+      node_conf[i].enable = 1;
+      rt_thread_mdelay(200);//确保错误重置完成
+
+      config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
+      if(node_conf[i].err_code != 0X00)//因配置错误导致的退出
       {
-        LOG_E("The configuration was not sent because the local dictionary failed");
+        LOG_E("Failed to configure the dictionary for node %d",nodeId);
+        if(node_conf[i].err_code == 0XFF)
+        {
+          LOG_E("The configuration was not sent because the local dictionary failed");
+        }
+        else if(node_conf[i].err_code == 0X03)
+        {
+          LOG_E("The configuration reply did not respond, and the node dictionary failed");
+        }
+        LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
+        master402_fix_config_err(d,nodeId);
+        return; //退出线程
       }
-      else if(node_conf[i].err_code == 0X03)
-      {
-        LOG_E("The configuration reply did not respond, and the node dictionary failed");
-      }
-      LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
-      master402_fix_config_err(d,nodeId);
-      return; //退出线程
     }
   }
   LOG_I("Node configuration Complete");
@@ -436,10 +440,13 @@ void canopen_start_thread_entry(void *parameter)
   /**有格式定义，字典工具没有支持，需要自己写入**/
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
-    nodeId = node_conf[i].nodeID;
-    consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
-    size = 4;
-    writeLocalDict(d, 0x1016, i+1, &consumer_heartbeat_time, &size, 0);
+    if(node_conf[i].enable == 1)
+    {
+      nodeId = node_conf[i].nodeID;
+      consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
+      size = 4;
+      writeLocalDict(d, 0x1016, i+1, &consumer_heartbeat_time, &size, 0);
+    }
   }
 
   /**写入主机生成者/发送端心跳发送时间  DS301定义**/
@@ -453,9 +460,12 @@ void canopen_start_thread_entry(void *parameter)
 
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
-    nodeId = node_conf[i].nodeID;
-	  masterSendNMTstateChange(d, nodeId, NMT_Start_Node);//等待进入操作模式再开始算心跳超时
-    rt_thread_mdelay(200);//确保NMT命令下发成功
+    if(node_conf[i].enable == 1)
+    {
+      nodeId = node_conf[i].nodeID;
+      masterSendNMTstateChange(d, nodeId, NMT_Start_Node);//等待进入操作模式再开始算心跳超时
+      rt_thread_mdelay(200);//确保NMT命令下发成功
+    }
   }
 	size = 4;
 	readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);
@@ -485,7 +495,6 @@ static void writeNetworkDictSyncCb(CO_Data* d, UNS8 nodeId)
 static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         UNS8 subIndex, UNS32 count, UNS8 dataType, void *data, UNS8 useBlockMode) 
 {
-
     if(nodeId < 1 || nodeId > MAX_NODE_COUNT - 1) 
     {
       LOG_W("invalid nodeId:%d, should between 2 and %d",nodeId,MAX_NODE_COUNT-1);
@@ -501,14 +510,14 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         if(writeNetworkDictCallBack(d, nodeId, index, subIndex,
                 count, dataType, data, writeNetworkDictSyncCb, useBlockMode) != 0)
         {
-            LOG_W("write SDO failed!  nodeId = %d, index: %x, subIndex: %x", nodeId, index, subIndex);
+            LOG_W("write SDO failed!  nodeId = %d, index: 0x%x, subIndex: 0x%x", nodeId, index, subIndex);
             closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }
 
         if(rt_sem_take(&conf->finish_sem, SDO_REPLY_TIMEOUT) != RT_EOK) 
         {
-            LOG_W("write SDO timeout!  nodeId = %d, index: %d, subIndex: %d", nodeId, index, subIndex);
+            LOG_W("write SDO timeout!  nodeId = %d, index: 0x%x, subIndex: 0x%x", nodeId, index, subIndex);
             closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }
@@ -519,7 +528,7 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
 
         if(res != SDO_FINISHED)
         {
-            LOG_W("get SDO write result failed!  nodeId = %d, index: 0x%x, subIndex: %d, abortCode = 0x%08X", nodeId, index, subIndex, abortCode);
+            LOG_W("get SDO write result failed!  nodeId = %d, index: 0x%x, subIndex: 0x%x, abortCode = 0x%08X", nodeId, index, subIndex, abortCode);
             continue;
         }
         rt_sem_detach(&conf->finish_sem);
