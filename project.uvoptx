@@ -152,9 +152,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>1388</LineNumber>
+          <LineNumber>1413</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134272112</Address>
+          <Address>134272384</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -163,12 +163,12 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>packages\CanFestival-latest\master402\master402_canopen.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\rt_thread\packages/CanFestival-latest/master402/master402_canopen.c\1388</Expression>
+          <Expression>\\rt_thread\packages/CanFestival-latest/master402/master402_canopen.c\1413</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>376</LineNumber>
+          <LineNumber>1397</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -184,7 +184,7 @@
         <Bp>
           <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>1387</LineNumber>
+          <LineNumber>1398</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -200,7 +200,7 @@
         <Bp>
           <Number>3</Number>
           <Type>0</Type>
-          <LineNumber>1410</LineNumber>
+          <LineNumber>1415</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -216,7 +216,39 @@
         <Bp>
           <Number>4</Number>
           <Type>0</Type>
-          <LineNumber>1415</LineNumber>
+          <LineNumber>1420</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>packages\CanFestival-latest\master402\master402_canopen.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>5</Number>
+          <Type>0</Type>
+          <LineNumber>1423</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>packages\CanFestival-latest\master402\master402_canopen.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
+        </Bp>
+        <Bp>
+          <Number>6</Number>
+          <Type>0</Type>
+          <LineNumber>1425</LineNumber>
           <EnabledFlag>1</EnabledFlag>
           <Address>0</Address>
           <ByteObject>0</ByteObject>
@@ -233,11 +265,6 @@
       <WatchWindow1>
         <Ww>
           <count>0</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>consumer_heartbeat_time,0x10</ItemText>
-        </Ww>
-        <Ww>
-          <count>1</count>
           <WinNumber>1</WinNumber>
           <ItemText>node_conf</ItemText>
         </Ww>

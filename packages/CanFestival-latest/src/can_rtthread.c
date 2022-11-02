@@ -123,7 +123,7 @@ unsigned char canSend(CAN_PORT notused, Message *m)
     }
 		if(++canSend_err_cnt >= (5*5000 / PRODUCER_HEARTBEAT_TIME)) 
     {
-		    setState(od_data, Stopped);
+      setState(od_data, Stopped);
 		}
 	  return 0xFF;
 	}

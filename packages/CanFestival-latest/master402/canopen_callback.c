@@ -330,13 +330,12 @@ static void master402_fix_config_err_thread_entry(void* parameter)
     }
     else if(now == Pre_operational)//通信恢复
     {
-      setState(OD_Data, Initialisation);//Initialisation ->自动转入pre状态 ->转入op
+      config_node(nodeId);
       LOG_I("nodeID:%d,The line communication of the node is restored",nodeId);
       return; //删除线程
     }
     else if(now == Initialisation)//节点断电后上电
     {
-      setState(OD_Data, Initialisation);//Initialisation
       LOG_I("nodeID:%d,Restart the node after the node is shut down",nodeId);
       return; //删除线程
     }
@@ -358,7 +357,6 @@ void master402_fix_config_err(CO_Data *d,UNS8 nodeId)
 {
   if(++cfg[nodeId - 2].try_cnt <= 3)
   {
-    setState(d, Stopped);
     LOG_I("nodeID:%d,Enabling the repair thread,Repair times = %d",nodeId,cfg[nodeId - 2].try_cnt);
     rt_thread_t tid = rt_thread_create("fix_config_err", master402_fix_config_err_thread_entry,
                       (void *)(int)nodeId,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告

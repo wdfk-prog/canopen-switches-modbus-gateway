@@ -41,6 +41,7 @@ typedef enum
 /* Exported variables ---------------------------------------------------------*/
 extern CO_Data *OD_Data;
 /* Exported functions prototypes ---------------------------------------------*/
+extern void config_node(uint8_t nodeId);
 extern void canopen_start_thread_entry(void *parameter);
 extern UNS8 Write_SLAVE_control_word(UNS8 nodeId,UNS16 value);
 extern UNS8 Write_SLAVE_Modes_of_operation(UNS8 nodeId,INTEGER8 mode);

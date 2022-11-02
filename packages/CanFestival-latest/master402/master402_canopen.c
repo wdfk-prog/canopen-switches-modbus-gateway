@@ -27,13 +27,17 @@
 
 #include "motor_control.h"
 /* Private typedef -----------------------------------------------------------*/
+/* 节点配置状态结构体
+ * err_code:配置参数错误代码 0xff,配置未发送,本地字典出错。
+                             0x03,配置回复未响应，节点字典出错
+                             0X01,节点重新上线
+*/
 typedef struct 
 {
   uint8_t nodeID;
 	uint8_t state;
 	uint8_t try_cnt;
-  uint8_t err_code;//配置参数错误代码 0xff,配置未发送,本地字典出错。 0x03,配置回复未响应，节点字典出错
-
+  uint8_t err_code;
   struct rt_semaphore finish_sem;
 }node_config_state;
 /* Private define ------------------------------------------------------------*/
@@ -85,8 +89,7 @@ static void InitNodes(CO_Data* d, UNS32 id)
 */
 static int canopen_init(void)
 {
-  ulog_e("","\n--------------------------------CANOPEN----------------------------------");
-	OD_Data->heartbeatError = master402_heartbeatError;
+  OD_Data->heartbeatError = master402_heartbeatError;
 	OD_Data->initialisation = master402_initialisation;
 	OD_Data->preOperational = master402_preOperational;
 	OD_Data->operational = master402_operational;
@@ -342,7 +345,7 @@ static void config_node_param_cb(CO_Data* d, UNS8 nodeId)
   * @retval None
   * @note   互斥量等待配置完成
 */
-static void config_node(uint8_t nodeId)
+void config_node(uint8_t nodeId)
 {
 	node_conf[nodeId - 2].state = 0;
 	node_conf[nodeId - 2].try_cnt = 0;
@@ -416,8 +419,8 @@ static void config_single_node(void *parameter)
 static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 {
 	rt_thread_t tid;
-
   LOG_I("Node %d has gone online",nodeId);
+  rt_sem_release(&(node_conf[nodeId - 2].finish_sem));
 	tid = rt_thread_create("co_cfg", config_single_node, (void *)(int)nodeId, 1024, 12 + nodeId, 2);
 	if(tid == RT_NULL)
 	{
@@ -450,6 +453,14 @@ void canopen_start_thread_entry(void *parameter)
     if(Write_SLAVE_control_word(nodeId,0x80) == 0xFF)//初始化进行错误重置
     {
         LOG_E("nodeId:%d,Failed to clear error.The current node is not in operation",nodeId);
+        rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
+        if(rt_sem_take(&(node_conf[nodeId - 2].finish_sem), SDO_REPLY_TIMEOUT) != RT_EOK)
+        {
+          //掉线情况执行，重新上电情况无需处理
+          LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
+          master402_fix_config_err(OD_Data,nodeId);
+        }
+        rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
     }
     else
     {
@@ -493,7 +504,6 @@ void canopen_start_thread_entry(void *parameter)
       return ;
     }
   }
-  ulog_e("","\n--------------------------------CANOPEN----------------------------------");
 }
 /******************************写入节点字典操作函数**********************************/
 /**
