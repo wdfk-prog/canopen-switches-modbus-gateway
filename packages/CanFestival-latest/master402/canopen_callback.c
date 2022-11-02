@@ -30,16 +30,10 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   * 异常处理
   * 
   * CAN线短路，阻塞当前线程，等待短路恢复
-  * 
-  * 单节点状态
-  * MCU 初始化时:CAN总线断开[已处理] 节点掉线[已处理]
-  * MCU 预操作时:CAN总线断开[已处理] 节点掉线[已处理]
-  * MCU 操作态时:CAN总线断开[已处理] 节点掉线[已处理]
-  * 
-  * 多节点状态                       该节点禁用
-  * MCU 初始化时:CAN总线断开[]       单节点掉线[已处理] 多节点掉线[]
-  * MCU 预操作时:CAN总线断开[]       单节点掉线[] 多节点掉线[]
-  * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理]
+  *                                  该节点禁用
+  * MCU 初始化时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[]       节点掉电[] 多节点掉电[]
+  * MCU 预操作时:CAN总线断开[]       单节点掉线[]       多节点掉线[]       节点掉电[] 多节点掉电[]
+  * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[已处理] 多节点掉电[已处理]
   * @author
   ******************************************************************************
   */
@@ -301,7 +295,7 @@ static void master402_fix_node_Disconnected(void* parameter)
 			}
       else if(now == Initialisation)
       {
-        setState(OD_Data, Initialisation);//Initialisation
+//        setState(OD_Data, Initialisation);//Initialisation
         LOG_I("nodeID:%d,After the heartbeat of the node is abnormal, the node is shut down and powered on",heartbeatID);
         node[heartbeatID - 2].lock = 0;
 				return;//退出线程

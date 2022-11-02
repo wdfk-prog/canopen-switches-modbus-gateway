@@ -379,7 +379,6 @@ static void config_node(uint8_t nodeId)
     {
       /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
       /**有格式定义，字典工具没有支持，需要自己写入**/
-      //等下在字典工具生成，读取后生成对应格式
       UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点的心跳时间
       errorCode = writeLocalDict(OD_Data, 0x1016, nodeId - 1, &consumer_heartbeat_time, &size, 0);
       if(errorCode != OD_SUCCESSFUL)
