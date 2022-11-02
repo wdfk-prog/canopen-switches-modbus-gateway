@@ -94,6 +94,9 @@ static int canopen_init(void)
 	OD_Data->storeODSubIndex = (storeODSubIndex_t)master402_storeODSubIndex;
 	OD_Data->post_emcy = (post_emcy_t)master402_post_emcy;
 
+  PDODisable(OD_Data,1);
+  PDODisable(OD_Data,3);
+
 	canOpen(&agv_board, OD_Data);
 	initTimer();
 
@@ -431,14 +434,14 @@ void canopen_start_thread_entry(void *parameter)
 	d->post_SlaveBootup = slaveBootupHdl;
   /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
   /**有格式定义，字典工具没有支持，需要自己写入**/
-	consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
-	size = 4;
-	writeLocalDict(d, 0x1016, 1, &consumer_heartbeat_time, &size, 0);
-	consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId + 1,CONSUMER_HEARTBEAT_TIME);//写入节点3的心跳时间,没有节点即跳过
-	writeLocalDict(d, 0x1016, 2, &consumer_heartbeat_time, &size, 0);
-	sub_cnt = 2;
-	size = 1;
-	writeLocalDict(d, 0x1016, 0, &sub_cnt, &size, 0);
+  for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
+  {
+    nodeId = node_conf[i].nodeID;
+    consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
+    size = 4;
+    writeLocalDict(d, 0x1016, i+1, &consumer_heartbeat_time, &size, 0);
+  }
+
   /**写入主机生成者/发送端心跳发送时间  DS301定义**/
   UNS16 producer_heartbeat_time;
 	producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
