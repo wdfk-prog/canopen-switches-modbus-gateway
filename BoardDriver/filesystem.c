@@ -225,6 +225,7 @@ int Flash_KVDB_Init(void)
 */
 static int FileSystem_Init(void)
 {
+  ulog_e("","\n--------------------------------FILESYSTEM----------------------------------");
   /* 初始化 fal */
   fal_init();
   //必须先创建rom文件系统，以提供后面的挂载目录
@@ -272,6 +273,7 @@ static int FileSystem_Init(void)
   #endif
   /*数据库初始化*/
   Flash_KVDB_Init();
+  ulog_e("","\n--------------------------------FILESYSTEM----------------------------------");
   return RT_EOK;
 }
 INIT_ENV_EXPORT(FileSystem_Init);

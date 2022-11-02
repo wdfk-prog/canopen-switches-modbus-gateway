@@ -85,6 +85,7 @@ static void InitNodes(CO_Data* d, UNS32 id)
 */
 static int canopen_init(void)
 {
+  ulog_e("","\n--------------------------------CANOPEN----------------------------------");
 	OD_Data->heartbeatError = master402_heartbeatError;
 	OD_Data->initialisation = master402_initialisation;
 	OD_Data->preOperational = master402_preOperational;
@@ -493,6 +494,7 @@ void canopen_start_thread_entry(void *parameter)
       return ;
     }
   }
+  ulog_e("","\n--------------------------------CANOPEN----------------------------------");
 }
 /******************************写入节点字典操作函数**********************************/
 /**
