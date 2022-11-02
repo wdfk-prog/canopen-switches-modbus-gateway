@@ -33,7 +33,7 @@ typedef struct
 	uint8_t state;
 	uint8_t try_cnt;
   uint8_t err_code;//配置参数错误代码 0xff,配置未发送,本地字典出错。 0x03,配置回复未响应，节点字典出错
-	uint8_t enable; //使能或禁用该节点
+
   struct rt_semaphore finish_sem;
 }node_config_state;
 /* Private define ------------------------------------------------------------*/
@@ -348,13 +348,36 @@ static void config_node(uint8_t nodeId)
 	rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
 
 	EnterMutex();
+  LOG_I("The configuration starts for node %d",nodeId);
 	config_node_param(nodeId, &node_conf[nodeId - 2]);
 	LeaveMutex();
 	rt_sem_take(&(node_conf[nodeId - 2].finish_sem), RT_WAITING_FOREVER);
 	rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
+
+  if(node_conf[nodeId - 2].err_code != 0X00)//因配置错误导致的退出
+  {
+    LOG_E("Failed to configure the dictionary for node %d",nodeId);
+    if(node_conf[nodeId - 2].err_code == 0XFF)
+    {
+      LOG_E("The configuration was not sent because the local dictionary failed");
+    }
+    else if(node_conf[nodeId - 2].err_code == 0X03)
+    {
+      LOG_E("The configuration reply did not respond, and the node dictionary failed");
+    }
+    LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
+    master402_fix_config_err(OD_Data,nodeId);
+    return; //退出线程
+  }
+  else
+  {
+    masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
+    LOG_I("Node %d configuration Complete",nodeId);
+    rt_thread_mdelay(200);//确保NMT命令下发成功
+  }
 }
 /**
-  * @brief  None
+  * @brief  配置当前节点
   * @param  None
   * @retval None
   * @note   None
@@ -364,10 +387,9 @@ static void config_single_node(void *parameter)
 	uint32_t nodeId;
 	nodeId = (uint32_t)parameter;
 	config_node(nodeId);
-	masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
 }
 /**
-  * @brief  从机心跳上线处理函数
+  * @brief  从机上线处理函数
   * @param  None
   * @retval None
   * @note   创建config_single_servo线程
@@ -376,6 +398,7 @@ static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 {
 	rt_thread_t tid;
 
+  LOG_I("Node %d has gone online",nodeId);
 	tid = rt_thread_create("co_cfg", config_single_node, (void *)(int)nodeId, 1024, 12 + nodeId, 2);
 	if(tid == RT_NULL)
 	{
@@ -400,73 +423,37 @@ void canopen_start_thread_entry(void *parameter)
 	UNS32 consumer_heartbeat_time;
   CO_Data *d = (CO_Data *)parameter;
   UNS8 nodeId = 0;
+
   /*写入节点字典*/
+//  UNS8 i = 0;//调试取消注释这行，注释下行。用来单节点初始化
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
-//  UNS8 i = 0;//调试取消注释这行，注释上行。用来单节点初始化
   {
     nodeId = node_conf[i].nodeID;
     if(Write_SLAVE_control_word(nodeId,0x80) == 0xFF)//初始化进行错误重置
     {
         LOG_E("nodeId:%d,Failed to clear error.The current node is not in operation",nodeId);
-        node_conf[i].enable = 0;
     }
     else
     {
-      node_conf[i].enable = 1;
-      rt_thread_mdelay(200);//确保错误重置完成
-
-      config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
-      if(node_conf[i].err_code != 0X00)//因配置错误导致的退出
-      {
-        LOG_E("Failed to configure the dictionary for node %d",nodeId);
-        if(node_conf[i].err_code == 0XFF)
-        {
-          LOG_E("The configuration was not sent because the local dictionary failed");
-        }
-        else if(node_conf[i].err_code == 0X03)
-        {
-          LOG_E("The configuration reply did not respond, and the node dictionary failed");
-        }
-        LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
-        master402_fix_config_err(d,nodeId);
-        return; //退出线程
-      }
+        config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
+        /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
+        /**有格式定义，字典工具没有支持，需要自己写入**/
+        consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点的心跳时间
+        size = 4;
+        writeLocalDict(d, 0x1016, i+1, &consumer_heartbeat_time, &size, 0);
     }
   }
-  LOG_I("Node configuration Complete");
   /*写入本地字典*/
 	d->post_SlaveBootup = slaveBootupHdl;
-  /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
-  /**有格式定义，字典工具没有支持，需要自己写入**/
-  for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
-  {
-    if(node_conf[i].enable == 1)
-    {
-      nodeId = node_conf[i].nodeID;
-      consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点2的心跳时间
-      size = 4;
-      writeLocalDict(d, 0x1016, i+1, &consumer_heartbeat_time, &size, 0);
-    }
-  }
-
   /**写入主机生成者/发送端心跳发送时间  DS301定义**/
   UNS16 producer_heartbeat_time;
 	producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
 	size = 2;
 	writeLocalDict(d, 0x1017, 0, &producer_heartbeat_time, &size, 0);
+  //主站进入操作模式
+  setState(d, Operational);
   /**有格式定义，字典工具没有支持，需要自己写入**/
 	data_type = uint32;
-	setState(d, Operational);
-
-  for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
-  {
-    if(node_conf[i].enable == 1)
-    {
-      nodeId = node_conf[i].nodeID;
-      masterSendNMTstateChange(d, nodeId, NMT_Start_Node);//等待进入操作模式再开始算心跳超时
-      rt_thread_mdelay(200);//确保NMT命令下发成功
-    }
-  }
 	size = 4;
 	readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);
 	sync_id = SYNC_ENANBLE(sync_id);//DS301 30位置1 ，启用CANopen设备生成同步消息
