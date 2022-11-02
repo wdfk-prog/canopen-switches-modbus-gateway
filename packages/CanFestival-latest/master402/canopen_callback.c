@@ -33,7 +33,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   * MCU 操作态时:CAN总线断开[已处理] 节点掉线[已处理]
 
   * 多节点状态
-  * MCU 初始化时:单节点掉线
+  * MCU 初始化时:单节点掉线[已处理] 多节点掉线[已处理]
   * @author
   ******************************************************************************
   */
@@ -60,8 +60,8 @@ typedef struct
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static Fix_Typedef node;
-static Fix_Typedef cfg;
+static Fix_Typedef node[MAX_NODE_COUNT - 2];
+static Fix_Typedef cfg[MAX_NODE_COUNT - 2];
 /* Private function prototypes -----------------------------------------------*/
 static void master402_fix_node_Disconnected(void* parameter);
 /**
@@ -73,10 +73,10 @@ static void master402_fix_node_Disconnected(void* parameter);
 */
 void master402_heartbeatError(CO_Data* d, UNS8 heartbeatID)
 {
-  if(++node.try_cnt <= 5)
+  if(++node[heartbeatID - 2].try_cnt <= 5)
   {
-    LOG_E("heartbeatError!heartbeatID:0x%x,try cnt = %d", heartbeatID,node.try_cnt);
-    if(node.lock == 0)
+    LOG_E("heartbeatError!heartbeatID:0x%x,try cnt = %d", heartbeatID,node[heartbeatID - 2].try_cnt);
+    if(node[heartbeatID - 2].lock == 0)
     {
       rt_thread_t tid;
       tid = rt_thread_create("fix_nodeID", master402_fix_node_Disconnected,
@@ -97,7 +97,7 @@ void master402_heartbeatError(CO_Data* d, UNS8 heartbeatID)
       LOG_W("Unable to create a new thread because an existing thread is running");
     }
   }
-  else if(node.try_cnt == 4)
+  else if(node[heartbeatID - 2].try_cnt > 5)
   {
      LOG_E("The number of repairs is too many. It is confirmed that it is not an occasional anomaly. It will not be repaired any more.");
   }
@@ -222,7 +222,7 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
   {
       if(d->nodeState == Pre_operational && d->NMTable[nodeID] == Unknown_state)
       {
-        LOG_D("The last node error is not cleared. Do not worry");
+        LOG_D("nodeID:%d,The last node error is not cleared. Do not worry",nodeID);
       }
       else
       {
@@ -238,7 +238,7 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
             从机进入pre状态，不可进行操作
             切换从机进入start状态*/
           masterSendNMTstateChange(d,nodeID,NMT_Start_Node);
-          LOG_I("The ability to receive this error code indicates that communication is back to normal.");
+          LOG_I("nodeID:%d,The ability to receive this error code indicates that communication is back to normal.",nodeID);
         }
       }
   }
@@ -258,7 +258,7 @@ static void master402_fix_node_Disconnected(void* parameter)
 
 	int heartbeatID = (int)parameter;//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
 	LOG_E("heartbeatID abnormal:0x%x  ", heartbeatID);
-  node.lock = 0xff;
+  node[heartbeatID - 2].lock = 0xff;
 	while (1)
 	{
 		last = now;
@@ -267,8 +267,8 @@ static void master402_fix_node_Disconnected(void* parameter)
 		{
 			if(now == Operational)//由0x8130错误码处理程序处理
 			{
-        LOG_I("Handled by the 0x8130 error code handler,def ThreadFinished");
-        node.lock = 0;
+        LOG_I("nodeID:%d,Handled by the 0x8130 error code handler,def ThreadFinished",heartbeatID);
+        node[heartbeatID - 2].lock = 0;
 				return;//删除线程
 			}
 			else if(now == Pre_operational)
@@ -282,22 +282,22 @@ static void master402_fix_node_Disconnected(void* parameter)
             TIMEVAL time = *OD_Data->ProducerHeartBeatTime;
             extern void ProducerHeartbeatAlarm(CO_Data* d, UNS32 id);
             //设置生产者时间定时器，并设置定时回调
-            LOG_W("Restart the producer heartbeat");
+            LOG_W("nodeID:%d,Restart the producer heartbeat",heartbeatID);
             OD_Data->ProducerHeartBeatTimer = SetAlarm(OD_Data, 0, &ProducerHeartbeatAlarm, MS_TO_TIMEVAL(time), MS_TO_TIMEVAL(time));
           }
-          LOG_W("The master station enters the operation state from the stop state");
+          LOG_W("nodeID:%d,The master station enters the operation state from the stop state",heartbeatID);
           setState(OD_Data, Operational);//转入Operational状态
         }
 				masterSendNMTstateChange(OD_Data,heartbeatID,NMT_Start_Node);
-				LOG_I("Determines that the line is restored and switches the slave machine to operation mode, deleting the current thread");
-        node.lock = 0;
+				LOG_I("nodeID:%d,Determines that the line is restored and switches the slave machine to operation mode, deleting the current thread",heartbeatID);
+        node[heartbeatID - 2].lock = 0;
 				return;//退出线程
 			}
       else if(now == Initialisation)
       {
         setState(OD_Data, Initialisation);//Initialisation
-        LOG_I("After the heartbeat of the node is abnormal, the node is shut down and powered on");
-        node.lock = 0;
+        LOG_I("nodeID:%d,After the heartbeat of the node is abnormal, the node is shut down and powered on",heartbeatID);
+        node[heartbeatID - 2].lock = 0;
 				return;//退出线程
       }
 		}
@@ -331,13 +331,13 @@ static void master402_fix_config_err_thread_entry(void* parameter)
     else if(now == Pre_operational)//通信恢复
     {
       setState(OD_Data, Initialisation);//Initialisation ->自动转入pre状态 ->转入op
-      LOG_I("The line communication of the node is restored");
+      LOG_I("nodeID:%d,The line communication of the node is restored",nodeId);
       return; //删除线程
     }
     else if(now == Initialisation)//节点断电后上电
     {
       setState(OD_Data, Initialisation);//Initialisation
-      LOG_I("Restart the node after the node is shut down");
+      LOG_I("nodeID:%d,Restart the node after the node is shut down",nodeId);
       return; //删除线程
     }
     else
@@ -356,25 +356,25 @@ static void master402_fix_config_err_thread_entry(void* parameter)
 */
 void master402_fix_config_err(CO_Data *d,UNS8 nodeId)
 {
-  if(++cfg.try_cnt <= 3)
+  if(++cfg[nodeId - 2].try_cnt <= 3)
   {
     setState(d, Stopped);
-    LOG_I("Enabling the repair thread,Repair times = %d",cfg.try_cnt);
+    LOG_I("nodeID:%d,Enabling the repair thread,Repair times = %d",nodeId,cfg[nodeId - 2].try_cnt);
     rt_thread_t tid = rt_thread_create("fix_config_err", master402_fix_config_err_thread_entry,
                       (void *)(int)nodeId,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
                       2048, 12, 2);
 
     if(tid == RT_NULL)
     {
-      LOG_E("canfestival fix_config_err thread start failed!");
+      LOG_E("nodeID:%d,canfestival fix_config_err thread start failed!",nodeId);
     }
     else
     {
       rt_thread_startup(tid);
     }
   }
-  else if(cfg.try_cnt == 4)
+  else if(cfg[nodeId - 2].try_cnt == 4)
   {
-     LOG_E("The number of repairs is too many. It is confirmed that it is not an occasional anomaly. It will not be repaired any more.");
+     LOG_E("nodeID:%d,The number of repairs is too many. It is confirmed that it is not an occasional anomaly. It will not be repaired any more.",nodeId);
   }
 }
