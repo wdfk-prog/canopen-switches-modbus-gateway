@@ -371,6 +371,25 @@ static void config_node(uint8_t nodeId)
   }
   else
   {
+    UNS32 errorCode,map_val, size = SDO_MAX_LENGTH_TRANSFER;
+    UNS8 data_type;
+    errorCode = readLocalDict(OD_Data, 0x1016, nodeId - 1, &map_val, &size, &data_type, 0);
+    if(errorCode == OD_SUCCESSFUL)
+    {
+      /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
+      /**有格式定义，字典工具没有支持，需要自己写入**/
+      //等下在字典工具生成，读取后生成对应格式
+      UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点的心跳时间
+      errorCode = writeLocalDict(OD_Data, 0x1016, nodeId - 1, &consumer_heartbeat_time, &size, 0);
+      if(errorCode != OD_SUCCESSFUL)
+        LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1016,nodeId - 1,errorCode);
+    }
+    else
+    {
+      LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1016,nodeId - 1,errorCode);
+      LOG_W("Node %d is not configured with a consumer heartbeat",nodeId);
+    }
+    //节点进入操作状态
     masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
     LOG_I("Node %d configuration Complete",nodeId);
     rt_thread_mdelay(200);//确保NMT命令下发成功
@@ -418,9 +437,8 @@ static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 void canopen_start_thread_entry(void *parameter)
 {
   assert(parameter);
-	UNS32 sync_id, size;
-	UNS8 data_type, sub_cnt;
-	UNS32 consumer_heartbeat_time;
+	UNS32 size,errorCode;
+	UNS8 data_type;
   CO_Data *d = (CO_Data *)parameter;
   UNS8 nodeId = 0;
 
@@ -436,28 +454,45 @@ void canopen_start_thread_entry(void *parameter)
     else
     {
         config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
-        /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
-        /**有格式定义，字典工具没有支持，需要自己写入**/
-        consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点的心跳时间
-        size = 4;
-        writeLocalDict(d, 0x1016, i+1, &consumer_heartbeat_time, &size, 0);
     }
   }
   /*写入本地字典*/
 	d->post_SlaveBootup = slaveBootupHdl;
   /**写入主机生成者/发送端心跳发送时间  DS301定义**/
-  UNS16 producer_heartbeat_time;
-	producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
+  UNS16 producer_heartbeat_time = PRODUCER_HEARTBEAT_TIME;
 	size = 2;
-	writeLocalDict(d, 0x1017, 0, &producer_heartbeat_time, &size, 0);
+  errorCode = writeLocalDict(d, 0x1017, 0, &producer_heartbeat_time, &size, 0);
+	if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1017,0,errorCode);
+    setState(d, Stopped);//主站不发送生产者心跳，就进行操作。可能发送主站掉线，节点不知道还在运行
+    return ;
+  }
+
   //主站进入操作模式
   setState(d, Operational);
   /**有格式定义，字典工具没有支持，需要自己写入**/
+  UNS32 sync_id;
 	data_type = uint32;
 	size = 4;
-	readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);
-	sync_id = SYNC_ENANBLE(sync_id);//DS301 30位置1 ，启用CANopen设备生成同步消息
-	writeLocalDict(d, 0x1005, 0, &sync_id, &size, 0);
+  errorCode = readLocalDict(d, 0x1005, 0, &sync_id, &size, &data_type, 0);
+	if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0x1005,0,errorCode);
+    setState(d, Stopped);//主站不发送同步消息不可能操作节点
+    return ;
+  }
+  else
+  {
+    sync_id = SYNC_ENANBLE(sync_id);//DS301 30位置1 ，启用CANopen设备生成同步消息
+    errorCode = writeLocalDict(d, 0x1005, 0, &sync_id, &size, 0);
+    if(errorCode != OD_SUCCESSFUL)
+    {
+      LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1005,0,errorCode);
+      setState(d, Stopped);//主站不发送同步消息不可能操作节点
+      return ;
+    }
+  }
 }
 /******************************写入节点字典操作函数**********************************/
 /**
@@ -544,13 +579,13 @@ static UNS8 Read_local_Send_Node(CO_Data* d,UNS8 nodeId,UNS16 local_index,UNS8 l
   errorCode = readLocalDict(d,local_index,local_subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%08X",local_index,local_subIndex,errorCode);
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",local_index,local_subIndex,errorCode);
     return 0xFF;
   }
   errorCode = writeNetworkDictSync(d,nodeId,slave_index,slave_subIndex,size,dataType,&pdo_map_val,0);
   if(errorCode != true)
   {
-    LOG_E("index:0X%04X,subIndex:0X%X,write slave Dict false",slave_index,slave_subIndex);
+    LOG_E("index:0X%04X,subIndex:0X%X,write slave Dict false,abort code is 0X%08X",slave_index,slave_subIndex,errorCode);
     return 0xFF;
   }
   return 0x00;
@@ -584,7 +619,7 @@ static UNS8 local_od_send(UNS16 index,UNS8 subIndex,uint8_t nodeId)
   errorCode = readLocalDict(OD_Data,slave_Index,subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%08X",index,subIndex,errorCode);
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",index,subIndex,errorCode);
     return 0XFF;
   }
   else
@@ -613,7 +648,7 @@ static UNS8 local_cfg_od_send(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_
   errorCode = readLocalDict(OD_Data,local_index,local_subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%08X",local_index,local_subIndex,errorCode);
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",local_index,local_subIndex,errorCode);
     return 0XFF;
   }
   else
@@ -629,7 +664,7 @@ static UNS8 local_cfg_od_send(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_
     errorCode = readLocalDict(OD_Data,slave_Index,slave_subIndex,(void *)&pdo_map_val,&size,&dataType,0);
     if(errorCode != OD_SUCCESSFUL)
     {
-      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%X",slave_Index,slave_subIndex,errorCode);
+      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",slave_Index,slave_subIndex,errorCode);
       return 0XFF;
     }
     else
