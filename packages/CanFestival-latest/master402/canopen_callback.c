@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   * 
   * CAN线短路，阻塞当前线程，等待短路恢复
   *                                  该节点禁用
-  * MCU 初始化时:CAN总线断开[]       单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[] 多节点掉电[]
+  * MCU 初始化时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[] 多节点掉电[]
   * MCU 预操作时:CAN总线断开[]       单节点掉线[]       多节点掉线[]       节点掉电[] 多节点掉电[]
   * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[已处理] 多节点掉电[已处理]
   * @author
@@ -321,6 +321,8 @@ static void master402_fix_config_err_thread_entry(void* parameter)
     }
     else if(now == Pre_operational)//通信恢复
     {
+      if(OD_Data->nodeState != Operational || OD_Data->nodeState != Pre_operational)
+        setState(OD_Data, Operational);
       config_node(nodeId);
       LOG_I("nodeID:%d,The line communication of the node is restored",nodeId);
       return; //删除线程
