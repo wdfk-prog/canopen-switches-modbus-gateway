@@ -79,9 +79,11 @@ void master402_heartbeatError(CO_Data* d, UNS8 heartbeatID)
     if(node[heartbeatID - 2].lock == 0)
     {
       rt_thread_t tid;
-      tid = rt_thread_create("fix_nodeID", master402_fix_node_Disconnected,
+      char name[RT_NAME_MAX + 1];
+      rt_sprintf(name,"NODEerr%d",heartbeatID);
+      tid = rt_thread_create(name, master402_fix_node_Disconnected,
                               (void *)(int)heartbeatID,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
-                              2048, 12, 2);
+                              1024, 12, 2);
 
       if(tid == RT_NULL)
       {
@@ -94,12 +96,12 @@ void master402_heartbeatError(CO_Data* d, UNS8 heartbeatID)
     }
     else
     {
-      LOG_W("Unable to create a new thread because an existing thread is running");
+      LOG_W("nodeID :%d,Unable to create a new thread because an existing thread is running",heartbeatID);
     }
   }
   else if(node[heartbeatID - 2].try_cnt > 5)
   {
-     LOG_E("The number of repairs is too many. It is confirmed that it is not an occasional anomaly. It will not be repaired any more.");
+     LOG_E("NodeID:%d,The number %d of repairs is too many. It is confirmed that it is not an occasional anomaly. It will not be repaired any more.",heartbeatID,node[heartbeatID - 2].try_cnt);
   }
 }
 /**
@@ -355,7 +357,7 @@ void master402_fix_config_err(CO_Data *d,UNS8 nodeId)
     LOG_I("nodeID:%d,Enabling the repair thread,Repair times = %d",nodeId,cfg[nodeId - 2].try_cnt);
     rt_thread_t tid = rt_thread_create(name, master402_fix_config_err_thread_entry,
                       (void *)(int)nodeId,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
-                      2048, 12, 2);
+                      1024, 12, 2);
 
     if(tid == RT_NULL)
     {
