@@ -56,7 +56,7 @@ UNS8 master402_bDeviceNodeId = 0x00;
 
 const UNS8 master402_iam_a_slave = 0;
 
-TIMER_HANDLE master402_heartBeatTimers[1] = {TIMER_NONE};
+TIMER_HANDLE master402_heartBeatTimers[2] = {TIMER_NONE,TIMER_NONE};
 
 /*
 $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -120,15 +120,17 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                      };
 
 /* index 0x1016 :   Consumer Heartbeat Time. */
-                    UNS8 master402_highestSubIndex_obj1016 = 1; /* number of subindex - 1*/
+                    UNS8 master402_highestSubIndex_obj1016 = 2; /* number of subindex - 1*/
                     UNS32 master402_obj1016[] = 
                     {
+                      0x0,	/* 0 */
                       0x0	/* 0 */
                     };
                     subindex master402_Index1016[] = 
                      {
                        { RO, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1016, NULL },
-                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1016[0], NULL }
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1016[0], NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1016[1], NULL }
                      };
 
 /* index 0x1017 :   Producer Heartbeat Time. */
