@@ -31,7 +31,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   * 
   * CAN线短路，阻塞当前线程，等待短路恢复
   *                                  该节点禁用
-  * MCU 初始化时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[]       节点掉电[] 多节点掉电[]
+  * MCU 初始化时:CAN总线断开[]       单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[] 多节点掉电[]
   * MCU 预操作时:CAN总线断开[]       单节点掉线[]       多节点掉线[]       节点掉电[] 多节点掉电[]
   * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[已处理] 多节点掉电[已处理]
   * @author
@@ -230,15 +230,6 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
         if(errSpec[0]+errSpec[1]+errSpec[2]+errSpec[3]+errSpec[4])
         {
           LOG_E("Manufacturer Specific: 0X%X %2.2X %2.2X %2.2X %2.2X",errSpec[0],errSpec[1],errSpec[2],errSpec[3],errSpec[4]);
-        }
-        if(errCode == 0x8130)//节点保护错误或者心跳错误
-        {
-          /*产生此错误代码原因：从机掉线或者can信号线异常、掉线
-            能够接收到此错误代码，证明通信恢复正常。此错误可以通过重置NMT清除。
-            从机进入pre状态，不可进行操作
-            切换从机进入start状态*/
-          masterSendNMTstateChange(d,nodeID,NMT_Start_Node);
-          LOG_I("nodeID:%d,The ability to receive this error code indicates that communication is back to normal.",nodeID);
         }
       }
   }
