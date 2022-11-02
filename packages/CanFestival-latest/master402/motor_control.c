@@ -189,6 +189,13 @@ typedef enum
 if(CODE != 0X00)            \
    return 0XFF;             \
 }
+/*判断当前操作节点是否处于运行状态宏*/
+#define NODE_DECISION {  \
+if(OD_Data->NMTable[nodeId] != Operational){ \
+  LOG_E("The current node %d is not in operation and is in 0X%02X state", \
+  nodeId,OD_Data->NMTable[nodeId]); \
+  return 0XFF; \
+}}
 /* Private variables ---------------------------------------------------------*/
 Map_Val_UNS16 Controlword_Node[] = {
 {&Controlword           ,0x6040},
@@ -250,6 +257,7 @@ static UNS8 block_query_BIT_change(UNS16 *value,UNS8 bit,uint16_t timeout,uint16
 */
 static UNS8 motor_on_profile_position(UNS8 nodeId)
 {
+  NODE_DECISION;
   *Target_position_Node[nodeId - 2].map_val = 0;
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,PROFILE_POSITION_MODE));
@@ -268,6 +276,7 @@ static UNS8 motor_on_profile_position(UNS8 nodeId)
 */
 static UNS8 motor_on_interpolated_position(UNS8 nodeId)
 {
+  NODE_DECISION;
   FAILED_EXIT(Write_SLAVE_Interpolation_time_period(nodeId));
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,INTERPOLATED_POSITION_MODE));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
@@ -290,6 +299,7 @@ static UNS8 motor_on_interpolated_position(UNS8 nodeId)
 */
 static UNS8 motor_on_homing_mode(int32_t offset,uint8_t method,float switch_speed,float zero_speed,UNS8 nodeId)
 {
+  NODE_DECISION;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,HOMING_MODE));
   FAILED_EXIT(Write_SLAVE_Homing_set(nodeId,offset,method,switch_speed,zero_speed));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
@@ -316,6 +326,7 @@ rfg use ref     0     Ramp input value is set to zero.
                 1     Ramp input value accords to ramp reference.*/
 static UNS8 motor_on_profile_velocity(UNS8 nodeId)
 {
+  NODE_DECISION;
   *Target_velocity_Node[nodeId - 2].map_val = 0;
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,PROFILE_VELOCITY_MODE));
@@ -355,6 +366,7 @@ static UNS8 motor_on_profile_velocity(UNS8 nodeId)
   */
 static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,bool immediately,UNS8 nodeId)
 {
+  NODE_DECISION;
   UNS16 value = 0;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != PROFILE_POSITION_MODE)
   {
@@ -398,6 +410,7 @@ static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,
 */
 static UNS8 motor_interpolation_position (UNS8 nodeId)
 {
+  NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != INTERPOLATED_POSITION_MODE)
   {
     LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
@@ -426,6 +439,7 @@ static UNS8 motor_interpolation_position (UNS8 nodeId)
 */
 static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
 {
+  NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != HOMING_MODE)
   {
     LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
@@ -472,6 +486,7 @@ static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   */
 static UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
 {
+  NODE_DECISION;
   UNS16 value = 0;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != PROFILE_VELOCITY_MODE)
   {
@@ -493,6 +508,7 @@ static UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
 */
 static UNS8 motor_off(UNS8 nodeId)
 {
+  NODE_DECISION;
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_DISABLE_VOLTAGE));
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,0));//清除模式选择

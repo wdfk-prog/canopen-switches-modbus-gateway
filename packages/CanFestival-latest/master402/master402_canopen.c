@@ -510,14 +510,14 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         if(writeNetworkDictCallBack(d, nodeId, index, subIndex,
                 count, dataType, data, writeNetworkDictSyncCb, useBlockMode) != 0)
         {
-            LOG_W("write SDO failed!  nodeId = %d, index: 0x%x, subIndex: 0x%x", nodeId, index, subIndex);
+            LOG_W("write SDO failed!  nodeId = %d, index: 0X%04X, subIndex: 0X%X", nodeId, index, subIndex);
             closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }
 
         if(rt_sem_take(&conf->finish_sem, SDO_REPLY_TIMEOUT) != RT_EOK) 
         {
-            LOG_W("write SDO timeout!  nodeId = %d, index: 0x%x, subIndex: 0x%x", nodeId, index, subIndex);
+            LOG_W("write SDO timeout!  nodeId = %d, index: 0X%04X, subIndex: 0X%X", nodeId, index, subIndex);
             closeSDOtransfer(d, nodeId, SDO_CLIENT);
             continue;
         }
@@ -528,7 +528,7 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
 
         if(res != SDO_FINISHED)
         {
-            LOG_W("get SDO write result failed!  nodeId = %d, index: 0x%x, subIndex: 0x%x, abortCode = 0x%08X", nodeId, index, subIndex, abortCode);
+            LOG_W("get SDO write result failed!  nodeId = %d, index: 0X%04X, subIndex: 0X%X, abortCode = 0X%08X", nodeId, index, subIndex, abortCode);
             continue;
         }
         rt_sem_detach(&conf->finish_sem);
@@ -557,13 +557,13 @@ static UNS8 Read_local_Send_Node(CO_Data* d,UNS8 nodeId,UNS16 local_index,UNS8 l
   errorCode = readLocalDict(d,local_index,local_subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%X",local_index,local_subIndex,errorCode);
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%08X",local_index,local_subIndex,errorCode);
     return 0xFF;
   }
   errorCode = writeNetworkDictSync(d,nodeId,slave_index,slave_subIndex,size,dataType,&pdo_map_val,0);
   if(errorCode != true)
   {
-    LOG_E("index:0X%X,subIndex:0X%X,write slave Dict false",slave_index,slave_subIndex);
+    LOG_E("index:0X%04X,subIndex:0X%X,write slave Dict false",slave_index,slave_subIndex);
     return 0xFF;
   }
   return 0x00;
@@ -597,7 +597,7 @@ static UNS8 local_od_send(UNS16 index,UNS8 subIndex,uint8_t nodeId)
   errorCode = readLocalDict(OD_Data,slave_Index,subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%X",index,subIndex,errorCode);
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%08X",index,subIndex,errorCode);
     return 0XFF;
   }
   else
@@ -626,7 +626,7 @@ static UNS8 local_cfg_od_send(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_
   errorCode = readLocalDict(OD_Data,local_index,local_subIndex,(void *)&pdo_map_val,&size,&dataType,0);
   if(errorCode != OD_SUCCESSFUL)
   {
-    LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%X",local_index,local_subIndex,errorCode);
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,SDO abort code is 0X%08X",local_index,local_subIndex,errorCode);
     return 0XFF;
   }
   else
