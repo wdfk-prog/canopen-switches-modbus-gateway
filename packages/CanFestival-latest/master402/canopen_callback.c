@@ -346,16 +346,18 @@ static void master402_fix_config_err_thread_entry(void* parameter)
 */
 void master402_fix_config_err(CO_Data *d,UNS8 nodeId)
 {
+  char name[RT_NAME_MAX];
+  rt_sprintf(name,"%s%c","cf_err",'0'+nodeId);
   if(++cfg[nodeId - 2].try_cnt <= 3)
   {
     LOG_I("nodeID:%d,Enabling the repair thread,Repair times = %d",nodeId,cfg[nodeId - 2].try_cnt);
-    rt_thread_t tid = rt_thread_create("fix_config_err", master402_fix_config_err_thread_entry,
+    rt_thread_t tid = rt_thread_create(name, master402_fix_config_err_thread_entry,
                       (void *)(int)nodeId,//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
                       2048, 12, 2);
 
     if(tid == RT_NULL)
     {
-      LOG_E("nodeID:%d,canfestival fix_config_err thread start failed!",nodeId);
+      LOG_E("uanodeID:%d,canfestival fix_config_err thread start failed!",nodeId);
     }
     else
     {
