@@ -31,9 +31,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   * 
   * CAN线短路，阻塞当前线程，等待短路恢复
   *
-  * MCU 初始化时:CAN总线断开[]       单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[] 多节点掉电[]
-  * MCU 预操作时:CAN总线断开[]       单节点掉线[]       多节点掉线[]       节点掉电[] 多节点掉电[]
-  * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理] 节点掉电[] 多节点掉电[]
+  * MCU 初始化时:CAN总线断开[]       单节点掉线[已处理] 多节点掉线[已处理] 单节点掉电[暂时无法测试] 多节点掉电[]
+  * MCU 预操作时:CAN总线断开[]       单节点掉线[]       多节点掉线[]       单节点掉电[暂时无法测试] 多节点掉电[]
+  * MCU 操作态时:CAN总线断开[已处理] 单节点掉线[已处理] 多节点掉线[已处理] 单节点掉电[暂时无法测试] 多节点掉电[已处理]
   * @author
   ******************************************************************************
   */
@@ -247,7 +247,7 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
 static void master402_fix_node_Disconnected(void* parameter)
 {
 	static e_nodeState last;
-	e_nodeState now,master;
+	e_nodeState now;
 
 	int heartbeatID = (int)parameter;//强制转换为16位数据与void*指针字节一致，以消除强制转换大小不匹配警告
 	LOG_E("heartbeatID abnormal:0x%x  ", heartbeatID);
@@ -266,8 +266,7 @@ static void master402_fix_node_Disconnected(void* parameter)
 			}
 			else if(now == Pre_operational)
 			{
-        master = getState(OD_Data);//获取主站节点状态
-        if(master == Stopped)//can通信异常，发送失败多次，进入停止状态
+        if(getState(OD_Data) == Stopped)//can通信异常，发送失败多次，进入停止状态
         {
           //Stop状态时会删除生产者心跳定时器
           if (*OD_Data->ProducerHeartBeatTime)//恢复到OP状态时检查是否有生产者心跳时间
@@ -323,10 +322,22 @@ static void master402_fix_config_err_thread_entry(void* parameter)
     }
     else if(now == Pre_operational)//通信恢复
     {
-      if(OD_Data->nodeState != Operational || OD_Data->nodeState != Pre_operational)
-        setState(OD_Data, Operational);
+      if(getState(OD_Data) != Operational || getState(OD_Data) != Pre_operational)
+      {
+        //Stop状态时会删除生产者心跳定时器
+        if (*OD_Data->ProducerHeartBeatTime)//恢复到OP状态时检查是否有生产者心跳时间
+        {
+          TIMEVAL time = *OD_Data->ProducerHeartBeatTime;
+          extern void ProducerHeartbeatAlarm(CO_Data* d, UNS32 id);
+          //设置生产者时间定时器，并设置定时回调
+          LOG_W("Restart the producer heartbeat");
+          OD_Data->ProducerHeartBeatTimer = SetAlarm(OD_Data, 0, &ProducerHeartbeatAlarm, MS_TO_TIMEVAL(time), MS_TO_TIMEVAL(time));
+        }
+        LOG_W("The master station enters the operation state from the stop state");
+        setState(OD_Data, Operational);//转入Operational状态
+      }
       config_node(nodeId);
-      LOG_I("nodeID:%d,The line communication of the node is restored",nodeId);
+      LOG_I("nodeID:%d,The line comm.unication of the node is restored",nodeId);
       return; //删除线程
     }
     else if(now == Initialisation)//节点断电后上电
