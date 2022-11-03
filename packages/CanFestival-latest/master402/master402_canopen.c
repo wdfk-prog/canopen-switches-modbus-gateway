@@ -98,7 +98,7 @@ static int canopen_init(void)
 	OD_Data->storeODSubIndex = (storeODSubIndex_t)master402_storeODSubIndex;
 	OD_Data->post_emcy = (post_emcy_t)master402_post_emcy;
 
-  PDODisable(OD_Data,1);
+//  PDODisable(OD_Data,1);
   PDODisable(OD_Data,3);
 
 	canOpen(&agv_board, OD_Data);

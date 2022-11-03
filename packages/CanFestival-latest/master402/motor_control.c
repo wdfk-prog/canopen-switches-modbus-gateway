@@ -262,7 +262,7 @@ static UNS8 motor_on_profile_position(UNS8 nodeId)
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,PROFILE_POSITION_MODE));
   FAILED_EXIT(Write_SLAVE_profile_position_speed_set(nodeId,0));
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
+  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
 	FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
 
@@ -280,7 +280,7 @@ static UNS8 motor_on_interpolated_position(UNS8 nodeId)
   pos_cmd1 = *Position_actual_value_Node[nodeId - 2].map_val;
   FAILED_EXIT(Write_SLAVE_Interpolation_time_period(nodeId));
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,INTERPOLATED_POSITION_MODE));
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
+  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
   /*State Transition 1: NO IP-MODE SELECTED => IP-MODE INACTIVE
   Event: Enter in the state OPERATION ENABLE with controlword and select ip 
@@ -303,7 +303,7 @@ static UNS8 motor_on_homing_mode(int32_t offset,uint8_t method,float switch_spee
   NODE_DECISION;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,HOMING_MODE));
   FAILED_EXIT(Write_SLAVE_Homing_set(nodeId,offset,method,switch_speed,zero_speed));
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
+  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
 	FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
 
@@ -332,7 +332,7 @@ static UNS8 motor_on_profile_velocity(UNS8 nodeId)
   SYNC_DELAY;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,PROFILE_VELOCITY_MODE));
   FAILED_EXIT(Write_SLAVE_profile_position_speed_set(nodeId,0));
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
+  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
 	FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
   
@@ -504,7 +504,7 @@ static UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
 static UNS8 motor_off(UNS8 nodeId)
 {
   NODE_DECISION;
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
+  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_DISABLE_VOLTAGE));
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,0));//清除模式选择
   return 0x00;
