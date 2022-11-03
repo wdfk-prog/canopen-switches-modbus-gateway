@@ -318,7 +318,7 @@ static void config_node_param_cb(CO_Data* d, UNS8 nodeId)
 		conf->try_cnt++;
 		if(conf->try_cnt < 3)
 		{
-      LOG_W(" write SDO failed!  nodeId = %d, abortCode = 0x%08X,step = %d", nodeId, abortCode,conf->state - 1);
+      LOG_W(" write SDO failed!  nodeId = %d, abortCode = 0x%08X,step = %d", nodeId, abortCode,conf->state + 1);
 			config_node_param(nodeId, conf);
 		}
 		else
@@ -968,75 +968,7 @@ static UNS8 NODE2_Clear_SLAVE_TPDO2_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_TPDO2_Sub1(uint8_t nodeId)
 {
-  UNS32 pdo_map_val;
-  UNS32 size = SDO_MAX_LENGTH_TRANSFER;
-  UNS8  dataType;
-  UNS32 errorCode;
-  UNS32 SDO_data;
-
-  errorCode = readLocalDict(OD_Data,0X2F00,0,(void *)&pdo_map_val,&size,&dataType,0);
-  if(errorCode != OD_SUCCESSFUL)
-  {
-    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0X2F00,0,errorCode);
-    return 0XFF;
-  }
-  else
-  {
-    /*
-          位             功能 
-    Bit 0 ~ Bit 7     对象数据长度 
-    Bit 8 ~ Bit 15    对象子索引 
-    Bit 16 ~ Bit 31   对象索引 
-    */
-    SDO_data = (0X60C1 << 16) + (1 << 8) + (size * 8);
-    pdo_map_val = 0;size = SDO_MAX_LENGTH_TRANSFER;dataType = 0;//清除遗留数据
-    errorCode = readLocalDict(OD_Data,0X1A01,1,(void *)&pdo_map_val,&size,&dataType,0);
-    if(errorCode != OD_SUCCESSFUL)
-    {
-      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",0X1A01,1,errorCode);
-      return 0XFF;
-    }
-    else
-    {
-      return writeNetworkDictCallBack(OD_Data,nodeId,0X1A01,1,size,dataType,&SDO_data,config_node_param_cb,0);
-    }
-  }
-}
-static UNS8 NODE2_Write_SLAVE_TPDO2_Sub2(uint8_t nodeId)
-{
-  UNS32 pdo_map_val;
-  UNS32 size = SDO_MAX_LENGTH_TRANSFER;
-  UNS8  dataType;
-  UNS32 errorCode;
-  UNS32 SDO_data;
-
-  errorCode = readLocalDict(OD_Data,0X2F01,0,(void *)&pdo_map_val,&size,&dataType,0);
-  if(errorCode != OD_SUCCESSFUL)
-  {
-    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0X2F01,0,errorCode);
-    return 0XFF;
-  }
-  else
-  {
-    /*
-          位             功能 
-    Bit 0 ~ Bit 7     对象数据长度 
-    Bit 8 ~ Bit 15    对象子索引 
-    Bit 16 ~ Bit 31   对象索引 
-    */
-    SDO_data = (0X60C1 << 16) + (2 << 8) + (size * 8);
-    pdo_map_val = 0;size = SDO_MAX_LENGTH_TRANSFER;dataType = 0;//清除遗留数据
-    errorCode = readLocalDict(OD_Data,0X1A01,2,(void *)&pdo_map_val,&size,&dataType,0);
-    if(errorCode != OD_SUCCESSFUL)
-    {
-      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",0X1A01,2,errorCode);
-      return 0XFF;
-    }
-    else
-    {
-      return writeNetworkDictCallBack(OD_Data,nodeId,0X1A01,2,size,dataType,&SDO_data,config_node_param_cb,0);
-    }
-  }
+  return read_local_send_node_pdo_T_R(0X1A01,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE2_Write_SLAVE_TPDO2_Sub0(uint8_t nodeId)
 {
@@ -1129,7 +1061,75 @@ static UNS8 NODE2_Clear_SLAVE_RPDO2_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_RPDO2_Sub1(uint8_t nodeId)
 {
-  return read_local_send_node_pdo_T_R(0X1601,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  UNS32 pdo_map_val;
+  UNS32 size = SDO_MAX_LENGTH_TRANSFER;
+  UNS8  dataType;
+  UNS32 errorCode;
+  UNS32 SDO_data;
+
+  errorCode = readLocalDict(OD_Data,0X2F00,0,(void *)&pdo_map_val,&size,&dataType,0);
+  if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0X2F00,0,errorCode);
+    return 0XFF;
+  }
+  else
+  {
+    /*
+          位             功能 
+    Bit 0 ~ Bit 7     对象数据长度 
+    Bit 8 ~ Bit 15    对象子索引 
+    Bit 16 ~ Bit 31   对象索引 
+    */
+    SDO_data = (0X60C1 << 16) + (1 << 8) + (size * 8);
+    pdo_map_val = 0;size = SDO_MAX_LENGTH_TRANSFER;dataType = 0;//清除遗留数据
+    errorCode = readLocalDict(OD_Data,0X1A01,1,(void *)&pdo_map_val,&size,&dataType,0);
+    if(errorCode != OD_SUCCESSFUL)
+    {
+      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",0X1A01,1,errorCode);
+      return 0XFF;
+    }
+    else
+    {
+      return writeNetworkDictCallBack(OD_Data,nodeId,0X1601,1,size,dataType,&SDO_data,config_node_param_cb,0);
+    }
+  }
+}
+static UNS8 NODE2_Write_SLAVE_RPDO2_Sub2(uint8_t nodeId)
+{
+  UNS32 pdo_map_val;
+  UNS32 size = SDO_MAX_LENGTH_TRANSFER;
+  UNS8  dataType;
+  UNS32 errorCode;
+  UNS32 SDO_data;
+
+  errorCode = readLocalDict(OD_Data,0X2F01,0,(void *)&pdo_map_val,&size,&dataType,0);
+  if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0X2F01,0,errorCode);
+    return 0XFF;
+  }
+  else
+  {
+    /*
+          位             功能 
+    Bit 0 ~ Bit 7     对象数据长度 
+    Bit 8 ~ Bit 15    对象子索引 
+    Bit 16 ~ Bit 31   对象索引 
+    */
+    SDO_data = (0X60C1 << 16) + (2 << 8) + (size * 8);
+    pdo_map_val = 0;size = SDO_MAX_LENGTH_TRANSFER;dataType = 0;//清除遗留数据
+    errorCode = readLocalDict(OD_Data,0X1A01,2,(void *)&pdo_map_val,&size,&dataType,0);
+    if(errorCode != OD_SUCCESSFUL)
+    {
+      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",0X1A01,2,errorCode);
+      return 0XFF;
+    }
+    else
+    {
+      return writeNetworkDictCallBack(OD_Data,nodeId,0X1601,2,size,dataType,&SDO_data,config_node_param_cb,0);
+    }
+  }
 }
 static UNS8 NODE2_Write_SLAVE_RPDO2_Sub0(uint8_t nodeId)
 {
@@ -1201,7 +1201,6 @@ static UNS8 (*NODECFG_Operation_2[])(uint8_t nodeId) =
   NODE2_Write_SLAVE_TPDO2_Type,
   NODE2_Clear_SLAVE_TPDO2_Cnt,
   NODE2_Write_SLAVE_TPDO2_Sub1,
-  NODE2_Write_SLAVE_TPDO2_Sub2,
   NODE2_Write_SLAVE_TPDO2_Sub0,
   NODE2_EN_SLAVE_TPDO2,
   //RPDO1通道操作
@@ -1217,6 +1216,7 @@ static UNS8 (*NODECFG_Operation_2[])(uint8_t nodeId) =
   NODE2_Write_SLAVE_RPDO2_Type,
   NODE2_Clear_SLAVE_RPDO2_Cnt,
   NODE2_Write_SLAVE_RPDO2_Sub1,
+  NODE2_Write_SLAVE_RPDO2_Sub2,
   NODE2_Write_SLAVE_RPDO2_Sub0,
   NODE2_EN_SLAVE_RPDO2,
   //写入心跳
@@ -1531,7 +1531,7 @@ static void config_node_param(uint8_t nodeId, node_config_state *conf)
   if(conf->err_code != 0)//配置参数错误
   {
     rt_sem_release(&(conf->finish_sem));
-    LOG_W("Step %d configuration parameters are incorrect",conf->state - 1);
+    LOG_W("Step %d configuration parameters are incorrect",conf->state + 1);
     conf->state = 0;
   }
   else
