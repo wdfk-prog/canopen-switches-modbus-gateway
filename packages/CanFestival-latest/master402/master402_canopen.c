@@ -59,14 +59,13 @@ typedef struct
   NodeID  : 节点*/
 #define SYNC_ENANBLE(NodeID) ((1 << 30) | (NodeID))
 /* Private variables ---------------------------------------------------------*/
+CO_Data *OD_Data = &master402_Data;
 static s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
 static node_config_state node_conf[MAX_NODE_COUNT - 2] = 
 {
   {SERVO_NODEID_1,},
   {SERVO_NODEID_2,},
 };//配置状态
-CO_Data *OD_Data = &master402_Data;
-
 /* Private function prototypes -----------------------------------------------*/
 static void config_node_param(uint8_t nodeId, node_config_state *conf);
 /***********************初始化操作状态函数**************************************************/
