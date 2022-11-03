@@ -98,7 +98,7 @@ static int canopen_init(void)
 	OD_Data->storeODSubIndex = (storeODSubIndex_t)master402_storeODSubIndex;
 	OD_Data->post_emcy = (post_emcy_t)master402_post_emcy;
 
-//  PDODisable(OD_Data,1);
+  PDODisable(OD_Data,1);
   PDODisable(OD_Data,3);
 
 	canOpen(&agv_board, OD_Data);
@@ -928,7 +928,7 @@ static UNS8 NODE2_Write_SLAVE_TPDO1_Sub2(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_TPDO1_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1A00,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1A00,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_TPDO1(uint8_t nodeId)
 {
@@ -972,7 +972,7 @@ static UNS8 NODE2_Write_SLAVE_TPDO2_Sub1(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_TPDO2_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1A01,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1A01,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_TPDO2(uint8_t nodeId)
 {
@@ -1021,7 +1021,7 @@ static UNS8 NODE2_Write_SLAVE_RPDO1_Sub2(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_RPDO1_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1600,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1600,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_RPDO1(uint8_t nodeId)
 {
@@ -1133,7 +1133,7 @@ static UNS8 NODE2_Write_SLAVE_RPDO2_Sub2(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_RPDO2_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1601,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1601,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_RPDO2(uint8_t nodeId)
 {
@@ -1269,7 +1269,7 @@ static UNS8 NODE3_Write_SLAVE_TPDO1_Sub2(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_TPDO1_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1A00,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1A00,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_TPDO1(uint8_t nodeId)
 {
@@ -1313,7 +1313,7 @@ static UNS8 NODE3_Write_SLAVE_TPDO2_Sub1(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_TPDO2_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1A01,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1A01,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_TPDO2(uint8_t nodeId)
 {
@@ -1362,7 +1362,7 @@ static UNS8 NODE3_Write_SLAVE_RPDO1_Sub2(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_RPDO1_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1600,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1600,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_RPDO1(uint8_t nodeId)
 {
@@ -1406,7 +1406,7 @@ static UNS8 NODE3_Write_SLAVE_RPDO2_Sub1(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_RPDO2_Sub0(uint8_t nodeId)
 {
-  return read_local_send_node_init_start(0X1601,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_pdo_T_R(0X1601,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_RPDO2(uint8_t nodeId)
 {
@@ -1474,7 +1474,6 @@ static UNS8 (*NODECFG_Operation_3[])(uint8_t nodeId) =
   NODE3_Write_SLAVE_TPDO2_Type,
   NODE3_Clear_SLAVE_TPDO2_Cnt,
   NODE3_Write_SLAVE_TPDO2_Sub1,
-//  NODE3_Write_SLAVE_TPDO2_Sub2,
   NODE3_Write_SLAVE_TPDO2_Sub0,
   NODE3_EN_SLAVE_TPDO2,
   //RPDO1通道操作

@@ -277,6 +277,7 @@ static UNS8 motor_on_profile_position(UNS8 nodeId)
 static UNS8 motor_on_interpolated_position(UNS8 nodeId)
 {
   NODE_DECISION;
+  pos_cmd1 = *Position_actual_value_Node[nodeId - 2].map_val;
   FAILED_EXIT(Write_SLAVE_Interpolation_time_period(nodeId));
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,INTERPOLATED_POSITION_MODE));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN));
@@ -284,7 +285,7 @@ static UNS8 motor_on_interpolated_position(UNS8 nodeId)
   /*State Transition 1: NO IP-MODE SELECTED => IP-MODE INACTIVE
   Event: Enter in the state OPERATION ENABLE with controlword and select ip 
   mode with modes of operation*/
-  //FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
+//  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
   return 0X00;
 }
 /**
@@ -416,18 +417,12 @@ static UNS8 motor_interpolation_position (UNS8 nodeId)
     LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
-  Interpolation_data_record_Parameter1_of_ip_function = 100;
   /* State Transition 3: IP-MODE INACTIVE => IP-MODE ACTIVE
   Event: Set bit enable ip mode (bit4) of the controlword while in ip mode and 
   OPERATION ENABLE*/
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | ENABLE_IP_MODE));//Bit 4«–÷¡ on°£ 
 //  PDOEnable(OD_Data,1);
-  
-  for(uint8_t i = 0;i <= 100; i++)
-  {
-    Interpolation_data_record_Parameter1_of_ip_function += 100;
-    rt_thread_mdelay(10);
-  }
+  pos_cmd1 += 100;
   return 0X00;
 }
 /**
