@@ -153,17 +153,12 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>node[heartbeatID - 2]</ItemText>
+          <ItemText>node_conf,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
           <ItemText>nodeId</ItemText>
-        </Ww>
-        <Ww>
-          <count>2</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>heartbeatID</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

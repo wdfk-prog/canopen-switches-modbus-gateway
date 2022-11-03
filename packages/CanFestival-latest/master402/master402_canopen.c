@@ -347,55 +347,70 @@ static void config_node_param_cb(CO_Data* d, UNS8 nodeId)
 */
 void config_node(uint8_t nodeId)
 {
-	node_conf[nodeId - 2].state = 0;
-	node_conf[nodeId - 2].try_cnt = 0;
-	rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
-
-	EnterMutex();
-  LOG_I("The configuration starts for node %d",nodeId);
-	config_node_param(nodeId, &node_conf[nodeId - 2]);
-	LeaveMutex();
-	rt_sem_take(&(node_conf[nodeId - 2].finish_sem), RT_WAITING_FOREVER);
-	rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
-
-  if(node_conf[nodeId - 2].err_code != 0X00)//因配置错误导致的退出
+  if(Write_SLAVE_control_word(nodeId,0x80) == 0xFF)//初始化进行错误重置
   {
-    LOG_E("Failed to configure the dictionary for node %d",nodeId);
-    if(node_conf[nodeId - 2].err_code == 0XFF)
-    {
-      LOG_E("The configuration was not sent because the local dictionary failed");
-    }
-    else if(node_conf[nodeId - 2].err_code == 0X03)
-    {
-      LOG_E("The configuration reply did not respond, and the node dictionary failed");
-    }
-    LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
-    master402_fix_config_err(OD_Data,nodeId);
-    return; //退出线程
+      LOG_E("nodeId:%d,Failed to clear error.The current node is not in operation",nodeId);
+      rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
+      if(rt_sem_take(&(node_conf[nodeId - 2].finish_sem), SDO_REPLY_TIMEOUT) != RT_EOK)
+      {
+        //掉线情况执行，重新上电情况无需处理
+        LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
+        master402_fix_config_err(OD_Data,nodeId);
+      }
+      rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
   }
   else
   {
-    UNS32 errorCode,map_val, size = SDO_MAX_LENGTH_TRANSFER;
-    UNS8 data_type;
-    errorCode = readLocalDict(OD_Data, 0x1016, nodeId - 1, &map_val, &size, &data_type, 0);
-    if(errorCode == OD_SUCCESSFUL)
-    {
-      /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
-      /**有格式定义，字典工具没有支持，需要自己写入**/
-      UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点的心跳时间
-      errorCode = writeLocalDict(OD_Data, 0x1016, nodeId - 1, &consumer_heartbeat_time, &size, 0);
-      if(errorCode != OD_SUCCESSFUL)
-        LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1016,nodeId - 1,errorCode);
-    }
-    else
-    {
-      LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1016,nodeId - 1,errorCode);
-      LOG_W("Node %d is not configured with a consumer heartbeat",nodeId);
-    }
-    //节点进入操作状态
-    masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
-    LOG_I("Node %d configuration Complete",nodeId);
-    rt_thread_mdelay(200);//确保NMT命令下发成功
+      node_conf[nodeId - 2].state = 0;
+      node_conf[nodeId - 2].try_cnt = 0;
+      rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
+
+      EnterMutex();
+      LOG_I("The configuration starts for node %d",nodeId);
+      config_node_param(nodeId, &node_conf[nodeId - 2]);
+      LeaveMutex();
+      rt_sem_take(&(node_conf[nodeId - 2].finish_sem), RT_WAITING_FOREVER);
+      rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
+
+      if(node_conf[nodeId - 2].err_code != 0X00)//因配置错误导致的退出
+      {
+        LOG_E("Failed to configure the dictionary for node %d",nodeId);
+        if(node_conf[nodeId - 2].err_code == 0XFF)
+        {
+          LOG_E("The configuration was not sent because the local dictionary failed");
+        }
+        else if(node_conf[nodeId - 2].err_code == 0X03)
+        {
+          LOG_E("The configuration reply did not respond, and the node dictionary failed");
+        }
+        LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
+        master402_fix_config_err(OD_Data,nodeId);
+        return; //退出线程
+      }
+      else
+      {
+        UNS32 errorCode,map_val, size = SDO_MAX_LENGTH_TRANSFER;
+        UNS8 data_type;
+        errorCode = readLocalDict(OD_Data, 0x1016, nodeId - 1, &map_val, &size, &data_type, 0);
+        if(errorCode == OD_SUCCESSFUL)
+        {
+          /**写入主机消费者/接收端判断心跳超时时间  DS301定义**/
+          /**有格式定义，字典工具没有支持，需要自己写入**/
+          UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(nodeId,CONSUMER_HEARTBEAT_TIME);//写入节点的心跳时间
+          errorCode = writeLocalDict(OD_Data, 0x1016, nodeId - 1, &consumer_heartbeat_time, &size, 0);
+          if(errorCode != OD_SUCCESSFUL)
+            LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1016,nodeId - 1,errorCode);
+        }
+        else
+        {
+          LOG_E("index:0X%04X,subIndex:0X%X,write Local Dict false,abort code is 0X%08X",0x1016,nodeId - 1,errorCode);
+          LOG_W("Node %d is not configured with a consumer heartbeat",nodeId);
+        }
+        //节点进入操作状态
+        masterSendNMTstateChange(OD_Data, nodeId, NMT_Start_Node);
+        LOG_I("Node %d configuration Complete",nodeId);
+        rt_thread_mdelay(200);//确保NMT命令下发成功
+      }
   }
 }
 /**
@@ -420,7 +435,16 @@ static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 {
 	rt_thread_t tid;
   LOG_I("Node %d has gone online",nodeId);
-  rt_sem_release(&(node_conf[nodeId - 2].finish_sem));
+  //判断信号量是否初始化
+  if(!rt_list_isempty(&node_conf[nodeId - 2].finish_sem.parent.suspend_thread))
+  {
+    LOG_I("Node %d is powered on before the MCU",nodeId);
+    rt_sem_release(&(node_conf[nodeId - 2].finish_sem));
+  }
+  else
+  {
+    LOG_I("After the MCU is powered on, node %d is powered on",nodeId);
+  }
 	tid = rt_thread_create("co_cfg", config_single_node, (void *)(int)nodeId, 1024, 12 + nodeId, 2);
 	if(tid == RT_NULL)
 	{
@@ -443,29 +467,11 @@ void canopen_start_thread_entry(void *parameter)
 	UNS32 size,errorCode;
 	UNS8 data_type;
   CO_Data *d = (CO_Data *)parameter;
-  UNS8 nodeId = 0;
-
   /*写入节点字典*/
 //  UNS8 i = 0;//调试取消注释这行，注释下行。用来单节点初始化
   for (UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
-    nodeId = node_conf[i].nodeID;
-    if(Write_SLAVE_control_word(nodeId,0x80) == 0xFF)//初始化进行错误重置
-    {
-        LOG_E("nodeId:%d,Failed to clear error.The current node is not in operation",nodeId);
-        rt_sem_init(&(node_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
-        if(rt_sem_take(&(node_conf[nodeId - 2].finish_sem), SDO_REPLY_TIMEOUT) != RT_EOK)
-        {
-          //掉线情况执行，重新上电情况无需处理
-          LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
-          master402_fix_config_err(OD_Data,nodeId);
-        }
-        rt_sem_detach(&(node_conf[nodeId - 2].finish_sem));
-    }
-    else
-    {
-        config_node(nodeId);//初始化时使用此配置，减少sem初始化与删除操作
-    }
+    config_node(node_conf[i].nodeID);//初始化时使用此配置，减少sem初始化与删除操作
   }
   /*写入本地字典*/
 	d->post_SlaveBootup = slaveBootupHdl;
@@ -479,7 +485,6 @@ void canopen_start_thread_entry(void *parameter)
     setState(d, Stopped);//主站不发送生产者心跳，就进行操作。可能发送主站掉线，节点不知道还在运行
     return ;
   }
-
   //主站进入操作模式
   setState(d, Operational);
   /**有格式定义，字典工具没有支持，需要自己写入**/
