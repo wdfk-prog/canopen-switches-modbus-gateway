@@ -14,6 +14,8 @@ INTEGER32 NODE3_Velocity_actual_value_0x606C = 0x0;		/* Mapped at index 0x2005, 
 INTEGER32 NODE3_Target_position_607A = 0x0;		/* Mapped at index 0x2006, subindex 0x00 */
 INTEGER32 NODE3_Target_velocity_60FF = 0x0;		/* Mapped at index 0x2007, subindex 0x00 */
 UNS16 S_move = 0x0;		/* Mapped at index 0x2124, subindex 0x00 */
+INTEGER32 pos_cmd1 = 0x0;		/* Mapped at index 0x2F00, subindex 0x00 */
+INTEGER16 pos_cmd2 = 0x0;		/* Mapped at index 0x2F01, subindex 0x00 */
 UNS16 Controlword = 0x0;		/* Mapped at index 0x6040, subindex 0x00 */
 UNS16 Statusword = 0x0;		/* Mapped at index 0x6041, subindex 0x00 */
 INTEGER8 Modes_of_operation = 0x0;		/* Mapped at index 0x6060, subindex 0x00 */
@@ -411,15 +413,17 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                      };
 
 /* index 0x1A01 :   Transmit PDO 2 Mapping. */
-                    UNS8 master402_highestSubIndex_obj1A01 = 1; /* number of subindex - 1*/
+                    UNS8 master402_highestSubIndex_obj1A01 = 2; /* number of subindex - 1*/
                     UNS32 master402_obj1A01[] = 
                     {
-                      0x60C10120	/* 1623261472 */
+                      0x2F000020,	/* 788529184 */
+                      0x2F010010	/* 788594704 */
                     };
                     subindex master402_Index1A01[] = 
                      {
                        { RW, uint8, sizeof (UNS8), (void*)&master402_highestSubIndex_obj1A01, NULL },
-                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A01[0], NULL }
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A01[0], NULL },
+                       { RW, uint32, sizeof (UNS32), (void*)&master402_obj1A01[1], NULL }
                      };
 
 /* index 0x1A02 :   Transmit PDO 3 Mapping. */
@@ -494,6 +498,18 @@ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
                     subindex master402_Index2124[] = 
                      {
                        { RW, uint16, sizeof (UNS16), (void*)&S_move, NULL }
+                     };
+
+/* index 0x2F00 :   Mapped variable pos_cmd1 */
+                    subindex master402_Index2F00[] = 
+                     {
+                       { RW, int32, sizeof (INTEGER32), (void*)&pos_cmd1, NULL }
+                     };
+
+/* index 0x2F01 :   Mapped variable pos_cmd2 */
+                    subindex master402_Index2F01[] = 
+                     {
+                       { RW, int16, sizeof (INTEGER16), (void*)&pos_cmd2, NULL }
                      };
 
 /* index 0x6040 :   Mapped variable Controlword */
@@ -623,6 +639,8 @@ const indextable master402_objdict[] =
   { (subindex*)master402_Index2006,sizeof(master402_Index2006)/sizeof(master402_Index2006[0]), 0x2006},
   { (subindex*)master402_Index2007,sizeof(master402_Index2007)/sizeof(master402_Index2007[0]), 0x2007},
   { (subindex*)master402_Index2124,sizeof(master402_Index2124)/sizeof(master402_Index2124[0]), 0x2124},
+  { (subindex*)master402_Index2F00,sizeof(master402_Index2F00)/sizeof(master402_Index2F00[0]), 0x2F00},
+  { (subindex*)master402_Index2F01,sizeof(master402_Index2F01)/sizeof(master402_Index2F01[0]), 0x2F01},
   { (subindex*)master402_Index6040,sizeof(master402_Index6040)/sizeof(master402_Index6040[0]), 0x6040},
   { (subindex*)master402_Index6041,sizeof(master402_Index6041)/sizeof(master402_Index6041[0]), 0x6041},
   { (subindex*)master402_Index6060,sizeof(master402_Index6060)/sizeof(master402_Index6060[0]), 0x6060},
@@ -678,19 +696,21 @@ const indextable * master402_scanIndexOD (CO_Data *d, UNS16 wIndex, UNS32 * erro
 		case 0x2006: i = 32;break;
 		case 0x2007: i = 33;break;
 		case 0x2124: i = 34;break;
-		case 0x6040: i = 35;break;
-		case 0x6041: i = 36;break;
-		case 0x6060: i = 37;break;
-		case 0x6064: i = 38;break;
-		case 0x606C: i = 39;break;
-		case 0x607A: i = 40;break;
-		case 0x607C: i = 41;break;
-		case 0x6081: i = 42;break;
-		case 0x6098: i = 43;break;
-		case 0x6099: i = 44;break;
-		case 0x60C1: i = 45;break;
-		case 0x60C2: i = 46;break;
-		case 0x60FF: i = 47;break;
+		case 0x2F00: i = 35;break;
+		case 0x2F01: i = 36;break;
+		case 0x6040: i = 37;break;
+		case 0x6041: i = 38;break;
+		case 0x6060: i = 39;break;
+		case 0x6064: i = 40;break;
+		case 0x606C: i = 41;break;
+		case 0x607A: i = 42;break;
+		case 0x607C: i = 43;break;
+		case 0x6081: i = 44;break;
+		case 0x6098: i = 45;break;
+		case 0x6099: i = 46;break;
+		case 0x60C1: i = 47;break;
+		case 0x60C2: i = 48;break;
+		case 0x60FF: i = 49;break;
 		default:
 			*errorCode = OD_NO_SUCH_OBJECT;
 			return NULL;

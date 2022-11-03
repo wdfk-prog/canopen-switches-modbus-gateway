@@ -20,6 +20,8 @@ extern INTEGER32 NODE3_Velocity_actual_value_0x606C;		/* Mapped at index 0x2005,
 extern INTEGER32 NODE3_Target_position_607A;		/* Mapped at index 0x2006, subindex 0x00*/
 extern INTEGER32 NODE3_Target_velocity_60FF;		/* Mapped at index 0x2007, subindex 0x00*/
 extern UNS16 S_move;		/* Mapped at index 0x2124, subindex 0x00*/
+extern INTEGER32 pos_cmd1;		/* Mapped at index 0x2F00, subindex 0x00*/
+extern INTEGER16 pos_cmd2;		/* Mapped at index 0x2F01, subindex 0x00*/
 extern UNS16 Controlword;		/* Mapped at index 0x6040, subindex 0x00*/
 extern UNS16 Statusword;		/* Mapped at index 0x6041, subindex 0x00*/
 extern INTEGER8 Modes_of_operation;		/* Mapped at index 0x6060, subindex 0x00*/

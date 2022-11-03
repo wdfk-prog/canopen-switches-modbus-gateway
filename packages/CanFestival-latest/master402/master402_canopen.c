@@ -98,7 +98,7 @@ static int canopen_init(void)
 	OD_Data->storeODSubIndex = (storeODSubIndex_t)master402_storeODSubIndex;
 	OD_Data->post_emcy = (post_emcy_t)master402_post_emcy;
 
-  PDODisable(OD_Data,1);
+//  PDODisable(OD_Data,1);
   PDODisable(OD_Data,3);
 
 	canOpen(&agv_board, OD_Data);
@@ -514,8 +514,8 @@ void canopen_start_thread_entry(void *parameter)
   * @brief  发送完成回调
   * @param  d:字典结构体
   * @param  nodeId：节点ID
-  * @retval None
-  * @note   None
+  * @retval FLASE:错误,TRUE:成功.
+  * @note   仅限初始化结束后使用
 */
 static void writeNetworkDictSyncCb(CO_Data* d, UNS8 nodeId) 
 {
@@ -526,8 +526,8 @@ static void writeNetworkDictSyncCb(CO_Data* d, UNS8 nodeId)
   * @brief  异步写入节点字典
   * @param  d:字典结构体
   * @param  nodeId：节点ID
-  * @retval None
-  * @note   None
+  * @retval FLASE:错误,TRUE:成功.
+  * @note   仅限初始化结束后使用
 */
 static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
         UNS8 subIndex, UNS32 count, UNS8 dataType, void *data, UNS8 useBlockMode) 
@@ -575,17 +575,19 @@ static bool writeNetworkDictSync (CO_Data* d, UNS8 nodeId, UNS16 index,
     return false;
 }
 /**
-  * @brief  读取本地字典参数并写入节点字典
+  * @brief  初始化结束后读取本地字典参数并写入节点字典
   * @param  d:字典结构体
   * @param  nodeId:节点ID
   * @param  local_index:本地索引
   * @param  local_subIndex:本地子索引
   * @param  slave_Index:从机索引
   * @param  slave_subIndex:从机子索引
-  * @retval None
-  * @note   None
+  * @retval 0XFF:错误，0X00:成功.
+  * @note   仅限初始化结束后使用
+            初始化过程使用，会导致信号量重复初始化，导致系统卡死
+            读取本地字典变量值发送至节点该变量值。
 */
-static UNS8 Read_local_Send_Node(CO_Data* d,UNS8 nodeId,UNS16 local_index,UNS8 local_subIndex,UNS16 slave_index,UNS8 slave_subIndex)
+static UNS8 read_local_send_node_init_end(CO_Data* d,UNS8 nodeId,UNS16 local_index,UNS8 local_subIndex,UNS16 slave_index,UNS8 slave_subIndex)
 {
   UNS32  size = SDO_MAX_LENGTH_TRANSFER;
   UNS32 pdo_map_val = 0,errorCode = 0; 
@@ -606,14 +608,15 @@ static UNS8 Read_local_Send_Node(CO_Data* d,UNS8 nodeId,UNS16 local_index,UNS8 l
   return 0x00;
 }
 /**
-  * @brief  读取本地字典值并发送至从机节点
+  * @brief  读取本地字典值并发送至从机节点 仅适用于主站TPDO至RPDO与RPDO至TPDO
   * @param  index:本地索引
   * @param  subIndex:本地子索引
   * @param  nodeId:节点ID
-  * @retval None.
-  * @note   仅适用于主站TPDO至RPDO与RPDO至TPDO 0XFF:错误，0X00:成功.
+  * @retval 0XFF:错误，0X00:成功..
+  * @note   仅适用于主站TPDO至RPDO与RPDO至TPDO
+            读取对应地图映射变量索引相关参数并发送至从机
 */
-static UNS8 local_od_send(UNS16 index,UNS8 subIndex,uint8_t nodeId)
+static UNS8 read_local_send_node_pdo_T_R(UNS16 index,UNS8 subIndex,uint8_t nodeId)
 {
   UNS32 pdo_map_val;
   UNS32  size = SDO_MAX_LENGTH_TRANSFER;
@@ -649,10 +652,11 @@ static UNS8 local_od_send(UNS16 index,UNS8 subIndex,uint8_t nodeId)
   * @param  slave_Index:从机索引
   * @param  slave_subIndex:从机子索引
   * @param  nodeId:节点ID
-  * @retval None.
-  * @note   0XFF:错误，0X00:成功.
+  * @retval 0XFF:错误，0X00:成功.
+  * @note   仅限PDO配置发送[不包括PDO CNT设置]。
+            读取本地字典索引与大小计算传输数据
 */
-static UNS8 local_cfg_od_send(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_Index,UNS8 slave_subIndex,uint8_t nodeId)
+static UNS8 read_local_send_node_pdo(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_Index,UNS8 slave_subIndex,uint8_t nodeId)
 {
   UNS32 pdo_map_val;
   UNS32 size = SDO_MAX_LENGTH_TRANSFER;
@@ -688,6 +692,31 @@ static UNS8 local_cfg_od_send(UNS16 local_index,UNS8 local_subIndex,UNS16 slave_
     }
   }
 }
+
+/**
+  * @brief  初始化阶段读取本地字典参数并写入节点字典
+  * @param  d:字典结构体
+  * @param  nodeId:节点ID
+  * @param  index:本地索引
+  * @param  subIndex:本地子索引
+  * @retval 0XFF:错误，0X00:成功.
+  * @note   仅初始化使用
+            仅做读取写入，不做任何计算
+*/
+static UNS8 read_local_send_node_init_start(UNS16 index,UNS8 subIndex,UNS8 nodeId)
+{
+  UNS32  size = SDO_MAX_LENGTH_TRANSFER;
+  UNS32 pdo_map_val = 0,errorCode = 0; 
+  UNS8  dataType = 0;
+
+  errorCode = readLocalDict(OD_Data,index,subIndex,(void *)&pdo_map_val,&size,&dataType,0);
+  if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",index,subIndex,errorCode);
+    return 0xFF;
+  }
+  return writeNetworkDictCallBack(OD_Data,nodeId,index,subIndex,size,dataType,&pdo_map_val,config_node_param_cb,0);
+}
 /******************************SDO设置参数操作**********************************/
 /**
   * @brief  写入从机Modes_of_operation设置
@@ -711,7 +740,7 @@ UNS8 Write_SLAVE_Modes_of_operation(UNS8 nodeId,INTEGER8 mode)
   }
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,
+  if(read_local_send_node_init_end(OD_Data,nodeId,
                           Modes_of_operation_Node[nodeId - 2].index,0x00,//读取本地变量
                           0x6060,0x00) == 0XFF)//发送至从机变量
     return 0XFF;
@@ -732,7 +761,7 @@ UNS8 Write_SLAVE_control_word(UNS8 nodeId,UNS16 value)
   *Controlword_Node[nodeId - 2].map_val = value;
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,
+  if(read_local_send_node_init_end(OD_Data,nodeId,
                           Controlword_Node[nodeId - 2].index,0x00,//读取本地变量
                           0x6040,0x00) == 0XFF)//发送至从机变量
     return 0XFF;
@@ -759,7 +788,7 @@ UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,UNS32 speed)
   }
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,
+  if(read_local_send_node_init_end(OD_Data,nodeId,
                           0x6081,0x00,//读取本地变量
                           0x6081,0x00) == 0XFF)//发送至从机变量
         return 0XFF;
@@ -793,9 +822,9 @@ UNS8 Write_SLAVE_Interpolation_time_period(UNS8 nodeId)
   Interpolation_time_period_Interpolation_time_index = (Bit_Int_2(pdo_map_val) - 1) - 6;//十的次方数 = 10^(n-6)
   Interpolation_time_period_Interpolation_time_units = pdo_map_val / pow(10,(Bit_Int_2(pdo_map_val) - 1));//插补周期时间常数
   
-  if(Read_local_Send_Node(OD_Data,nodeId,0X60C2,0x01,0X60C2,0x01) == 0XFF)
+  if(read_local_send_node_init_end(OD_Data,nodeId,0X60C2,0x01,0X60C2,0x01) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X60C2,0x02,0X60C2,0x02) == 0XFF)
+  if(read_local_send_node_init_end(OD_Data,nodeId,0X60C2,0x02,0X60C2,0x02) == 0XFF)
     return 0XFF;
 
   return 0x00;
@@ -847,13 +876,13 @@ UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float switch_sp
   }
 
   //参数发送节点字典
-  if(Read_local_Send_Node(OD_Data,nodeId,0X607C,0x00,0X607C,0x00) == 0XFF)
+  if(read_local_send_node_init_end(OD_Data,nodeId,0X607C,0x00,0X607C,0x00) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6098,0x00,0X6098,0x00) == 0XFF)
+  if(read_local_send_node_init_end(OD_Data,nodeId,0X6098,0x00,0X6098,0x00) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6099,0x01,0X6099,0x01) == 0XFF)
+  if(read_local_send_node_init_end(OD_Data,nodeId,0X6099,0x01,0X6099,0x01) == 0XFF)
     return 0XFF;
-  if(Read_local_Send_Node(OD_Data,nodeId,0X6099,0x02,0X6099,0x02) == 0XFF)
+  if(read_local_send_node_init_end(OD_Data,nodeId,0X6099,0x02,0X6099,0x02) == 0XFF)
     return 0XFF;
 
   return 0X00;
@@ -891,15 +920,15 @@ static UNS8 NODE2_Clear_SLAVE_TPDO1_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_TPDO1_Sub1(uint8_t nodeId)
 {
-  return local_od_send(0X1A00,1,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
+  return read_local_send_node_pdo_T_R(0X1A00,1,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
 }
 static UNS8 NODE2_Write_SLAVE_TPDO1_Sub2(uint8_t nodeId)
 {
-  return local_od_send(0X1A00,2,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
+  return read_local_send_node_pdo_T_R(0X1A00,2,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
 }
 static UNS8 NODE2_Write_SLAVE_TPDO1_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1A00,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1A00,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_TPDO1(uint8_t nodeId)
 {
@@ -939,11 +968,79 @@ static UNS8 NODE2_Clear_SLAVE_TPDO2_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_TPDO2_Sub1(uint8_t nodeId)
 {
-  return local_od_send(0X1A01,1,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
+  UNS32 pdo_map_val;
+  UNS32 size = SDO_MAX_LENGTH_TRANSFER;
+  UNS8  dataType;
+  UNS32 errorCode;
+  UNS32 SDO_data;
+
+  errorCode = readLocalDict(OD_Data,0X2F00,0,(void *)&pdo_map_val,&size,&dataType,0);
+  if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0X2F00,0,errorCode);
+    return 0XFF;
+  }
+  else
+  {
+    /*
+          位             功能 
+    Bit 0 ~ Bit 7     对象数据长度 
+    Bit 8 ~ Bit 15    对象子索引 
+    Bit 16 ~ Bit 31   对象索引 
+    */
+    SDO_data = (0X60C1 << 16) + (1 << 8) + (size * 8);
+    pdo_map_val = 0;size = SDO_MAX_LENGTH_TRANSFER;dataType = 0;//清除遗留数据
+    errorCode = readLocalDict(OD_Data,0X1A01,1,(void *)&pdo_map_val,&size,&dataType,0);
+    if(errorCode != OD_SUCCESSFUL)
+    {
+      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",0X1A01,1,errorCode);
+      return 0XFF;
+    }
+    else
+    {
+      return writeNetworkDictCallBack(OD_Data,nodeId,0X1A01,1,size,dataType,&SDO_data,config_node_param_cb,0);
+    }
+  }
+}
+static UNS8 NODE2_Write_SLAVE_TPDO2_Sub2(uint8_t nodeId)
+{
+  UNS32 pdo_map_val;
+  UNS32 size = SDO_MAX_LENGTH_TRANSFER;
+  UNS8  dataType;
+  UNS32 errorCode;
+  UNS32 SDO_data;
+
+  errorCode = readLocalDict(OD_Data,0X2F01,0,(void *)&pdo_map_val,&size,&dataType,0);
+  if(errorCode != OD_SUCCESSFUL)
+  {
+    LOG_E("index:0X%04X,subIndex:0X%X,read Local Dict false,abort code is 0X%08X",0X2F01,0,errorCode);
+    return 0XFF;
+  }
+  else
+  {
+    /*
+          位             功能 
+    Bit 0 ~ Bit 7     对象数据长度 
+    Bit 8 ~ Bit 15    对象子索引 
+    Bit 16 ~ Bit 31   对象索引 
+    */
+    SDO_data = (0X60C1 << 16) + (2 << 8) + (size * 8);
+    pdo_map_val = 0;size = SDO_MAX_LENGTH_TRANSFER;dataType = 0;//清除遗留数据
+    errorCode = readLocalDict(OD_Data,0X1A01,2,(void *)&pdo_map_val,&size,&dataType,0);
+    if(errorCode != OD_SUCCESSFUL)
+    {
+      LOG_E("index:0X%X,subIndex:0X%X,read Local Dict false,abort code is 0X%X",0X1A01,2,errorCode);
+      return 0XFF;
+    }
+    else
+    {
+      return writeNetworkDictCallBack(OD_Data,nodeId,0X1A01,2,size,dataType,&SDO_data,config_node_param_cb,0);
+    }
+  }
 }
 static UNS8 NODE2_Write_SLAVE_TPDO2_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1A01,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1A01,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_TPDO2(uint8_t nodeId)
 {
@@ -984,15 +1081,15 @@ static UNS8 NODE2_Clear_SLAVE_RPDO1_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_RPDO1_Sub1(uint8_t nodeId)
 {
-  return local_od_send(0X1600,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  return read_local_send_node_pdo_T_R(0X1600,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE2_Write_SLAVE_RPDO1_Sub2(uint8_t nodeId)
 {
-  return local_od_send(0X1600,2,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  return read_local_send_node_pdo_T_R(0X1600,2,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE2_Write_SLAVE_RPDO1_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1600,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1600,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_RPDO1(uint8_t nodeId)
 {
@@ -1032,11 +1129,11 @@ static UNS8 NODE2_Clear_SLAVE_RPDO2_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE2_Write_SLAVE_RPDO2_Sub1(uint8_t nodeId)
 {
-  return local_od_send(0X1601,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  return read_local_send_node_pdo_T_R(0X1601,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE2_Write_SLAVE_RPDO2_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1601,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1601,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE2_EN_SLAVE_RPDO2(uint8_t nodeId)
 {
@@ -1104,7 +1201,7 @@ static UNS8 (*NODECFG_Operation_2[])(uint8_t nodeId) =
   NODE2_Write_SLAVE_TPDO2_Type,
   NODE2_Clear_SLAVE_TPDO2_Cnt,
   NODE2_Write_SLAVE_TPDO2_Sub1,
-//  NODE2_Write_SLAVE_TPDO2_Sub2,
+  NODE2_Write_SLAVE_TPDO2_Sub2,
   NODE2_Write_SLAVE_TPDO2_Sub0,
   NODE2_EN_SLAVE_TPDO2,
   //RPDO1通道操作
@@ -1164,15 +1261,15 @@ static UNS8 NODE3_Clear_SLAVE_TPDO1_Cnt(uint8_t nodeId)
 static UNS8 NODE3_Write_SLAVE_TPDO1_Sub1(uint8_t nodeId)
 {
   //主机0X6040配置写入从机TPDO通道中
-  return local_cfg_od_send(0X6064,0,0x1A00,1,nodeId);
+  return read_local_send_node_pdo(0X6064,0,0x1A00,1,nodeId);
 }
 static UNS8 NODE3_Write_SLAVE_TPDO1_Sub2(uint8_t nodeId)
 {
-  return local_cfg_od_send(0X606C,0,0x1A00,2,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
+  return read_local_send_node_pdo(0X606C,0,0x1A00,2,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
 }
 static UNS8 NODE3_Write_SLAVE_TPDO1_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1A00,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1A00,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_TPDO1(uint8_t nodeId)
 {
@@ -1212,11 +1309,11 @@ static UNS8 NODE3_Clear_SLAVE_TPDO2_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_TPDO2_Sub1(uint8_t nodeId)
 {
-  return local_cfg_od_send(0x6041,0,0X1A01,1,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
+  return read_local_send_node_pdo(0x6041,0,0X1A01,1,nodeId);//写入从机PDO1需要发送映射，即主站需要PDO1接收映射
 }
 static UNS8 NODE3_Write_SLAVE_TPDO2_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1A01,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1A01,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_TPDO2(uint8_t nodeId)
 {
@@ -1257,15 +1354,15 @@ static UNS8 NODE3_Clear_SLAVE_RPDO1_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_RPDO1_Sub1(uint8_t nodeId)
 {
-  return local_cfg_od_send(0x607A,0,0X1600,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  return read_local_send_node_pdo(0x607A,0,0X1600,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE3_Write_SLAVE_RPDO1_Sub2(uint8_t nodeId)
 {
-  return local_cfg_od_send(0x60FF,0,0X1600,2,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  return read_local_send_node_pdo(0x60FF,0,0X1600,2,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE3_Write_SLAVE_RPDO1_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1600,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1600,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_RPDO1(uint8_t nodeId)
 {
@@ -1305,11 +1402,11 @@ static UNS8 NODE3_Clear_SLAVE_RPDO2_Cnt(uint8_t nodeId)
 }
 static UNS8 NODE3_Write_SLAVE_RPDO2_Sub1(uint8_t nodeId)
 {
-  return local_cfg_od_send(0x60C1,1,0X1601,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
+  return read_local_send_node_pdo(0x60C1,1,0X1601,1,nodeId);//写入从机PDO1需要接收映射，即主站需要PDO1发送映射
 }
 static UNS8 NODE3_Write_SLAVE_RPDO2_Sub0(uint8_t nodeId)
 {
-  return local_od_send(0X1601,0,nodeId);//重新写入正确索引数
+  return read_local_send_node_init_start(0X1601,0,nodeId);//重新写入正确索引数
 }
 static UNS8 NODE3_EN_SLAVE_RPDO2(uint8_t nodeId)
 {
