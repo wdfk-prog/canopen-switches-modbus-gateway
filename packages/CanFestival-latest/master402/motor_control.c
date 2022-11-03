@@ -420,7 +420,7 @@ static UNS8 motor_interpolation_position (UNS8 nodeId)
   /* State Transition 3: IP-MODE INACTIVE => IP-MODE ACTIVE
   Event: Set bit enable ip mode (bit4) of the controlword while in ip mode and 
   OPERATION ENABLE*/
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | ENABLE_IP_MODE));//Bit 4«–÷¡ on°£ 
+//  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | ENABLE_IP_MODE));//Bit 4«–÷¡ on°£ 
 //  PDOEnable(OD_Data,1);
   pos_cmd1 += 100;
   return 0X00;
