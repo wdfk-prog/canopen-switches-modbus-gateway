@@ -427,7 +427,7 @@ def ARMCC_Version():
     path = rtconfig.EXEC_PATH
     if(rtconfig.PLATFORM == 'armcc'):
         path = os.path.join(path, 'armcc.exe')
-    else:
+    elif(rtconfig.PLATFORM == 'armclang'):
         path = os.path.join(path, 'armlink.exe')
 
     if os.path.exists(path):
