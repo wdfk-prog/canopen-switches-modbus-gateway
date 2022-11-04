@@ -21,7 +21,7 @@ del *.dep /s
 del JLinkLog.txt /s
 
 del *.iex /s
-del *.htm /s
+::del *.htm /s
 ::del *.sct /s ::不允许删除链接的设置
 del *.map /s
 ::删除cubemx生成无用工程文件
