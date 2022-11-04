@@ -26,9 +26,9 @@
 - 外部 RAM：IS42S16400J（SDRAM，8MB）
 - 外部 FLASH：W25Q128（SPI，16MB）
 - 常用外设
-  - LED：RGB灯
-  - 按键：2个，K1（兼具唤醒功能，PA0），K2（PC13）
-- 常用接口：USB 转串口、SD 卡接口、以太网接口、LCD 接口
+  - LED：blue灯
+  - 按键：1个，K1（兼具唤醒功能，PA0）
+- 常用接口：USB 转串口、LCD 接口
 - 调试接口，标准 JTAG/SWD
 
 开发板更多详细信息请参考野火 [STM32 挑战者开发板介绍](https://fire-stm32.taobao.com/index.htm)。
@@ -40,31 +40,32 @@
 | **板载外设**      | **支持情况** | **备注**                              |
 | :----------------- | :----------: | :------------------------------------- |
 | USB 转串口        |     支持     |                                       |
-| RS232         |     支持     |  |
-| SPI Flash         |     支持     |                                       |
+| RS232         |     支持     |  |      支持
+| SPI Flash         |     支持     |     支持                         |
 | 电位器             |     支持     |     使用 ADC1                          |
 | 以太网            |     支持     |                                       |
 | MPU6050六轴传感器 |     支持     |                   |
-| SDRAM             |     支持     |                                       |
+| SDRAM             |     支持     |    支持                               |
 | LCD               |     支持     | 支持 RGB 屏                            |
 | SD卡              |   即将支持   |                                       |
-| CAN               |   即将支持   |                                       |
+| CAN               |   即将支持   |   支持                                 |
 | EMW1062 | 暂不支持 | |
 | **片上外设**      | **支持情况** | **备注**                              |
 | GPIO              |     支持     | PA0, PA1... PK15 ---> PIN: 0, 1...176 |
 | UART              |     支持     | UART1/2                             |
 | SPI               |     支持     | SPI1/2/5                              |
 | I2C               |     支持     | 软件 I2C                              |
-| ADC               |     支持     |                                     |
+| ADC               |     支持     |                                 |
 | RTC               |     支持     | 支持外部晶振和内部低速时钟 |
-| WDT               |     支持     |                                       |
+| WDT               |     支持     |                                   |
 | FLASH | 支持 | 已适配 [FAL](https://github.com/RT-Thread-packages/fal) |
 | SDIO              |   暂不支持   | 即将支持                              |
-| PWM               |   暂不支持   | 即将支持                              |
+| PWM               |   支持   | 支持                              |
 | USB Device        |   暂不支持   | 即将支持                              |
 | USB Host          |   暂不支持   | 即将支持                              |
 | **扩展模块**      | **支持情况** | **备注**                              |
-| 暂无         |   暂不支持   | 暂不支持                              |
+| MODBUS         |   支持   | 支持                              |
+| canopen         |   支持   | 使用canfestival                              |
 
 ## 使用说明
 
@@ -128,4 +129,4 @@ msh >
 
 维护人:
 
-- [SummerGift](https://github.com/SummerGGift)
+- [wdfk-pro](https://github.com/wdfk-prog)
