@@ -18,7 +18,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "rtc.h"
+#include "Cube_rtc.h"
 
 /* USER CODE BEGIN 0 */
 

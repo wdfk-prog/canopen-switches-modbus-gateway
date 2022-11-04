@@ -18,7 +18,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "can.h"
+#include "Cube_can.h"
 
 /* USER CODE BEGIN 0 */
 

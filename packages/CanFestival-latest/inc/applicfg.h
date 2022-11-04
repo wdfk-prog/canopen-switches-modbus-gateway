@@ -54,7 +54,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #define REAL32	float
 #define REAL64 double
 
-#include "can.h"
+#include "canoepn_can.h"
 
 #define DBG_TAG __func__
 #define DBG_LVL DBG_INFO
