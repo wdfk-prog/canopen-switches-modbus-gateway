@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+ * Copyright (c) 2006-2022, RT-Thread Development Team
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -11,7 +11,7 @@
 
 #include <board.h>
 
-#ifdef RT_USING_PWM
+#ifdef BSP_USING_PWM
 #include "drv_config.h"
 #include <drivers/rt_drv_pwm.h>
 
@@ -180,17 +180,17 @@ static void pclkx_doubler_get(rt_uint32_t *pclk1_doubler, rt_uint32_t *pclk2_dou
     }
     if (RCC_ClkInitStruct.APB2_Div != RCC_APB2_DIV1)
     {
-       *pclk2_doubler = 2;
+        *pclk2_doubler = 2;
     }
 #else
     if (RCC_ClkInitStruct.APB1CLKDivider != RCC_HCLK_DIV1)
     {
-         *pclk1_doubler = 2;
+        *pclk1_doubler = 2;
     }
-#if !defined(SOC_SERIES_STM32F0) && !defined(SOC_SERIES_STM32G0)
+#if !(defined(SOC_SERIES_STM32F0) || defined(SOC_SERIES_STM32G0))
     if (RCC_ClkInitStruct.APB2CLKDivider != RCC_HCLK_DIV1)
     {
-         *pclk2_doubler = 2;
+        *pclk2_doubler = 2;
     }
 #endif
 #endif
@@ -213,7 +213,7 @@ static rt_uint64_t tim_clock_get(TIM_HandleTypeDef *htim)
     if (0)
 #endif
     {
-#if !defined(SOC_SERIES_STM32F0) && !defined(SOC_SERIES_STM32G0)
+#if !(defined(SOC_SERIES_STM32F0) || defined(SOC_SERIES_STM32G0)) /* don't have HAL_RCC_GetPCLK2Freq */
         tim_clock = (rt_uint32_t)(HAL_RCC_GetPCLK2Freq() * pclk2_doubler);
 #endif
     }
@@ -383,12 +383,8 @@ static rt_err_t drv_pwm_control(struct rt_device_pwm *device, int cmd, void *arg
 
     switch (cmd)
     {
-    case PWMN_CMD_ENABLE:
-        configuration->complementary = RT_TRUE;
     case PWM_CMD_ENABLE:
         return drv_pwm_enable(htim, configuration, RT_TRUE);
-    case PWMN_CMD_DISABLE:
-        configuration->complementary = RT_FALSE;
     case PWM_CMD_DISABLE:
         return drv_pwm_enable(htim, configuration, RT_FALSE);
     case PWM_CMD_SET:
@@ -400,7 +396,7 @@ static rt_err_t drv_pwm_control(struct rt_device_pwm *device, int cmd, void *arg
     case PWM_CMD_GET:
         return drv_pwm_get(htim, configuration);
     default:
-        return RT_EINVAL;
+        return -RT_EINVAL;
     }
 }
 
@@ -635,6 +631,15 @@ static void pwm_get_channel(void)
 #ifdef BSP_USING_PWM12_CH2
     stm32_pwm_obj[PWM12_INDEX].channel |= 1 << 1;
 #endif
+#ifdef BSP_USING_PWM13_CH1
+    stm32_pwm_obj[PWM13_INDEX].channel |= 1 << 0;
+#endif
+#ifdef BSP_USING_PWM14_CH1
+    stm32_pwm_obj[PWM14_INDEX].channel |= 1 << 0;
+#endif
+#ifdef BSP_USING_PWM15_CH1
+    stm32_pwm_obj[PWM15_INDEX].channel |= 1 << 0;
+#endif
 #ifdef BSP_USING_PWM16_CH1
     stm32_pwm_obj[PWM16_INDEX].channel |= 1 << 0;
 #endif
@@ -680,4 +685,4 @@ __exit:
     return result;
 }
 INIT_DEVICE_EXPORT(stm32_pwm_init);
-#endif /* RT_USING_PWM */
+#endif /* BSP_USING_PWM */
