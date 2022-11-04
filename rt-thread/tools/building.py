@@ -467,7 +467,17 @@ def GetLocalDepend(options, depend):
     return building
 
 def AddDepend(option):
-    BuildOptions[option] = 1
+    if isinstance(option, str):
+        BuildOptions[option] = 1
+    elif isinstance(option, list):
+        for obj in option:
+            if isinstance(obj, str):
+                BuildOptions[obj] = 1
+            else:
+                print('AddDepend arguements are illegal!')
+    else:
+        print('AddDepend arguements are illegal!')
+
 
 def MergeGroup(src_group, group):
     src_group['src'] = src_group['src'] + group['src']
@@ -871,7 +881,6 @@ def GenTargetProject(program = None):
     if GetOption('target') == 'esp-idf':
         from esp_idf import ESPIDFProject
         ESPIDFProject(Env, Projects)
-        exit(0)
 
 def EndBuilding(target, program = None):
 
@@ -895,6 +904,7 @@ def EndBuilding(target, program = None):
 
     if GetOption('target'):
         GenTargetProject(program)
+        need_exit = True
 
     BSP_ROOT = Dir('#').abspath
     if GetOption('make-dist') and program != None:
@@ -909,12 +919,13 @@ def EndBuilding(target, program = None):
         project_path = GetOption('project-path')
         project_name = GetOption('project-name')
 
-        if not isinstance(project_path, str) or len(project_path) == 0 :
-            project_path = os.path.join(BSP_ROOT, 'dist_ide_project')
-            print("\nwarning : --project-path not specified, use default path: {0}.".format(project_path))
         if not isinstance(project_name, str) or len(project_name) == 0:
             project_name = "dist_ide_project"
             print("\nwarning : --project-name not specified, use default project name: {0}.".format(project_name))
+
+        if not isinstance(project_path, str) or len(project_path) == 0 :
+            project_path = os.path.join(BSP_ROOT, 'rt-studio-project', project_name)
+            print("\nwarning : --project-path not specified, use default path: {0}.".format(project_path))
 
         rtt_ide = {'project_path' : project_path, 'project_name' : project_name}
         MkDist(program, BSP_ROOT, Rtt_Root, Env, rtt_ide)
