@@ -163,11 +163,12 @@ rt_inline int _can_int_tx(struct rt_can_device *can, const struct rt_can_msg *da
             rt_sem_release(&(tx_fifo->sem));
             goto err_ret;
         }
+
         can->status.sndchange = 1;
         rt_completion_wait(&(tx_tosnd->completion), RT_WAITING_FOREVER);
+
         level = rt_hw_interrupt_disable();
         result = tx_tosnd->result;
-
         if (!rt_list_isempty(&tx_tosnd->list))
         {
             rt_list_remove(&tx_tosnd->list);
