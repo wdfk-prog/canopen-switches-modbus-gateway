@@ -77,6 +77,7 @@ int main(void)
 {
   rt_thread_mdelay(1000);//延时后不会在初始化日志中间产生
   Version();
+  LOG_MV("--------------------------Start-----------------------");
   while(1)
   {
       set_angle += 0.1;
