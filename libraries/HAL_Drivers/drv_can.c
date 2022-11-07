@@ -333,7 +333,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
             /* get default filter */
             for (int i = 0; i < filter_cfg->count; i++)
             {
-                if (filter_cfg->items[i].hdr == -1)
+                if (filter_cfg->items[i].hdr_bank == -1)
                 {
                     /* use default filter bank settings */
                     if (rt_strcmp(drv_can->name, "can1") == 0)
@@ -350,7 +350,7 @@ static rt_err_t _can_control(struct rt_can_device *can, int cmd, void *arg)
                 else
                 {
                     /* use user-defined filter bank settings */
-                    drv_can->FilterConfig.FilterBank = filter_cfg->items[i].hdr;
+                    drv_can->FilterConfig.FilterBank = filter_cfg->items[i].hdr_bank;
                 }
                  /**
                  * ID     | CAN_FxR1[31:24] | CAN_FxR1[23:16] | CAN_FxR1[15:8] | CAN_FxR1[7:0]       |
