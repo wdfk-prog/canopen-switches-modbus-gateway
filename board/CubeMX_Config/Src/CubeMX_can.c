@@ -16,12 +16,14 @@
   *
   ******************************************************************************
   */
+#include "CubeMX_can.h"
+#ifdef CUBE_ERROR
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "Cube_can.h"
+#include "can.h"
 
 /* USER CODE BEGIN 0 */
-
+#endif
 /* USER CODE END 0 */
 
 CAN_HandleTypeDef hcan1;

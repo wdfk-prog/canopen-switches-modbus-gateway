@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "Cube_can.h"
+#include "CubeMX_can.h"
 #include "dma.h"
 #include "iwdg.h"
-#include "Cube_rtc.h"
+#include "CubeMX_rtc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"

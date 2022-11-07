@@ -16,12 +16,14 @@
   *
   ******************************************************************************
   */
+#include "CubeMX_rtc.h"
+#ifdef CUBE_ERROR
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "Cube_rtc.h"
+#include "rtc.h"
 
 /* USER CODE BEGIN 0 */
-
+#endif
 /* USER CODE END 0 */
 
 RTC_HandleTypeDef hrtc;
