@@ -277,7 +277,7 @@ int rt_cm_backtrace_init(void) {
         return 0;
     }
 
-    cm_backtrace_init("rtthread","1.0","1.0");
+    cm_backtrace_init("rt-thread","1.0","1.0");
     
     rt_hw_exception_install(exception_hook);
 
