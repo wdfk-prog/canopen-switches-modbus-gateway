@@ -456,6 +456,7 @@ static void config_single_node(void *parameter)
 */
 static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
 {
+  master_resume_start(d,nodeId);//是否需要恢复操作模式
 	rt_thread_t tid;
   LOG_I("Node %d has gone online",nodeId);
   //判断信号量是否初始化
