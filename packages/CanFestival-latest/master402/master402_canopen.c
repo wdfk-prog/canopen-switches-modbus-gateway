@@ -468,7 +468,7 @@ static void slaveBootupHdl(CO_Data* d, UNS8 nodeId)
   {
     LOG_I("After the MCU is powered on, node %d is powered on",nodeId);
   }
-	tid = rt_thread_create("co_cfg", config_single_node, (void *)(int)nodeId, 1024, 12 + nodeId, 2);
+	tid = rt_thread_create("co_cfg", config_single_node, (void *)(int)nodeId, 2048, 12 + nodeId, 2);
 	if(tid == RT_NULL)
 	{
 		LOG_E("canopen config thread start failed!");
