@@ -71,8 +71,6 @@ extern "C" {
 /* USER CODE BEGIN EM */
 #define VERSION "0.0.2"
 
-#define BEEP_ENABLE 0
-
 #define YEAR ((((__DATE__ [7] - '0') * 10 + (__DATE__ [8] - '0')) * 10 \
     + (__DATE__ [9] - '0')) * 10 + (__DATE__ [10] - '0'))
 #define MONTH (__DATE__ [2] == 'n' ? (__DATE__ [1] == 'a' ? 0 : 5)  \
