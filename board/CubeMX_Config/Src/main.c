@@ -15,6 +15,7 @@
   *
   ******************************************************************************
   */
+#ifdef CUBE_ERROR
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -30,6 +31,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#endif
+#include "main.h"
 #include <rtconfig.h>
 #include "ulog_file_be.h"
 /*ulog include*/
@@ -77,21 +80,21 @@ int main(void)
 {
   rt_thread_mdelay(1000);//延时后不会在初始化日志中间产生
   Version();
-  LOG_MV("--------------------------Start-----------------------");
-  while(1)
-  {
-      set_angle += 0.1;
-      get_angle -= 0.1;
-      set_speed += 1;
-      get_speed -=1;
-      vaule += 3.14;
+//  LOG_MV("--------------------------Start-----------------------");
+//  while(1)
+//  {
+//      set_angle += 0.1;
+//      get_angle -= 0.1;
+//      set_speed += 1;
+//      get_speed -=1;
+//      vaule += 3.14;
 
-      LOG_MV("%f %f %d %f %f", 
-          set_angle,get_angle,set_speed,
-          get_speed,vaule);
+//      LOG_MV("%f %f %d %f %f", 
+//          set_angle,get_angle,set_speed,
+//          get_speed,vaule);
 
-     rt_thread_mdelay(500);
-  } 
+//     rt_thread_mdelay(500);
+//  } 
 }
 /* USER CODE END 0 */
 
