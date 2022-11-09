@@ -52,7 +52,7 @@
 #define RT_CONSOLEBUF_SIZE 128
 #define RT_CONSOLE_DEVICE_NAME "uart3"
 /* end of Kernel Device Object */
-#define RT_VER_NUM 0x40101
+#define RT_VER_NUM 0x50000
 /* end of RT-Thread Kernel */
 #define ARCH_ARM
 #define RT_USING_CPU_FFS
@@ -150,7 +150,7 @@
 #define ULOG_USING_ASYNC_OUTPUT
 #define ULOG_ASYNC_OUTPUT_BUF_SIZE 2048
 #define ULOG_ASYNC_OUTPUT_BY_THREAD
-#define ULOG_ASYNC_OUTPUT_THREAD_STACK 2048
+#define ULOG_ASYNC_OUTPUT_THREAD_STACK 4096
 #define ULOG_ASYNC_OUTPUT_THREAD_PRIORITY 30
 
 /* log format */
