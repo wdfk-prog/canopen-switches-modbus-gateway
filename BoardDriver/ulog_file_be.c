@@ -156,17 +156,55 @@ rt_bool_t ulog_console_backend_filter(struct ulog_backend *backend, rt_uint32_t 
 */
 static void cmd_log_file_backend(uint8_t argc, char **argv)
 {
+#define FILE_CMD_LIST                  0
+#define FILE_CMD_DEINIT                1
+#define FILE_CMD_CONTROL               2
+
+    size_t i = 0;
+
+    const char* help_info[] =
+    {
+        [FILE_CMD_LIST]           = "ulog_be_cmd list             - Prints the back-end status of all files.",
+        [FILE_CMD_DEINIT]         = "ulog_be_cmd deinit   [name]  - Deinit ulog file backend [name].",
+        [FILE_CMD_CONTROL]        = "ulog_be_cmd control  [name]  - Control ulog file backend [name] [enable/disable].",
+    };
+
     const char *operator = argv[1];
     if (argc < 2)
     {
         rt_kprintf("Usage:\n");
-        rt_kprintf("ulog_be_cmd deinit    --deinit ulog file backend [name]\n");
-        rt_kprintf("ulog_be_cmd control   --control ulog file backend [name] [enable/disable]\n");
+        for (i = 0; i < sizeof(help_info) / sizeof(char*); i++)
+        {
+            rt_kprintf("%s\n", help_info[i]);
+        }
+        rt_kprintf("\n");
         return;
     }
     else
     {
-        if(!rt_strcmp(operator,"deinit")) 
+        if(!rt_strcmp(operator,"list")) 
+        {
+            const char *item_title = "file_be";
+            int maxlen = RT_NAME_MAX;    
+
+            rt_kprintf("%-*.*s init_state\n",maxlen,maxlen,item_title);
+            rt_kprintf("-------- ----------\n");
+            for(uint8_t i = 0; i < sizeof(table) / sizeof(table[0]); i++)
+            {
+                rt_kprintf("%-*.*s",maxlen,maxlen,table[i].name);
+                ulog_backend_t file_be = ulog_backend_find(table[i].name);
+                if(file_be != RT_NULL)
+                { 
+                    rt_kprintf("  init");
+                }
+                else
+                { 
+                    rt_kprintf("  deinit ");
+                }
+                rt_kprintf("\n");
+            }
+        }
+        else if(!rt_strcmp(operator,"deinit")) 
         {
           const char *operator = argv[2];
           if(!rt_strcmp(operator,"motion"))
