@@ -35,6 +35,7 @@
 typedef struct 
 {
   uint8_t nodeID;
+  char name[RT_NAME_MAX];
 	uint8_t state;
 	uint8_t try_cnt;
   uint8_t err_code;
@@ -63,8 +64,8 @@ CO_Data *OD_Data = &master402_Data;
 static s_BOARD agv_board  = {CANFESTIVAL_CAN_DEVICE_NAME,"1M"};//没用,兼容CANFESTIVAL
 static node_config_state node_conf[MAX_NODE_COUNT - 2] = 
 {
-  {SERVO_NODEID_1,},
-  {SERVO_NODEID_2,},
+  {SERVO_NODEID_1,"walk",},
+  {SERVO_NODEID_2,"turn",},
 };//配置状态
 /* Private function prototypes -----------------------------------------------*/
 static void config_node_param(uint8_t nodeId, node_config_state *conf);
@@ -155,7 +156,7 @@ void printf_state(e_nodeState state)
   }
 }
 /**
-  * @brief  MSH控制canopen主站nmt状态
+  * @brief  查询或控制nmt状态
   * @param  None
   * @retval None
   * @note   None
@@ -193,12 +194,19 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
         {
           const char *item_title = "NMT";
           int maxlen = RT_NAME_MAX;    
-          e_nodeState state;
-          rt_kprintf("%s  nodeID  status\n",item_title);
-          rt_kprintf("--- ------  -------\n");
-          rt_kprintf("0X%02X ",CONTROLLER_NODEID);
+
+          rt_kprintf("%-*.*s nodeID  status\n",maxlen,maxlen,item_title);
+          rt_kprintf("-------- ------  -------\n");
+          rt_kprintf("%-*.*s 0X%02X    ",maxlen,maxlen,"master",CONTROLLER_NODEID);
           printf_state(getState(OD_Data));
           rt_kprintf("\n");
+
+          for(UNS8 i = 0; i < MAX_NODE_COUNT - 2; i++)
+          {
+              rt_kprintf("%-*.*s 0X%02X    ",maxlen,maxlen,node_conf[i].name,node_conf[i].nodeID);
+              printf_state(getNodeState(OD_Data,i+ 2));
+              rt_kprintf("\n");
+          }
         }
         else if (!strcmp(operator, "get"))//查询节点NMT
         {
