@@ -7,15 +7,30 @@
  * Date           Author       Notes
  * 2018-11-5      SummerGift   first version
  */
-
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : 
+  * @brief          : 
+  * @date           :
+  ******************************************************************************
+  * @attention
+  * @author
+  ******************************************************************************
+  */
+/* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __BOARD_H__
 #define __BOARD_H__
-
+/* Includes ------------------------------------------------------------------*/
 #include <rtthread.h>
 #include <stm32f4xx.h>
 #include "drv_common.h"
 #include "drv_gpio.h"
+/* Exported types ------------------------------------------------------------*/
 
+/* Exported constants --------------------------------------------------------*/
+#define PVD_ENABLE 0
+/* Exported macro ------------------------------------------------------------*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,12 +54,23 @@ extern int __bss_end;
 #endif
 
 #define HEAP_END        STM32_SRAM_END
+/* Exported variables ---------------------------------------------------------*/
 
+/* Exported functions prototypes ---------------------------------------------*/
 void SystemClock_Config(void);
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+
+
+
+
+
+
+
+
+
+
 

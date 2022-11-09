@@ -106,3 +106,75 @@ static int Set_RTC_Time(void)
   return ret;
 }
 INIT_COMPONENT_EXPORT(Set_RTC_Time);
+/*********************************掉电检测******************************************/
+#ifdef PVD_ENABLE
+/* 完成量控制块 */
+static struct rt_completion pvd_completion;
+/**
+  * @brief  None.
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+static void pvd_thread_entry(void* parameter)
+{
+  while(1)
+  {
+      rt_completion_wait(&pvd_completion, RT_WAITING_FOREVER);
+      /* 掉电前的紧急处理 */
+      ulog_flush();
+      rt_kprintf("Flush ULOG buffer complete\n");
+  }
+}
+static int PVD_Init(void)
+{
+    /*##-1- Enable Power Clock #################################################*/
+    __HAL_RCC_PWR_CLK_ENABLE();           /* 使能PVD */
+ 
+    /*##-2- Configure the NVIC for PVD #########################################*/
+    HAL_NVIC_SetPriority(PVD_IRQn, 0, 0); /* 配置PVD中断优先级 */
+    HAL_NVIC_EnableIRQ(PVD_IRQn);         /* 使能PVD中断 */
+ 
+    /* Configure the PVD Level to 3 and generate an interrupt on rising and falling
+       edges(PVD detection level set to 2.5V, refer to the electrical characteristics
+       of you device datasheet for more details) */
+    PWR_PVDTypeDef sConfigPVD;
+    sConfigPVD.PVDLevel = PWR_PVDLEVEL_6;     /* PVD阈值3.1V */
+    sConfigPVD.Mode = PWR_PVD_MODE_IT_RISING; /* 检测掉电 */
+    HAL_PWR_ConfigPVD(&sConfigPVD);
+ 
+    /* Enable the PVD Output */
+    HAL_PWR_EnablePVD();
+
+    /* 初始化完成量对象 */
+    rt_completion_init(&pvd_completion);
+    rt_thread_t tid;
+    tid = rt_thread_create("PVD", pvd_thread_entry, RT_NULL,
+                          2048, 0, 20);
+    if(tid == RT_NULL)
+    {
+      LOG_E("PVD thread start failed!");
+    }
+    else
+    {
+      rt_thread_startup(tid);
+    }
+    return RT_EOK;
+}
+INIT_APP_EXPORT(PVD_Init);
+/**
+  * @brief  PWR PVD interrupt callback
+  * @retval None
+  */
+void HAL_PWR_PVDCallback(void)
+{
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the HAL_PWR_PVDCallback could be implemented in the user file
+   */
+   if(__HAL_PWR_GET_FLAG( PWR_FLAG_PVDO ))    /* 1为VDD小于PVD阈值,掉电情况 */
+  {
+      rt_completion_done(&pvd_completion);
+      ulog_i("PVD","Voltage below 3.1V was detected");
+  }
+}
+#endif
