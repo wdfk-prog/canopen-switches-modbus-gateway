@@ -7,7 +7,6 @@
  * Date           Author       Notes
  * 2018-11-5      SummerGift   first version
  */
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : 
@@ -21,6 +20,10 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __BOARD_H__
 #define __BOARD_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* Includes ------------------------------------------------------------------*/
 #include <rtthread.h>
 #include <stm32f4xx.h>
@@ -31,10 +34,6 @@
 /* Exported constants --------------------------------------------------------*/
 #define PVD_ENABLE 0
 /* Exported macro ------------------------------------------------------------*/
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #define STM32_SRAM_SIZE           (192)
 #define STM32_SRAM_END            (0x20000000 + STM32_SRAM_SIZE * 1024)
 
@@ -58,14 +57,12 @@ extern int __bss_end;
 
 /* Exported functions prototypes ---------------------------------------------*/
 void SystemClock_Config(void);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
-
-
-
+#endif /* __BOARD_H__ */
 
 
 

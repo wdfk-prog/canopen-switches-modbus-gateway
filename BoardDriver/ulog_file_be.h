@@ -12,6 +12,10 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __ULOG_FILE_BE_H
 #define __ULOG_FILE_BE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* Includes ------------------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
@@ -27,4 +31,9 @@
 /* Exported functions prototypes ---------------------------------------------*/
 extern void sys_log_file_backend_init(void);
 extern void motion_log_file_backend_init(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* __ULOG_FILE_BE_H */

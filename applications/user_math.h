@@ -13,6 +13,10 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USER__MATH_H
 #define __USER__MATH_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
 /* Private includes ----------------------------------------------------------*/
@@ -143,4 +147,9 @@ extern float Angle_Conversion(float absolute_angle);
 extern uint16_t Binary_Search(uint32_t input,uint32_t *Array,uint16_t size);
 //https://blog.csdn.net/qq_40757240/article/details/85727578
 extern int Bit_Int_2(long n);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* __USER__MATH_H */
