@@ -110,7 +110,7 @@ static int canopen_init(void)
 	
 	return 0;
 }
-INIT_APP_EXPORT(canopen_init);
+//INIT_APP_EXPORT(canopen_init);
 /**
   * @brief  None
   * @param  None

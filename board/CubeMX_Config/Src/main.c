@@ -34,7 +34,6 @@
 #endif
 #include "main.h"
 #include <rtconfig.h>
-#include "ulog_file_be.h"
 /*ulog include*/
 #define LOG_TAG              "main" 
 #define LOG_LVL              DBG_INFO
