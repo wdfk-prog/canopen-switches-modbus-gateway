@@ -132,25 +132,25 @@ void printf_state(e_nodeState state)
   switch(state)
   {
     case Initialisation:
-      rt_kprintf("nodeID state is Initialisation\n");
+      rt_kprintf("Initialisation");
       break;
     case Stopped:
-      rt_kprintf("nodeID state is Stopped\n");
+      rt_kprintf("Stopped");
       break;
     case Operational:
-      rt_kprintf("nodeID state is Operational\n");
+      rt_kprintf("Operational");
       break;
     case Pre_operational:
-      rt_kprintf("nodeID state is Pre_operational\n");
+      rt_kprintf("Pre_operational");
       break;
     case Disconnected:
-      rt_kprintf("nodeID state is Disconnected\n");
+      rt_kprintf("Disconnected");
       break;   
     case Unknown_state:
-      rt_kprintf("nodeID state is Unknown_state\n");
+      rt_kprintf("Unknown_state");
       break;
     default:
-      rt_kprintf("nodeID state is %d\n",state);
+      rt_kprintf("%d",state);
       break;
   }
 }
@@ -162,13 +162,15 @@ void printf_state(e_nodeState state)
 */
 static void cmd_canopen_nmt(uint8_t argc, char **argv) 
 {
-#define NMT_CMD_GET                     0
-#define NMT_CMD_SLAVE_SET               1
-#define NMT_CMD_PRE                     3
+#define NMT_CMD_LIST                    0
+#define NMT_CMD_GET                     1
+#define NMT_CMD_SLAVE_SET               2
+#define NMT_CMD_PRE                     NMT_CMD_SLAVE_SET+2
   size_t i = 0;
 
   const char* help_info[] =
     {
+        [NMT_CMD_LIST]           = "canopen_nmt list                        - Print all node NMT.",
         [NMT_CMD_GET]            = "canopen_nmt get [nodeID]                - Get nodeID state.",
         [NMT_CMD_SLAVE_SET]      = "canopen_nmt s   [operational] <nodeID>  - Slvae  NMT set start/stop/pre/rn/rc.",
         [NMT_CMD_SLAVE_SET+1]    = "                                        - rn:Reset_Node rc:Reset_Comunication.",
@@ -187,8 +189,18 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
     else
     {
         const char *operator = argv[1];
-        uint32_t addr, size;
-        if (!strcmp(operator, "get"))
+        if (!strcmp(operator, "list"))//打印所有节点NMT状态
+        {
+          const char *item_title = "NMT";
+          int maxlen = RT_NAME_MAX;    
+          e_nodeState state;
+          rt_kprintf("%s  nodeID  status\n",item_title);
+          rt_kprintf("--- ------  -------\n");
+          rt_kprintf("0X%02X ",CONTROLLER_NODEID);
+          printf_state(getState(OD_Data));
+          rt_kprintf("\n");
+        }
+        else if (!strcmp(operator, "get"))//查询节点NMT
         {
           if(argc <= 2) 
           {
@@ -199,15 +211,19 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
           if(nodeid == CONTROLLER_NODEID)
           {
             rt_kprintf("Master NodeID:%2X  ",CONTROLLER_NODEID);
-            printf_state(getState(OD_Data));            
+            rt_kprintf("nodeID state is ");
+            printf_state(getState(OD_Data));     
+            rt_kprintf("\r\n");       
           }
           else
           {
             rt_kprintf("Slave  NodeID:%2X  ",nodeid);
+            rt_kprintf("nodeID state is ");
             printf_state(getNodeState(OD_Data,nodeid));
+            rt_kprintf("\n");
           }
         }
-        else if (!strcmp(operator, "s"))
+        else if (!strcmp(operator, "s"))//从机设置NMT
         {
           uint8_t nodeID = 2;
           UNS8    cs = 0X00; 
@@ -252,7 +268,7 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
           }
           masterSendNMTstateChange(OD_Data,nodeID,cs);
         }
-        else if (!strcmp(operator, "m"))
+        else if (!strcmp(operator, "m"))//主机设置NMT
         {
           const char *operator = argv[2];
           if(argc <= 2) 
