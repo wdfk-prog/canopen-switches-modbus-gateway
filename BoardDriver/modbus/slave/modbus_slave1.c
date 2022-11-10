@@ -202,7 +202,7 @@ static void modbus_thread(void* p)
       int read_len = serial_receive(ctx->read_buf, ctx->read_bufsz, 1000, 20);
       if (read_len == 0)
       {
-          LOG_W("Receive timeout.");
+          LOG_D("Receive timeout.");
           continue;
       }
 
