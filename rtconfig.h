@@ -187,6 +187,9 @@
 /* IoT Cloud */
 
 /* end of IoT Cloud */
+#define PKG_USING_AGILE_MODBUS
+#define PKG_USING_AGILE_MODBUS_LATEST_VERSION
+#define PKG_AGILE_MODBUS_VER_NUM 0x99999
 /* end of IoT - internet of things */
 
 /* security packages */

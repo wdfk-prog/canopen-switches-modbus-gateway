@@ -1,5 +1,10 @@
 [
  {
+  "path": "/packages/iot/agile_modbus", 
+  "ver": "latest", 
+  "name": "AGILE_MODBUS"
+ }, 
+ {
   "path": "/packages/tools/CmBacktrace", 
   "ver": "latest", 
   "name": "CMBACKTRACE"
@@ -35,18 +40,8 @@
   "name": "SYSWATCH"
  }, 
  {
-  "path": "/packages/peripherals/SignalLed", 
-  "ver": "latest", 
-  "name": "SIGNAL_LED"
- }, 
- {
   "path": "/packages/misc/CanFestival", 
   "ver": "latest", 
   "name": "CANFESTIVAL"
- }, 
- {
-  "path": "/packages/misc/MFBD", 
-  "ver": "latest", 
-  "name": "MFBD"
  }
 ]
