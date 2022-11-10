@@ -22,6 +22,8 @@
 struct _log_file
 {
     const char *name; 
+    ulog_backend_t backend;
+    struct ulog_file_be *file_be;
     const char *dir_path; 
     rt_size_t max_num;
     rt_size_t max_size;
@@ -32,6 +34,7 @@ struct _log_file
 */
 typedef enum 
 {
+    console_id,
     sys_id,
     motion_id,
 }ulog_file_be_name;
@@ -46,11 +49,13 @@ static struct ulog_backend sys_log_backend;
 static struct ulog_file_be sys_log_file;
 static struct ulog_backend motion_log_backend;
 static struct ulog_file_be motion_log_file;
+static struct ulog_file_be console_log_file;
 
 static struct _log_file table[] =
 {
-    {"sys"      ,ROOT_PATH,10,FILE_SIZE,BUFF_SIZE},
-    {"motion"   ,ROOT_PATH,5,FILE_SIZE,BUFF_SIZE},
+    {"console"  ,RT_NULL,&console_log_file,                                    },
+    {"sys"      ,&sys_log_backend,&sys_log_file,ROOT_PATH,10,FILE_SIZE,BUFF_SIZE},
+    {"motion"   ,&motion_log_backend,&motion_log_file,ROOT_PATH,5,FILE_SIZE,BUFF_SIZE,},
 };
 /* Private function prototypes -----------------------------------------------*/
 /************************系统日志文件后端操作函数*****************************************/
@@ -149,6 +154,54 @@ rt_bool_t ulog_console_backend_filter(struct ulog_backend *backend, rt_uint32_t 
       return RT_TRUE;
 }
 /**
+  * @brief  控制台后端滤波器设置.
+  * @param  None.
+  * @retval The filter will be call before output. It will return TRUE when the filter condition is math.
+  * @note   None.
+*/
+int ulog_console_backend_filter_init(void)
+{
+    ulog_backend_t console = ulog_backend_find("console");
+    ulog_backend_set_filter(console,ulog_console_backend_filter);
+    return 0;
+}
+INIT_DEVICE_EXPORT(ulog_console_backend_filter_init);
+/**
+  * @brief  控制台后端滤波设置
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+static void ulog_console_backend_filter_set(uint8_t argc, char **argv)
+{
+    if (argc < 2)
+    {
+        rt_kprintf("Usage:\n");
+        rt_kprintf("console filter [option] optino:enable or disable\n");
+        return;
+    }
+    else
+    {
+        const char *operator = argv[1];
+        ulog_backend_t console = ulog_backend_find("console");
+
+        if (!rt_strcmp(operator, "enable"))
+        {
+            ulog_backend_set_filter(console,ulog_console_backend_filter);
+        }
+        else if (!rt_strcmp(operator, "disable"))
+        {
+            ulog_backend_set_filter(console,RT_NULL);
+        }
+        else
+        {
+            rt_kprintf("Usage:\n");
+            rt_kprintf("console filter [option] optino:enable or disable\n");
+        }
+    }
+}
+MSH_CMD_EXPORT_ALIAS(ulog_console_backend_filter_set,console_filter,console filter [option] optino:enable or disable);
+/**
   * @brief  日志文件后端卸载
   * @param  None.
   * @retval None.
@@ -206,23 +259,36 @@ static void cmd_log_file_backend(uint8_t argc, char **argv)
         }
         else if(!rt_strcmp(operator,"deinit")) 
         {
-          const char *operator = argv[2];
-          if(!rt_strcmp(operator,"motion"))
+          if (argc < 3)
           {
-            ulog_file_backend_deinit(&motion_log_file);
-            ulog_file_backend_disable(&motion_log_file);
-            rt_kprintf("The file backend %s is deinit\n",operator);
+              rt_kprintf("Usage:\n");
+              rt_kprintf("Deinit ulog file backend [name]\n");
+              return;
           }
-          else if(!rt_strcmp(operator,"sys"))
+          const char *operator = argv[2];
+          const char *name = RT_NULL;
+          uint8_t i;
+          for(i = 0; i < sizeof(table) / sizeof(table[0]); i++)
           {
-            ulog_file_backend_deinit(&sys_log_file);
-            ulog_file_backend_disable(&sys_log_file);
+              if(!rt_strcmp(operator,table[i].name))
+              {
+                  name = table[i].name;
+                  break;
+              }
+              else
+              {
+                  continue;
+              }
+          }
+          if(name != RT_NULL)
+          {
+            ulog_file_backend_deinit(table[i].file_be);
+            ulog_file_backend_disable(table[i].file_be);
             rt_kprintf("The file backend %s is deinit\n",operator);
           }
           else
           {
-            rt_kprintf("Usage:\n");
-            rt_kprintf("Deinit ulog file backend [name]\n");
+            rt_kprintf("File backend %s not found\n",operator);
             return;
           }
         }
@@ -230,41 +296,37 @@ static void cmd_log_file_backend(uint8_t argc, char **argv)
         {
             const char *operator = argv[2];
             const char *flag = argv[3];
+            const char *name = RT_NULL;
+            uint8_t i;
             if (argc < 4)
             {
                 rt_kprintf("Usage:\n");
                 rt_kprintf("control ulog file backend [name] [enable/disable]\n");
                 return;
             }
-            else if(!rt_strcmp(operator,table[sys_id].name))
+
+            for(i = 0; i < sizeof(table) / sizeof(table[0]); i++)
             {
-              if(!rt_strcmp(flag,"disable"))
-              {
-                ulog_file_backend_disable(&sys_log_file);
-                rt_kprintf("The file backend %s is disabled\n",operator);
-              }
-              else if(!rt_strcmp(flag,"enable"))
-              {
-                ulog_file_backend_enable(&sys_log_file);
-                rt_kprintf("The file backend %s is enable\n",operator);
-              }
-              else
-              {
-                rt_kprintf("Usage:\n");
-                rt_kprintf("control ulog file backend [name] [enable/disable]\n");
-                return;
-              }
+                if(!rt_strcmp(operator,table[i].name))
+                {
+                    name = table[i].name;
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
             }
-            else if(!rt_strcmp(operator,table[motion_id].name))
+            if(name != RT_NULL)
             {
               if(!rt_strcmp(flag,"disable"))
               {
-                ulog_file_backend_disable(&motion_log_file);
+                ulog_file_backend_disable(table[i].file_be);
                 rt_kprintf("The file backend %s is disabled\n",operator);
               }
               else if(!rt_strcmp(flag,"enable"))
               {
-                ulog_file_backend_enable(&motion_log_file);
+                ulog_file_backend_enable(table[i].file_be);
                 rt_kprintf("The file backend %s is enable\n",operator);
               }
               else
@@ -276,8 +338,19 @@ static void cmd_log_file_backend(uint8_t argc, char **argv)
             }
             else
             {
-              rt_kprintf("Failed to find the file backend:%s\n",operator);
+                rt_kprintf("File backend %s not found\n",operator);
+                return;
             }
+        }
+        else
+        {
+            rt_kprintf("Usage:\n");
+            for (i = 0; i < sizeof(help_info) / sizeof(char*); i++)
+            {
+                rt_kprintf("%s\n", help_info[i]);
+            }
+            rt_kprintf("\n");
+            return;
         }
     }
 }
