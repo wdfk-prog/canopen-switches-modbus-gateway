@@ -34,8 +34,6 @@ struct rx_msg
 #define SLAVE_ADDRESS 0X01
 /*串口中断优先级设置*/
 #define IRQ_PRIORITY  3
-
-#define RegisterCount   10
 /* Private macro -------------------------------------------------------------*/
 /* 线程配置 */
 #define THREAD_PRIORITY      3//线程优先级
@@ -103,10 +101,10 @@ static int serial_send(uint8_t *buf, int len)
 */
 static int serial_init(void)
 {
-    _rx_sem = rt_sem_create("rs485_slave", 0, RT_IPC_FLAG_FIFO);
+    _rx_sem = rt_sem_create("mb_s1", 0, RT_IPC_FLAG_FIFO);
     if(_rx_sem == RT_NULL)
     {
-        LOG_E("create rs485_slave_sem failed.");
+        LOG_E("create mb_s1 sem failed.");
         return -RT_ERROR;
     }
     /*step1：查找串口设备 */
@@ -151,7 +149,7 @@ static int serial_init(void)
   * @retval None.
   * @note   None.
 */
-int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeout)
+static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeout)
 {
     int len = 0;
 

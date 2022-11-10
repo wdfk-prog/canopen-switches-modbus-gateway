@@ -1,5 +1,3 @@
-#include <stdint.h>
-#include <string.h>
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
