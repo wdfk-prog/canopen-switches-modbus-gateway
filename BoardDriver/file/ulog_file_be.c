@@ -148,10 +148,17 @@ void motion_log_file_backend_init(void)
 rt_bool_t ulog_console_backend_filter(struct ulog_backend *backend, rt_uint32_t level, const char *tag, rt_bool_t is_raw, 
                                       const char *log, rt_size_t len)
 {
-    if (rt_strncmp(tag,MOTION_TAG, sizeof(MOTION_TAG)) == 0)//排除带有"MOVE"标签输出
-      return RT_FALSE;
+    if(console_log_file.enable == RT_TRUE)
+    {
+      if (rt_strncmp(tag,MOTION_TAG, sizeof(MOTION_TAG)) == 0)//排除带有"MOVE"标签输出
+        return RT_FALSE;
+      else
+        return RT_TRUE;
+    }
     else
+    {
       return RT_TRUE;
+    }
 }
 /**
   * @brief  控制台后端滤波器设置.
@@ -162,45 +169,11 @@ rt_bool_t ulog_console_backend_filter(struct ulog_backend *backend, rt_uint32_t 
 int ulog_console_backend_filter_init(void)
 {
     ulog_backend_t console = ulog_backend_find("console");
+    console_log_file.enable = RT_TRUE;
     ulog_backend_set_filter(console,ulog_console_backend_filter);
     return 0;
 }
 INIT_DEVICE_EXPORT(ulog_console_backend_filter_init);
-/**
-  * @brief  控制台后端滤波设置
-  * @param  None.
-  * @retval None.
-  * @note   None.
-*/
-static void ulog_console_backend_filter_set(uint8_t argc, char **argv)
-{
-    if (argc < 2)
-    {
-        rt_kprintf("Usage:\n");
-        rt_kprintf("console filter [option] optino:enable or disable\n");
-        return;
-    }
-    else
-    {
-        const char *operator = argv[1];
-        ulog_backend_t console = ulog_backend_find("console");
-
-        if (!rt_strcmp(operator, "enable"))
-        {
-            ulog_backend_set_filter(console,ulog_console_backend_filter);
-        }
-        else if (!rt_strcmp(operator, "disable"))
-        {
-            ulog_backend_set_filter(console,RT_NULL);
-        }
-        else
-        {
-            rt_kprintf("Usage:\n");
-            rt_kprintf("console filter [option] optino:enable or disable\n");
-        }
-    }
-}
-MSH_CMD_EXPORT_ALIAS(ulog_console_backend_filter_set,console_filter,console filter [option] optino:enable or disable);
 /**
   * @brief  日志文件后端卸载
   * @param  None.
