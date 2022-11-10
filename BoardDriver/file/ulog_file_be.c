@@ -21,19 +21,19 @@
 */
 struct _log_file
 {
-  const char *name; 
-  const char *dir_path; 
-  rt_size_t max_num;
-  rt_size_t max_size;
-  rt_size_t buf_size;
+    const char *name; 
+    const char *dir_path; 
+    rt_size_t max_num;
+    rt_size_t max_size;
+    rt_size_t buf_size;
 };
 /*
 * 文件后端标识
 */
 typedef enum 
 {
-  sys_id,
-  motion_id,
+    sys_id,
+    motion_id,
 }ulog_file_be_name;
 /* Private define ------------------------------------------------------------*/
 #define ROOT_PATH "/flash/log"
@@ -49,8 +49,8 @@ static struct ulog_file_be motion_log_file;
 
 static struct _log_file table[] =
 {
-  {"sys"      ,ROOT_PATH,10,FILE_SIZE,BUFF_SIZE},
-  {"motion"   ,ROOT_PATH,5,FILE_SIZE,BUFF_SIZE},
+    {"sys"      ,ROOT_PATH,10,FILE_SIZE,BUFF_SIZE},
+    {"motion"   ,ROOT_PATH,5,FILE_SIZE,BUFF_SIZE},
 };
 /* Private function prototypes -----------------------------------------------*/
 /************************系统日志文件后端操作函数*****************************************/

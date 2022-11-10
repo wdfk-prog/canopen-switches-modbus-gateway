@@ -340,7 +340,7 @@
               <MiscControls>-Wno-pointer-bool-conversion -Wno-tautological-pointer-compare -Wno-invalid-source-encoding -Wno-logical-not-parentheses</MiscControls>
               <Define>__STDC_LIMIT_MACROS, RT_USING_ARMLIBC, USE_HAL_DRIVER, RT_USING_LIBC, __CLK_TCK=RT_TICK_PER_SECOND, __RTTHREAD__, LFS_CONFIG=lfs_config.h, STM32F429xx</Define>
               <Undefine></Undefine>
-              <IncludePath>rt-thread\components\drivers\include;libraries\HAL_Drivers;libraries\HAL_Drivers\config;rt-thread\components\utilities\ulog\backend;rt-thread\components\libc\posix\ipc;rt-thread\include;libraries\HAL_Drivers\drv_flash;rt-thread\components\drivers\include;rt-thread\components\utilities\ulog;rt-thread\components\drivers\spi;.;packages\CmBacktrace-latest;rt-thread\libcpu\arm\common;board;applications;rt-thread\components\libc\compilers\common\include;rt-thread\components\dfs\filesystems\romfs;board\ports;rt-thread\components\libc\posix\io\stdio;rt-thread\components\drivers\include;packages\CanFestival-latest\master402;rt-thread\components\dfs\include;rt-thread\components\libc\compilers\common\extension\fcntl\octal;rt-thread\components\libc\posix\io\poll;packages\littlefs-latest;rt-thread\components\drivers\spi\sfud\inc;packages\CanFestival-latest\inc;libraries\STM32F4xx_HAL\CMSIS\Device\ST\STM32F4xx\Include;rt-thread\components\drivers\include;rt-thread\components\finsh;rt-thread\components\drivers\include;BoardDriver;rt-thread\components\drivers\include;rt-thread\components\dfs\filesystems\devfs;rt-thread\components\drivers\include;packages\FlashDB-latest\inc;rt-thread\components\libc\compilers\common\extension;rt-thread\components\fal\inc;libraries\STM32F4xx_HAL\STM32F4xx_HAL_Driver\Inc;rt-thread\components\utilities\ymodem;libraries\HAL_Drivers\CMSIS\Include;rt-thread\components\drivers\include;packages\syswatch-latest\inc;rt-thread\libcpu\arm\cortex-m4;board\CubeMX_Config\Inc</IncludePath>
+              <IncludePath>rt-thread\components\dfs\filesystems\devfs;rt-thread\components\drivers\include;rt-thread\components\dfs\include;libraries\HAL_Drivers;BoardDriver\debug;rt-thread\components\drivers\include;rt-thread\components\drivers\include;rt-thread\components\libc\posix\io\stdio;packages\FlashDB-latest\inc;board\CubeMX_Config\Inc;rt-thread\components\drivers\include;packages\CmBacktrace-latest;packages\agile_modbus-latest\util;rt-thread\components\libc\compilers\common\extension;packages\littlefs-latest;board;rt-thread\libcpu\arm\common;board\ports;packages\syswatch-latest\inc;rt-thread\components\fal\inc;rt-thread\components\libc\posix\io\poll;rt-thread\include;rt-thread\components\utilities\ulog\backend;rt-thread\components\finsh;rt-thread\libcpu\arm\cortex-m4;packages\agile_modbus-latest\inc;rt-thread\components\drivers\include;libraries\HAL_Drivers\CMSIS\Include;BoardDriver\modbus\slave;libraries\STM32F4xx_HAL\CMSIS\Device\ST\STM32F4xx\Include;rt-thread\components\drivers\spi;rt-thread\components\libc\posix\ipc;BoardDriver\file;rt-thread\components\drivers\include;rt-thread\components\drivers\include;libraries\HAL_Drivers\config;rt-thread\components\utilities\ulog;rt-thread\components\dfs\filesystems\romfs;rt-thread\components\drivers\include;libraries\STM32F4xx_HAL\STM32F4xx_HAL_Driver\Inc;packages\CanFestival-latest\inc;applications;.;rt-thread\components\libc\compilers\common\extension\fcntl\octal;rt-thread\components\utilities\ymodem;libraries\HAL_Drivers\drv_flash;packages\CanFestival-latest\master402;rt-thread\components\libc\compilers\common\include;rt-thread\components\drivers\spi\sfud\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -382,32 +382,72 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>APP/Drivers</GroupName>
+          <GroupName>agile_modbus</GroupName>
           <Files>
             <File>
-              <FileName>tim.c</FileName>
+              <FileName>agile_modbus_rtu.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\tim.c</FilePath>
+              <FilePath>packages\agile_modbus-latest\src\agile_modbus_rtu.c</FilePath>
             </File>
+            <File>
+              <FileName>agile_modbus_tcp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\agile_modbus-latest\src\agile_modbus_tcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>agile_modbus.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\agile_modbus-latest\src\agile_modbus.c</FilePath>
+            </File>
+            <File>
+              <FileName>agile_modbus_slave_util.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\agile_modbus-latest\util\agile_modbus_slave_util.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>agile_modbus\slave</GroupName>
+          <Files>
+            <File>
+              <FileName>bits.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\modbus\slave\bits.c</FilePath>
+            </File>
+            <File>
+              <FileName>modbus_slave2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\modbus\slave\modbus_slave2.c</FilePath>
+            </File>
+            <File>
+              <FileName>input_bits.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\modbus\slave\input_bits.c</FilePath>
+            </File>
+            <File>
+              <FileName>input_registers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\modbus\slave\input_registers.c</FilePath>
+            </File>
+            <File>
+              <FileName>registers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\modbus\slave\registers.c</FilePath>
+            </File>
+            <File>
+              <FileName>modbus_slave1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\modbus\slave\modbus_slave1.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>APP/Drivers</GroupName>
+          <Files>
             <File>
               <FileName>board.c</FileName>
               <FileType>1</FileType>
               <FilePath>board\board.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi_flash_init.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\ports\spi_flash_init.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_msp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\stm32f4xx_hal_msp.c</FilePath>
-            </File>
-            <File>
-              <FileName>fmc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\fmc.c</FilePath>
             </File>
             <File>
               <FileName>system_stm32f4xx.c</FileName>
@@ -415,9 +455,9 @@
               <FilePath>board\CubeMX_Config\Src\system_stm32f4xx.c</FilePath>
             </File>
             <File>
-              <FileName>usart.c</FileName>
+              <FileName>main.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\usart.c</FilePath>
+              <FilePath>board\CubeMX_Config\Src\main.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_it.c</FileName>
@@ -425,9 +465,9 @@
               <FilePath>board\CubeMX_Config\Src\stm32f4xx_it.c</FilePath>
             </File>
             <File>
-              <FileName>gpio.c</FileName>
+              <FileName>spi.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\gpio.c</FilePath>
+              <FilePath>board\CubeMX_Config\Src\spi.c</FilePath>
             </File>
             <File>
               <FileName>iwdg.c</FileName>
@@ -435,14 +475,24 @@
               <FilePath>board\CubeMX_Config\Src\iwdg.c</FilePath>
             </File>
             <File>
+              <FileName>fmc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>board\CubeMX_Config\Src\fmc.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi_flash_init.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>board\ports\spi_flash_init.c</FilePath>
+            </File>
+            <File>
               <FileName>CubeMX_rtc.c</FileName>
               <FileType>1</FileType>
               <FilePath>board\CubeMX_Config\Src\CubeMX_rtc.c</FilePath>
             </File>
             <File>
-              <FileName>spi.c</FileName>
+              <FileName>gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\spi.c</FilePath>
+              <FilePath>board\CubeMX_Config\Src\gpio.c</FilePath>
             </File>
             <File>
               <FileName>CubeMX_can.c</FileName>
@@ -450,9 +500,19 @@
               <FilePath>board\CubeMX_Config\Src\CubeMX_can.c</FilePath>
             </File>
             <File>
-              <FileName>main.c</FileName>
+              <FileName>tim.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\main.c</FilePath>
+              <FilePath>board\CubeMX_Config\Src\tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>usart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>board\CubeMX_Config\Src\usart.c</FilePath>
+            </File>
+            <File>
+              <FileName>dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>board\CubeMX_Config\Src\dma.c</FilePath>
             </File>
             <File>
               <FileName>startup_stm32f429xx.s</FileName>
@@ -460,9 +520,9 @@
               <FilePath>board\CubeMX_Config\MDK-ARM\startup_stm32f429xx.s</FilePath>
             </File>
             <File>
-              <FileName>dma.c</FileName>
+              <FileName>stm32f4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
-              <FilePath>board\CubeMX_Config\Src\dma.c</FilePath>
+              <FilePath>board\CubeMX_Config\Src\stm32f4xx_hal_msp.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -480,19 +540,19 @@
           <GroupName>BoardDriver</GroupName>
           <Files>
             <File>
-              <FileName>ulog_file_be.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>BoardDriver\ulog_file_be.c</FilePath>
-            </File>
-            <File>
               <FileName>user_can.c</FileName>
               <FileType>1</FileType>
-              <FilePath>BoardDriver\user_can.c</FilePath>
+              <FilePath>BoardDriver\debug\user_can.c</FilePath>
             </File>
             <File>
               <FileName>filesystem.c</FileName>
               <FileType>1</FileType>
-              <FilePath>BoardDriver\filesystem.c</FilePath>
+              <FilePath>BoardDriver\file\filesystem.c</FilePath>
+            </File>
+            <File>
+              <FileName>ulog_file_be.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>BoardDriver\file\ulog_file_be.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -565,6 +625,11 @@
           <GroupName>cm_backtrace</GroupName>
           <Files>
             <File>
+              <FileName>cm_backtrace.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CmBacktrace-latest\cm_backtrace.c</FilePath>
+            </File>
+            <File>
               <FileName>cmb_flash_log.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\CmBacktrace-latest\cmb_flash_log.c</FilePath>
@@ -573,11 +638,6 @@
               <FileName>cmb_port.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\CmBacktrace-latest\cmb_port.c</FilePath>
-            </File>
-            <File>
-              <FileName>cm_backtrace.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\CmBacktrace-latest\cm_backtrace.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1723,19 +1783,19 @@
           <GroupName>Fal</GroupName>
           <Files>
             <File>
-              <FileName>fal_rtt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_rtt.c</FilePath>
-            </File>
-            <File>
               <FileName>fal_flash_sfud_port.c</FileName>
               <FileType>1</FileType>
               <FilePath>rt-thread\components\fal\samples\porting\fal_flash_sfud_port.c</FilePath>
             </File>
             <File>
-              <FileName>fal_partition.c</FileName>
+              <FileName>fal_rtt.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_partition.c</FilePath>
+              <FilePath>rt-thread\components\fal\src\fal_rtt.c</FilePath>
+            </File>
+            <File>
+              <FileName>fal_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
             </File>
             <File>
               <FileName>fal.c</FileName>
@@ -1743,9 +1803,9 @@
               <FilePath>rt-thread\components\fal\src\fal.c</FilePath>
             </File>
             <File>
-              <FileName>fal_flash.c</FileName>
+              <FileName>fal_partition.c</FileName>
               <FileType>1</FileType>
-              <FilePath>rt-thread\components\fal\src\fal_flash.c</FilePath>
+              <FilePath>rt-thread\components\fal\src\fal_partition.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1823,14 +1883,14 @@
           <GroupName>FlashDB</GroupName>
           <Files>
             <File>
-              <FileName>fdb_kvdb.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\FlashDB-latest\src\fdb_kvdb.c</FilePath>
-            </File>
-            <File>
               <FileName>fdb_file.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\FlashDB-latest\src\fdb_file.c</FilePath>
+            </File>
+            <File>
+              <FileName>fdb_kvdb.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\FlashDB-latest\src\fdb_kvdb.c</FilePath>
             </File>
             <File>
               <FileName>fdb_tsdb.c</FileName>
@@ -1838,9 +1898,9 @@
               <FilePath>packages\FlashDB-latest\src\fdb_tsdb.c</FilePath>
             </File>
             <File>
-              <FileName>fdb_utils.c</FileName>
+              <FileName>fdb.c</FileName>
               <FileType>1</FileType>
-              <FilePath>packages\FlashDB-latest\src\fdb_utils.c</FilePath>
+              <FilePath>packages\FlashDB-latest\src\fdb.c</FilePath>
             </File>
             <File>
               <FileName>fdb_cmd.c</FileName>
@@ -1848,9 +1908,9 @@
               <FilePath>packages\FlashDB-latest\src\fdb_cmd.c</FilePath>
             </File>
             <File>
-              <FileName>fdb.c</FileName>
+              <FileName>fdb_utils.c</FileName>
               <FileType>1</FileType>
-              <FilePath>packages\FlashDB-latest\src\fdb.c</FilePath>
+              <FilePath>packages\FlashDB-latest\src\fdb_utils.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2128,16 +2188,6 @@
           <GroupName>Master402</GroupName>
           <Files>
             <File>
-              <FileName>canopen_callback.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\CanFestival-latest\master402\canopen_callback.c</FilePath>
-            </File>
-            <File>
-              <FileName>motor_control.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>packages\CanFestival-latest\master402\motor_control.c</FilePath>
-            </File>
-            <File>
               <FileName>master402_canopen.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\CanFestival-latest\master402\master402_canopen.c</FilePath>
@@ -2146,6 +2196,16 @@
               <FileName>master402_od.c</FileName>
               <FileType>1</FileType>
               <FilePath>packages\CanFestival-latest\master402\master402_od.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor_control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CanFestival-latest\master402\motor_control.c</FilePath>
+            </File>
+            <File>
+              <FileName>canopen_callback.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>packages\CanFestival-latest\master402\canopen_callback.c</FilePath>
             </File>
           </Files>
         </Group>

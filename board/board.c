@@ -150,7 +150,7 @@ static int PVD_Init(void)
     rt_completion_init(&pvd_completion);
     rt_thread_t tid;
     tid = rt_thread_create("PVD", pvd_thread_entry, RT_NULL,
-                          2048, 0, 20);
+                          512, 0, 20);
     if(tid == RT_NULL)
     {
       LOG_E("PVD thread start failed!");
