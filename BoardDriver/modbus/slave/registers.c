@@ -13,7 +13,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-
+#include "master402_canopen.h"
 /* Private typedef -----------------------------------------------------------*/
 enum input_registers_name
 {
@@ -25,8 +25,21 @@ enum input_registers_name
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-uint16_t _tab_registers[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+static uint16_t _tab_registers[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 /* Private function prototypes -----------------------------------------------*/
+/**
+  * @brief  写入输入寄存器默认值
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+int modbus_slave_register_default(void)
+{
+  _tab_registers[node_id] = 1;
+
+  return RT_EOK;
+}
+INIT_DEVICE_EXPORT(modbus_slave_register_default);
 /**
   * @brief  写入本机数据至保持寄存器中
   * @param  None
@@ -38,6 +51,29 @@ void modbus_slave_register_write(void)
 
 }
 /**
+  * @brief  获取MODBUS保持寄存器数据
+  * @param  index:数组索引
+  * @param  index:数组子索引
+  * @retval None
+  * @note   None
+*/
+uint16_t modbus_register_get(uint16_t index,uint16_t sub_index)
+{
+  return _tab_registers[sub_index];
+}
+/**
+  * @brief  设置MODBUS保持寄存器数据
+  * @param  index:数组索引
+  * @param  index:数组子索引
+  * @param  data:赋值数据
+  * @retval None
+  * @note   None
+*/
+void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data)
+{
+  _tab_registers[sub_index] = data;
+}
+/**
   * @brief  
   * @param  None
   * @retval None
@@ -47,8 +83,9 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
 
-    for (int i = 0; i < sizeof(_tab_registers) / sizeof(_tab_registers[0]); i++) {
-        ptr[i] = _tab_registers[i];
+    for (int i = 0; i < sizeof(_tab_registers) / sizeof(_tab_registers[0]); i++) 
+    {
+        ptr[i] = _tab_registers[MODBUS_START_ADDR + i];
     }
 
     return 0;
@@ -63,8 +100,9 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
 
-    for (int i = 0; i < len; i++) {
-        _tab_registers[index + i] = ptr[index + i];
+    for (int i = 0; i < len; i++) 
+    {
+        _tab_registers[MODBUS_START_ADDR + index + i] = ptr[index + i];
     }
 
     return 0;

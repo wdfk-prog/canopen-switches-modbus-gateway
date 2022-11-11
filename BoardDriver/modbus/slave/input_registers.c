@@ -25,9 +25,22 @@ enum input_registers_name
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
-
+static uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
 /* Private function prototypes -----------------------------------------------*/
+/**
+  * @brief  写入输入寄存器默认值
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+int modbus_slave_input_register_default(void)
+{
+  _tab_input_registers[node_num]  = MAX_NODE_COUNT - 1;
+  _tab_input_registers[nmt_state] = 0X0F;
+
+  return RT_EOK;
+}
+INIT_DEVICE_EXPORT(modbus_slave_input_register_default);
 /**
   * @brief  写入本机数据至输入寄存器中
   * @param  None
@@ -36,8 +49,7 @@ uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
 */
 void modbus_slave_input_register_write(void)
 {
-    _tab_input_registers[node_num]  = MAX_NODE_COUNT + 1;
-
+    _tab_input_registers[nmt_state] = nodeID_get_nmt(modbus_register_get(0,1));
 }
 /**
   * @brief  
@@ -49,8 +61,9 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
 
-    for (int i = 0; i < sizeof(_tab_input_registers) / sizeof(_tab_input_registers[0]); i++) {
-        ptr[i] = _tab_input_registers[i];
+    for (int i = 0; i < sizeof(_tab_input_registers) / sizeof(_tab_input_registers[0]); i++) 
+    {
+        ptr[i] = _tab_input_registers[MODBUS_START_ADDR + i];
     }
 
     return 0;

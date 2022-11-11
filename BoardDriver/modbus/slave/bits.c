@@ -35,7 +35,7 @@ static int get_map_buf(void *buf, int bufsz)
 
     for (int i = 0; i < sizeof(_tab_bits); i++) 
     {
-        ptr[i] = _tab_bits[i];
+        ptr[i] = _tab_bits[MODBUS_START_ADDR + i];
     }
 
     return 0;
@@ -52,7 +52,7 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 
     for (int i = 0; i < len; i++) 
     {
-        _tab_bits[index + i] = ptr[index + i];
+        _tab_bits[MODBUS_START_ADDR + index + i] = ptr[index + i];
     }
 
     return 0;

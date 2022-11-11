@@ -35,5 +35,4 @@ void modbus_slave_write(void)
 {
     modbus_slave_input_register_write();
     modbus_slave_register_write();
-
 }

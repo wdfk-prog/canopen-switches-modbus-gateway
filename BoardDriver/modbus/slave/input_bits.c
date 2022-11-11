@@ -33,8 +33,9 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
-    for (int i = 0; i < sizeof(_tab_input_bits); i++) {
-        ptr[i] = _tab_input_bits[i];
+    for (int i = 0; i < sizeof(_tab_input_bits); i++) 
+    {
+        ptr[MODBUS_START_ADDR + i] = _tab_input_bits[MODBUS_START_ADDR + i];
     }
 
     return 0;

@@ -37,7 +37,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-
+#define MODBUS_START_ADDR 1
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported variables ---------------------------------------------------------*/
@@ -56,6 +56,8 @@ static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave
 }
 
 extern void modbus_slave_write(void);
+extern uint16_t modbus_register_get(uint16_t index,uint16_t sub_index);
+extern void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data);
 
 #ifdef __cplusplus
 }
