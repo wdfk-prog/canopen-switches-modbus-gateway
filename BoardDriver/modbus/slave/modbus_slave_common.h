@@ -39,6 +39,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 #define MODBUS_START_ADDR 1
+#define MODBUS_REG_MAX_NUM 125
+#define MODBUS_BIT_MAX_NUM 250
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported variables ---------------------------------------------------------*/
@@ -57,8 +59,16 @@ static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave
 }
 
 extern void modbus_slave_write(void);
+
 extern uint16_t modbus_register_get(uint16_t index,uint16_t sub_index);
 extern void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data);
+
+extern uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index);
+
+extern uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index);
+extern void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data);
+
+extern uint8_t modbus_input_bits_get(uint16_t index,uint16_t sub_index);
 
 #ifdef __cplusplus
 }
