@@ -34,6 +34,7 @@ extern "C" {
 #include "agile_modbus_slave_util.h"
 #include <stdint.h>
 #include <string.h>
+#include "rtthread.h"
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/

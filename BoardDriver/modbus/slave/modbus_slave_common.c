@@ -13,7 +13,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-
+#include "gpio.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -35,4 +35,5 @@ void modbus_slave_write(void)
 {
     modbus_slave_input_register_write();
     modbus_slave_register_write();
+    HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }

@@ -33,11 +33,7 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
-    for (int i = 0; i < sizeof(_tab_bits); i++) 
-    {
-        ptr[i] = _tab_bits[MODBUS_START_ADDR + i];
-    }
-
+    rt_memcpy(ptr,_tab_bits + MODBUS_START_ADDR,sizeof(_tab_bits));
     return 0;
 }
 /**
@@ -50,11 +46,11 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
-    for (int i = 0; i < len; i++) 
-    {
-        _tab_bits[MODBUS_START_ADDR + index + i] = ptr[index + i];
-    }
-
+//    for (int i = 0; i < len; i++) 
+//    {
+//        _tab_bits[MODBUS_START_ADDR + index + i] = ptr[index + i];
+//    }
+    rt_memcpy(_tab_bits + MODBUS_START_ADDR + index,ptr + index,len);
     return 0;
 }
 /**

@@ -19,13 +19,14 @@ enum input_registers_name
 {
   node_num = 0X01,
   nmt_state,
+  node_name,
 };
 /* Private define ------------------------------------------------------------*/
 #define INPUT_REG_START 0x00
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
+static uint16_t _tab_input_registers[125];
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  写入输入寄存器默认值
@@ -35,9 +36,9 @@ static uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
 */
 int modbus_slave_input_register_default(void)
 {
-  _tab_input_registers[node_num]  = MAX_NODE_COUNT - 1;
-  _tab_input_registers[nmt_state] = 0X0F;
-
+  _tab_input_registers[node_num]  = MAX_NODE_COUNT - 1; //节点数量
+  _tab_input_registers[nmt_state] = 0X0F;               //节点NMT状态
+  nodeID_get_name((char *)&_tab_input_registers[node_name],modbus_register_get(0,1));//节点名称
   return RT_EOK;
 }
 INIT_DEVICE_EXPORT(modbus_slave_input_register_default);
@@ -49,7 +50,9 @@ INIT_DEVICE_EXPORT(modbus_slave_input_register_default);
 */
 void modbus_slave_input_register_write(void)
 {
-    _tab_input_registers[nmt_state] = nodeID_get_nmt(modbus_register_get(0,1));
+    uint8_t nodeID = modbus_register_get(0,1);
+    _tab_input_registers[nmt_state] = nodeID_get_nmt(nodeID);
+    nodeID_get_name((char *)&_tab_input_registers[node_name],nodeID);//节点名称
 }
 /**
   * @brief  
@@ -60,12 +63,8 @@ void modbus_slave_input_register_write(void)
 static int get_map_buf(void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
-
-    for (int i = 0; i < sizeof(_tab_input_registers) / sizeof(_tab_input_registers[0]); i++) 
-    {
-        ptr[i] = _tab_input_registers[MODBUS_START_ADDR + i];
-    }
-
+    //使用memcpy比数组赋值快15us左右
+    rt_memcpy(ptr,_tab_input_registers + MODBUS_START_ADDR,sizeof(_tab_input_registers));
     return 0;
 }
 /**
