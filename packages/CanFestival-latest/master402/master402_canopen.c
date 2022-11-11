@@ -27,15 +27,6 @@
 
 #include "motor_control.h"
 /* Private typedef -----------------------------------------------------------*/
-/* 
- * 节点链表
-*/
-typedef struct
-{
-  uint8_t nodeID;
-  char name[RT_NAME_MAX];
-  e_nodeState *nmt_state;
-}node_list;
 /* 节点配置状态结构体
  * err_code:配置参数错误代码 0xff,配置未发送,本地字典出错。
                              0x03,配置回复未响应，节点字典出错

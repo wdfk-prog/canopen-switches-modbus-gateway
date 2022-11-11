@@ -28,6 +28,15 @@ typedef enum
   SERVO_NODEID_2,
   MAX_NODE_COUNT,         //最大节点数量
 }NODEID_NUM;
+/* 
+ * 节点链表
+*/
+typedef struct
+{
+  uint8_t nodeID;
+  char name[RT_NAME_MAX];
+  e_nodeState *nmt_state;
+}node_list;
 /* Exported constants --------------------------------------------------------*/
 #define CONTROLLER_NODEID 	  1//控制器ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
@@ -44,6 +53,7 @@ typedef enum
 
 /* Exported variables ---------------------------------------------------------*/
 extern CO_Data *OD_Data;
+extern node_list can_node[MAX_NODE_COUNT - 1];
 /* Exported functions prototypes ---------------------------------------------*/
 extern void config_node(uint8_t nodeId);
 extern void canopen_start_thread_entry(void *parameter);
