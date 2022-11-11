@@ -41,3 +41,8 @@ settings/
 *.uvguix*
 !cconfig.h
 project.uvoptx
+
+*.exob
+*.emtp.bak1
+*.emtp.bak2
+*.emtp.bak3
