@@ -53,7 +53,7 @@ extern UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,UNS32 speed);
 extern UNS8 Write_SLAVE_Interpolation_time_period(UNS8 nodeId);
 extern UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float switch_speed,float zero_speed);
 
-extern char *nodeid_get_name(uint8_t nodeid);
+extern char *nodeID_get_name(char* des,uint8_t nodeid);
 extern e_nodeState nodeID_get_nmt(uint8_t nodeid);
 #ifdef __cplusplus
 }

@@ -146,10 +146,17 @@ static void Exit(CO_Data* d, UNS32 id)
   * @retval 返回节点名称
   * @note   若输入节点ID不正确，将返回空指针
 */
-char *nodeid_get_name(uint8_t nodeid)
+char *nodeID_get_name(char* des,uint8_t nodeid)
 {
+  char* r = des;
+
+  ASSERT(des != NULL);
+
   if(nodeid == can_node[nodeid - 1].nodeID)
-    return can_node[nodeid - 1].name;
+  {
+    rt_memcpy(des,can_node[nodeid - 1].name,RT_NAME_MAX);
+    return des;
+  }
   else
     return RT_NULL;
 }
