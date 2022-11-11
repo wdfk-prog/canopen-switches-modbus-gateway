@@ -15,14 +15,28 @@
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
+enum input_registers_name
+{
+  node_id = 0X01,
 
+};
 /* Private define ------------------------------------------------------------*/
 #define REG_START 0x00
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t _tab_registers[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+uint16_t _tab_registers[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 /* Private function prototypes -----------------------------------------------*/
+/**
+  * @brief  写入本机数据至保持寄存器中
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_slave_register_write(void)
+{
+
+}
 /**
   * @brief  
   * @param  None

@@ -55,6 +55,8 @@ static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave
     return 0;
 }
 
+extern void modbus_slave_write(void);
+
 #ifdef __cplusplus
 }
 #endif

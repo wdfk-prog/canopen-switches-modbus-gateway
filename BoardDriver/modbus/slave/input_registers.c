@@ -13,17 +13,32 @@
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-
+#include "master402_canopen.h"
 /* Private typedef -----------------------------------------------------------*/
-
+enum input_registers_name
+{
+  node_num = 0X01,
+  nmt_state,
+};
 /* Private define ------------------------------------------------------------*/
 #define INPUT_REG_START 0x00
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
+uint16_t _tab_input_registers[10] = {0, 1, 2, 3, 4, 9, 8, 7, 6, 5};
 
 /* Private function prototypes -----------------------------------------------*/
+/**
+  * @brief  写入本机数据至输入寄存器中
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_slave_input_register_write(void)
+{
+    _tab_input_registers[node_num]  = MAX_NODE_COUNT + 1;
+
+}
 /**
   * @brief  
   * @param  None

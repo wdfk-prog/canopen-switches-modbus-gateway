@@ -78,13 +78,6 @@ int main(void)
 {
   rt_thread_mdelay(1000);//延时后不会在初始化日志中间产生
   Version();
-  while(1)
-  {
-#include "ulog_file_be.h"
-    int i = 0;
-    LOG_MV("%d",i++);
-    rt_thread_mdelay(500);
-  }
 }
 /* USER CODE END 0 */
 
