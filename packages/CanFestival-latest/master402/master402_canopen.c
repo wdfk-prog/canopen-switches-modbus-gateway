@@ -237,6 +237,7 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
             rt_kprintf("%s\n", help_info[i]);
         }
         rt_kprintf("\n");
+        return;
     }
     else
     {
@@ -353,6 +354,7 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
               rt_kprintf("%s\n", help_info[i]);
           }
           rt_kprintf("\n");
+          return;
         }
     }
 }
