@@ -100,8 +100,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LED_Pin GPIO_PIN_13
+#define LED_GPIO_Port GPIOC
 #define SPI5_NSS_Pin GPIO_PIN_6
 #define SPI5_NSS_GPIO_Port GPIOF
+#define LED1_Pin GPIO_PIN_12
+#define LED1_GPIO_Port GPIOD
+#define debug_IO_Pin GPIO_PIN_12
+#define debug_IO_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

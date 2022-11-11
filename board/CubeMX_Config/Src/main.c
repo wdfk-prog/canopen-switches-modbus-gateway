@@ -19,10 +19,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "CubeMX_can.h"
+#include "can.h"
 #include "dma.h"
 #include "iwdg.h"
-#include "CubeMX_rtc.h"
+#include "rtc.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
