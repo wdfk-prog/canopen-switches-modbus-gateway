@@ -28,15 +28,6 @@ typedef enum
   SERVO_NODEID_2,
   MAX_NODE_COUNT,         //最大节点数量
 }NODEID_NUM;
-/* 
- * 节点链表
-*/
-typedef struct
-{
-  uint8_t nodeID;
-  char name[RT_NAME_MAX];
-  e_nodeState *nmt_state;
-}node_list;
 /* Exported constants --------------------------------------------------------*/
 #define CONTROLLER_NODEID 	  1//控制器ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
@@ -53,7 +44,6 @@ typedef struct
 
 /* Exported variables ---------------------------------------------------------*/
 extern CO_Data *OD_Data;
-extern node_list can_node[MAX_NODE_COUNT - 1];
 /* Exported functions prototypes ---------------------------------------------*/
 extern void config_node(uint8_t nodeId);
 extern void canopen_start_thread_entry(void *parameter);
@@ -63,6 +53,8 @@ extern UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,UNS32 speed);
 extern UNS8 Write_SLAVE_Interpolation_time_period(UNS8 nodeId);
 extern UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float switch_speed,float zero_speed);
 
+extern char *nodeid_get_name(uint8_t nodeid);
+extern e_nodeState nodeID_get_nmt(uint8_t nodeid);
 #ifdef __cplusplus
 }
 #endif

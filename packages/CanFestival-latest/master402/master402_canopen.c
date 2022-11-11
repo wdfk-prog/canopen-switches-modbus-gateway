@@ -27,6 +27,15 @@
 
 #include "motor_control.h"
 /* Private typedef -----------------------------------------------------------*/
+/* 
+ * 节点链表
+*/
+typedef struct
+{
+  uint8_t nodeID;
+  char name[RT_NAME_MAX];
+  e_nodeState *nmt_state;
+}node_list;
 /* 节点配置状态结构体
  * err_code:配置参数错误代码 0xff,配置未发送,本地字典出错。
                              0x03,配置回复未响应，节点字典出错
@@ -60,7 +69,7 @@ typedef struct
 #define SYNC_ENANBLE(NodeID) ((1 << 30) | (NodeID))
 /* Private variables ---------------------------------------------------------*/
 CO_Data *OD_Data = &master402_Data;
-node_list can_node[MAX_NODE_COUNT - 1] = 
+static node_list can_node[MAX_NODE_COUNT - 1] = 
 {
   {CONTROLLER_NODEID, "master",},
   {SERVO_NODEID_1,    "walk",},
@@ -113,7 +122,7 @@ static int canopen_init(void)
   for(uint8_t i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
      slave_conf[i].list = &can_node[i+1];
-     can_node[i+1].nmt_state = &OD_Data->NMTable[i+2];
+     can_node[i].nmt_state = &OD_Data->NMTable[i+2];
   }
   can_node[0].nmt_state = &OD_Data->nodeState;
 
@@ -130,6 +139,33 @@ static void Exit(CO_Data* d, UNS32 id)
 {
 
 }
+/************************外部调用函数********************************************************/
+/**
+  * @brief  获取节点名称
+  * @param  None
+  * @retval 返回节点名称
+  * @note   若输入节点ID不正确，将返回空指针
+*/
+char *nodeid_get_name(uint8_t nodeid)
+{
+  if(nodeid == can_node[nodeid - 1].nodeID)
+    return can_node[nodeid - 1].name;
+  else
+    return RT_NULL;
+}
+/**
+  * @brief  获取节点NMT状态
+  * @param  None
+  * @retval 返回NMT状态
+  * @note   若输入节点ID不正确，将返回0XFF
+*/
+e_nodeState nodeID_get_nmt(uint8_t nodeid)
+{
+  if(nodeid == can_node[nodeid - 1].nodeID)
+    return *can_node[nodeid - 1].nmt_state;
+  else
+    return 0XFF;
+}
 #ifdef RT_USING_MSH
 /**
   * @brief  打印节点状态
@@ -137,7 +173,7 @@ static void Exit(CO_Data* d, UNS32 id)
   * @retval None.
   * @note   None.
 */
-void printf_state(e_nodeState state)
+static void printf_state(e_nodeState state)
 {
   switch(state)
   {
