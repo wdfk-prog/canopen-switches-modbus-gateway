@@ -49,13 +49,16 @@ static void modbus_get(int argc, char**argv)
 #define MODBUS_EG                     1
 #define MODBUS_TYPE                   2
 #define MODBUS_EN                     3
-  int16_t len,start,cnt = 0,flag = 0;
+#define MODBUS_HEX                    4
+  int16_t len,start,cnt = 0;
+  uint8_t flag = 0,hex = 0;
   const char* help_info[] =
     {
-        [MODBUS_LIST]           = "Please input'modbus_get <type|start_addr|lenth>'",
+        [MODBUS_LIST]           = "Please input'modbus_get [type|start_addr|lenth] <en> <hex>'",
         [MODBUS_EG]             = "       e.g : modbus_get  hold    100       10.",
         [MODBUS_TYPE]           = "      type : hold | coil | input | in_bit.",
-        [MODBUS_EN]             = "      EN   : EN is Only look at not zero data.",
+        [MODBUS_EN]             = "      en   : EN is Only look at not zero data.",
+        [MODBUS_HEX]            = "      hex  : Data is displayed in hexadecimal format.",
     };
 
   if (argc < 3)
@@ -75,7 +78,7 @@ static void modbus_get(int argc, char**argv)
   }
   else
   {
-    rt_kprintf("Please enter only digits\n");
+    rt_kprintf("Please enter only Nonnegative\n");
     return;
   }
   
@@ -85,7 +88,7 @@ static void modbus_get(int argc, char**argv)
   }
   else
   {
-    rt_kprintf("Please enter only digits\n");
+    rt_kprintf("Please enter only Nonnegative\n");
     return;
   }
   if(argv[4])
@@ -97,6 +100,19 @@ static void modbus_get(int argc, char**argv)
     else
     {
       rt_kprintf("Please enter en\n");
+      return;
+    }
+  }
+  if(argv[5])
+  {
+    if(!rt_strcmp(argv[5],"hex"))
+    {
+      hex = 1;
+    }
+    else
+    {
+      rt_kprintf("Please enter hex\n");
+      return;
     }
   }
   if(!rt_strcmp(argv[1], "hold"))
@@ -118,7 +134,10 @@ static void modbus_get(int argc, char**argv)
             cnt = 0;
           }
           cnt++;
-          rt_kprintf("num:%3d|hold:%5d#",i,modbus_register_get(0,i));
+          if(hex == 0)
+            rt_kprintf("num:%3d|hold:%5d#",i,modbus_register_get(0,i));
+          else
+            rt_kprintf("num:%3d|hold:0X%04X#",i,modbus_register_get(0,i));
         }
       }
       else
@@ -129,7 +148,10 @@ static void modbus_get(int argc, char**argv)
           cnt = 0;
         }
         cnt++;
-        rt_kprintf("num:%3d|hold:%5d#",i,modbus_register_get(0,i));
+        if(hex == 0)
+          rt_kprintf("num:%3d|hold:%5d#",i,modbus_register_get(0,i));
+        else
+          rt_kprintf("num:%3d|hold:0X%04X#",i,modbus_register_get(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -153,7 +175,10 @@ static void modbus_get(int argc, char**argv)
             cnt = 0;
           }
           cnt++;
-          rt_kprintf("num:%3d|input:%5d#",i,modbus_input_register_get(0,i));
+          if(hex == 0)
+            rt_kprintf("num:%3d|input:%5d#", i, modbus_input_register_get(0,i));
+          else
+            rt_kprintf("num:%3d|input:0X%04X#", i, modbus_input_register_get(0,i));
         }
       }
       else
@@ -164,7 +189,10 @@ static void modbus_get(int argc, char**argv)
           cnt = 0;
         }
         cnt++;
-        rt_kprintf("num:%3d|input:%5d#",i,modbus_input_register_get(0,i));
+        if(hex == 0)
+          rt_kprintf("num:%3d|input:%5d#", i, modbus_input_register_get(0,i));
+        else
+          rt_kprintf("num:%3d|input:0X%04X#", i, modbus_input_register_get(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -188,7 +216,7 @@ static void modbus_get(int argc, char**argv)
             cnt = 0;
           }
           cnt++;
-          rt_kprintf("num:%3d|coil:1#",i);
+          rt_kprintf("num:%3d|coil:%d#", i, modbus_bits_get(0,i));
         }
       }
       else
@@ -199,14 +227,7 @@ static void modbus_get(int argc, char**argv)
           cnt = 0;
         }
         cnt++;
-        if(modbus_bits_get(0,i))
-        {
-          rt_kprintf("num:%3d|coil:1#",i);
-        }
-        else
-        {
-          rt_kprintf("num:%3d|coil:0#",i);
-        }
+        rt_kprintf("num:%3d|coil:%d#", i, modbus_bits_get(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -230,7 +251,7 @@ static void modbus_get(int argc, char**argv)
             cnt = 0;
           }
           cnt++;
-          rt_kprintf("num:%3d|bits:1#",i);
+          rt_kprintf("num:%3d|bits:%d#", i, modbus_input_bits_get(0,i));
         }
       }
       else
@@ -241,14 +262,7 @@ static void modbus_get(int argc, char**argv)
           cnt = 0;
         }
         cnt++;
-        if(modbus_input_bits_get(0,i))
-        {
-          rt_kprintf("num:%3d|bits:1#",i);
-        }
-        else
-        {
-          rt_kprintf("num:%3d|bits:0#",i);
-        }
+        rt_kprintf("num:%3d|bits:%d#", i, modbus_input_bits_get(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -276,7 +290,7 @@ static void modbus_set(int argc, char**argv)
   int16_t num,addr;
   if (argc < 3)
   {
-      rt_kprintf("Please input'modbus_set <type|addr|num>'\n");
+      rt_kprintf("Please input'modbus_set [type|addr|num]'\n");
       rt_kprintf("       e.g : modbus_set  hold 100  10\n");
       rt_kprintf("       type: hold | coil\r\n");
       return;
@@ -292,7 +306,7 @@ static void modbus_set(int argc, char**argv)
   }
   else
   {
-    rt_kprintf("Please enter only digits\n");
+    rt_kprintf("Please enter only Nonnegative\n");
     return;
   }
   
@@ -302,7 +316,7 @@ static void modbus_set(int argc, char**argv)
   }
   else
   {
-    rt_kprintf("Please enter only digits\n");
+    rt_kprintf("Please enter only Nonnegative\n");
     return;
   }
   if(!rt_strcmp(argv[1], "hold"))
