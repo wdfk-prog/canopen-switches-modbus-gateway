@@ -122,7 +122,7 @@ static int canopen_init(void)
   for(uint8_t i = 0; i < MAX_NODE_COUNT - 2; i++)
   {
      slave_conf[i].list = &can_node[i+1];
-     can_node[i].nmt_state = &OD_Data->NMTable[i+2];
+     can_node[i+1].nmt_state = &OD_Data->NMTable[i+2];
   }
   can_node[0].nmt_state = &OD_Data->nodeState;
 
@@ -212,7 +212,6 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
 #define NMT_CMD_GET                     1
 #define NMT_CMD_SLAVE_SET               2
 #define NMT_CMD_PRE                     NMT_CMD_SLAVE_SET+2
-  size_t i = 0;
 
   const char* help_info[] =
     {
@@ -226,7 +225,7 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
     if (argc < 2)
     {
         rt_kprintf("Usage:\n");
-        for (i = 0; i < sizeof(help_info) / sizeof(char*); i++)
+        for (size_t i = 0; i < sizeof(help_info) / sizeof(char*); i++)
         {
             rt_kprintf("%s\n", help_info[i]);
         }
@@ -257,9 +256,9 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
               return;
           }
           uint8_t nodeid = atoi(argv[2]);
-          rt_kprintf("%s 0X%02X    ",can_node[i].name,can_node[i].nodeID);
+          rt_kprintf("%s 0X%02X    ",can_node[nodeid - 1].name,can_node[nodeid - 1].nodeID);
           rt_kprintf("nodeID state is ");
-          printf_state(*can_node[i].nmt_state);
+          printf_state(*can_node[nodeid - 1].nmt_state);
           rt_kprintf("\n");       
         }
         else if (!strcmp(operator, "s"))//´Ó»úÉèÖÃNMT
@@ -342,7 +341,7 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
         else
         {
           rt_kprintf("Usage:\n");
-          for (i = 0; i < sizeof(help_info) / sizeof(char*); i++)
+          for (size_t i = 0; i < sizeof(help_info) / sizeof(char*); i++)
           {
               rt_kprintf("%s\n", help_info[i]);
           }
