@@ -25,7 +25,7 @@ enum input_registers_name
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static uint16_t _tab_registers[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  写入输入寄存器默认值

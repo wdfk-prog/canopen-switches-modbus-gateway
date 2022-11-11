@@ -21,7 +21,7 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t _tab_bits[10] = {0, 1, 0, 1, 0, 1, 0, 1, 0, 1};
+static uint8_t _tab_bits[MODBUS_BIT_MAX_NUM];
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  
@@ -52,6 +52,29 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 //    }
     rt_memcpy(_tab_bits + MODBUS_START_ADDR + index,ptr + index,len);
     return 0;
+}
+/**
+  * @brief  获取MODBUS线圈寄存器数据
+  * @param  index:数组索引
+  * @param  index:数组子索引
+  * @retval None
+  * @note   None
+*/
+uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index)
+{
+  return _tab_bits[sub_index];
+}
+/**
+  * @brief  设置MODBUS线圈寄存器数据
+  * @param  index:数组索引
+  * @param  index:数组子索引
+  * @param  data:赋值数据
+  * @retval None
+  * @note   None
+*/
+void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data)
+{
+  _tab_bits[sub_index] = data;
 }
 /**
   * @brief  

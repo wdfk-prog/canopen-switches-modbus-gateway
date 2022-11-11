@@ -21,7 +21,7 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-static uint8_t _tab_input_bits[10] = {0, 1, 1, 0, 0, 1, 1, 0, 0, 1};
+static uint8_t _tab_input_bits[MODBUS_BIT_MAX_NUM];
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  
@@ -35,6 +35,17 @@ static int get_map_buf(void *buf, int bufsz)
 
     rt_memcpy(ptr,_tab_input_bits + MODBUS_START_ADDR,sizeof(_tab_input_bits));
     return 0;
+}
+/**
+  * @brief  获取MODBUS离散输入线圈寄存器数据
+  * @param  index:数组索引
+  * @param  index:数组子索引
+  * @retval None
+  * @note   None
+*/
+uint8_t modbus_input_bits_get(uint16_t index,uint16_t sub_index)
+{
+  return _tab_input_bits[sub_index];
 }
 /**
   * @brief  
