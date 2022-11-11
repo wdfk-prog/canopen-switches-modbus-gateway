@@ -1,7 +1,7 @@
 /**
  * @file    agile_modbus_slave_util.h
- * @brief   Agile Modbus è½¯ä»¶åŒ…æä¾›çš„ç®€æ˜“ä»æœºæ¥å…¥å¤´æ–‡ä»¶
- * @author  é©¬é¾™ä¼Ÿ (2544047213@qq.com)
+ * @brief   Agile Modbus Èí¼ş°üÌá¹©µÄ¼òÒ×´Ó»ú½ÓÈëÍ·ÎÄ¼ş
+ * @author  ÂíÁúÎ° (2544047213@qq.com)
  * @date    2022-07-28
  *
  * @attention
@@ -33,30 +33,30 @@ extern "C" {
  */
 
 /**
- * @brief   ä»æœºå¯„å­˜å™¨æ˜ å°„ç»“æ„ä½“
+ * @brief   ´Ó»ú¼Ä´æÆ÷Ó³Éä½á¹¹Ìå
  */
 typedef struct agile_modbus_slave_util_map {
-    int start_addr;                                       /**< èµ·å§‹åœ°å€ */
-    int end_addr;                                         /**< ç»“æŸåœ°å€ */
-    int (*get)(void *buf, int bufsz);                     /**< è·å–å¯„å­˜å™¨æ•°æ®æ¥å£ */
-    int (*set)(int index, int len, void *buf, int bufsz); /**< è®¾ç½®å¯„å­˜å™¨æ•°æ®æ¥å£ */
+    int start_addr;                                       /**< ÆğÊ¼µØÖ· */
+    int end_addr;                                         /**< ½áÊøµØÖ· */
+    int (*get)(void *buf, int bufsz);                     /**< »ñÈ¡¼Ä´æÆ÷Êı¾İ½Ó¿Ú */
+    int (*set)(int index, int len, void *buf, int bufsz); /**< ÉèÖÃ¼Ä´æÆ÷Êı¾İ½Ó¿Ú */
 } agile_modbus_slave_util_map_t;
 
 /**
- * @brief   ä»æœºåŠŸèƒ½ç»“æ„ä½“
+ * @brief   ´Ó»ú¹¦ÄÜ½á¹¹Ìå
  */
 typedef struct agile_modbus_slave_util {
-    const agile_modbus_slave_util_map_t *tab_bits;                                            /**< çº¿åœˆå¯„å­˜å™¨å®šä¹‰æ•°ç»„ */
-    int nb_bits;                                                                              /**< çº¿åœˆå¯„å­˜å™¨å®šä¹‰æ•°ç»„æ•°ç›® */
-    const agile_modbus_slave_util_map_t *tab_input_bits;                                      /**< ç¦»æ•£é‡è¾“å…¥å¯„å­˜å™¨å®šä¹‰æ•°ç»„ */
-    int nb_input_bits;                                                                        /**< ç¦»æ•£é‡è¾“å…¥å¯„å­˜å™¨å®šä¹‰æ•°ç»„æ•°ç›® */
-    const agile_modbus_slave_util_map_t *tab_registers;                                       /**< ä¿æŒå¯„å­˜å™¨å®šä¹‰æ•°ç»„ */
-    int nb_registers;                                                                         /**< ä¿æŒå¯„å­˜å™¨å®šä¹‰æ•°ç»„æ•°ç›® */
-    const agile_modbus_slave_util_map_t *tab_input_registers;                                 /**< è¾“å…¥å¯„å­˜å™¨å®šä¹‰æ•°ç»„ */
-    int nb_input_registers;                                                                   /**< è¾“å…¥å¯„å­˜å™¨å®šä¹‰æ•°ç»„æ•°ç›® */
-    int (*addr_check)(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info);       /**< åœ°å€æ£€æŸ¥æ¥å£ */
-    int (*special_function)(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info); /**< ç‰¹æ®ŠåŠŸèƒ½ç å¤„ç†æ¥å£ */
-    int (*done)(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info, int ret);    /**< å¤„ç†ç»“æŸæ¥å£ */
+    const agile_modbus_slave_util_map_t *tab_bits;                                            /**< ÏßÈ¦¼Ä´æÆ÷¶¨ÒåÊı×é */
+    int nb_bits;                                                                              /**< ÏßÈ¦¼Ä´æÆ÷¶¨ÒåÊı×éÊıÄ¿ */
+    const agile_modbus_slave_util_map_t *tab_input_bits;                                      /**< ÀëÉ¢Á¿ÊäÈë¼Ä´æÆ÷¶¨ÒåÊı×é */
+    int nb_input_bits;                                                                        /**< ÀëÉ¢Á¿ÊäÈë¼Ä´æÆ÷¶¨ÒåÊı×éÊıÄ¿ */
+    const agile_modbus_slave_util_map_t *tab_registers;                                       /**< ±£³Ö¼Ä´æÆ÷¶¨ÒåÊı×é */
+    int nb_registers;                                                                         /**< ±£³Ö¼Ä´æÆ÷¶¨ÒåÊı×éÊıÄ¿ */
+    const agile_modbus_slave_util_map_t *tab_input_registers;                                 /**< ÊäÈë¼Ä´æÆ÷¶¨ÒåÊı×é */
+    int nb_input_registers;                                                                   /**< ÊäÈë¼Ä´æÆ÷¶¨ÒåÊı×éÊıÄ¿ */
+    int (*addr_check)(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info);       /**< µØÖ·¼ì²é½Ó¿Ú */
+    int (*special_function)(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info); /**< ÌØÊâ¹¦ÄÜÂë´¦Àí½Ó¿Ú */
+    int (*done)(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info, int ret);    /**< ´¦Àí½áÊø½Ó¿Ú */
 } agile_modbus_slave_util_t;
 
 /**
