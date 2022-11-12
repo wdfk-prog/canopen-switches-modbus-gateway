@@ -82,7 +82,7 @@ void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data)
   * @retval None
   * @note   None
 */
-const agile_modbus_slave_util_map_t bit_maps[1] = 
+const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM] = 
 {
    //起始地址     结束地址                                                获取接口   设置接口 
     {BITS_START, BITS_START +  sizeof(_tab_bits) / sizeof(_tab_bits[0]), get_map_buf, set_map_buf}

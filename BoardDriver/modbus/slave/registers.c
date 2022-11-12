@@ -22,6 +22,11 @@ enum input_registers_name
 };
 /* Private define ------------------------------------------------------------*/
 #define REG_START 0x00
+
+#define CAN_START 1
+#define CAN_END   10
+#define MOTOR_START 11
+#define MOTOR_END   20
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -109,8 +114,8 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
   * @retval None
   * @note   None
 */
-const agile_modbus_slave_util_map_t register_maps[1] = 
+const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM] = 
 {
-   //起始地址   结束地址                                                        获取接口   设置接口 
-    {REG_START, REG_START + sizeof(_tab_registers) / sizeof(_tab_registers[0]), get_map_buf, set_map_buf}
+   //起始地址   结束地址 获取接口   设置接口 
+    {CAN_START, CAN_END, get_map_buf, set_map_buf},
 };

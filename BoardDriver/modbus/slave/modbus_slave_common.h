@@ -38,16 +38,21 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-#define MODBUS_START_ADDR 1
-#define MODBUS_REG_MAX_NUM 125
-#define MODBUS_BIT_MAX_NUM 250
+#define MODBUS_START_ADDR       1     
+#define MODBUS_REG_MAX_NUM      125
+#define MODBUS_BIT_MAX_NUM      250
+
+#define BIT_MAPS_NUM            1
+#define INPUT_BIT_MAPS_NUM      1
+#define REGISTER_MAPS_NUM       1
+#define INPUT_REGISTER_MAPS_NUM 2
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported variables ---------------------------------------------------------*/
-extern const agile_modbus_slave_util_map_t bit_maps[1];
-extern const agile_modbus_slave_util_map_t input_bit_maps[1];
-extern const agile_modbus_slave_util_map_t register_maps[1];
-extern const agile_modbus_slave_util_map_t input_register_maps[1];
+extern const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM];
+extern const agile_modbus_slave_util_map_t input_bit_maps[INPUT_BIT_MAPS_NUM];
+extern const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM];
+extern const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MAPS_NUM];
 /* Exported functions prototypes ---------------------------------------------*/
 static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info)
 {
