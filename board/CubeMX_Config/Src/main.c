@@ -14,6 +14,7 @@
   * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
+  加入__attribute__((optnone))取消优化
   */
 #ifdef CUBE_ERROR
 /* USER CODE END Header */
