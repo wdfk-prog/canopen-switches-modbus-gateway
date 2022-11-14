@@ -17,12 +17,24 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define BITS_START 0x00
+#define BITS_START 0x01
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
 static uint8_t _tab_bits[MODBUS_BIT_MAX_NUM];
 /* Private function prototypes -----------------------------------------------*/
+/**
+  * @brief  写入线圈寄存器默认值
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+int modbus_slave_bits_default(void)
+{
+  _tab_bits[1] = 0;  //电机使能控制
+  return RT_EOK;
+}
+INIT_DEVICE_EXPORT(modbus_slave_bits_default);
 /**
   * @brief  
   * @param  None
@@ -46,10 +58,7 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
-//    for (int i = 0; i < len; i++) 
-//    {
-//        _tab_bits[MODBUS_START_ADDR + index + i] = ptr[index + i];
-//    }
+
     rt_memcpy(_tab_bits + MODBUS_START_ADDR + index,ptr + index,len);
     return 0;
 }
@@ -84,6 +93,6 @@ void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data)
 */
 const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM] = 
 {
-   //起始地址     结束地址                                                获取接口   设置接口 
-    {BITS_START, BITS_START +  sizeof(_tab_bits) / sizeof(_tab_bits[0]), get_map_buf, set_map_buf}
+   //起始地址     结束地址           获取接口   设置接口 
+   {0, MODBUS_BIT_MAX_NUM, get_map_buf, set_map_buf}
 };
