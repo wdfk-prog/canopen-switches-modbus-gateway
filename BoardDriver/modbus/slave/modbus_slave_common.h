@@ -44,7 +44,7 @@ extern "C" {
 
 #define BIT_MAPS_NUM            1
 #define INPUT_BIT_MAPS_NUM      1
-#define REGISTER_MAPS_NUM       1
+#define REGISTER_MAPS_NUM       2
 #define INPUT_REGISTER_MAPS_NUM 2
 /* Exported macro ------------------------------------------------------------*/
 
