@@ -15,6 +15,7 @@
 
 /* private includes ----------------------------------------------------------*/
 #include "modbus_slave_common.h"
+#include "motor_control.h"
 /*ulog include*/
 #define log_tag              "mb key"
 #define log_lvl              dbg_info
@@ -100,21 +101,104 @@ typedef struct
 #define THREAD_TIMESLICE     10//线程时间片
 #define THREAD_STACK_SIZE    1024//栈大小
 /* private macro -------------------------------------------------------------*/
-
+/*
+ * 拼接16位为32位
+ * H:16位高位
+ * L:16位低位
+*/
+#define MAKEINT_32(H,L) (uint32_t)((uint16_t)(H) << 16 | (uint16_t)(L))
+/*
+ * 非零赋值
+ * x:判断是否为零数，并是写入数
+ * y:被写入数
+*/
+#define NON_ZERO_W(X,Y)   \
+  if(!(Y)){               \
+  (X) = (Y);}
 /* private variables ---------------------------------------------------------*/
-mbkey mbkey_buf[MBKEY_NUM];	// 创建按键数组
+static mbkey mbkey_buf[MBKEY_NUM];	// 创建按键数组
+static uint8_t nodeID;//节点ID
+static MODE_OPERATION motor_mode;//电机模式
 /* private function prototypes -----------------------------------------------*/
 static void key_motor_enable(mbkey_status *event)
 {
   switch(*event)
   {
     case MBKEY_ENABLE:  //按下处理事件
+    {
+      switch(motor_mode)
+      {
+        case PROFILE_POSITION_MODE://位置规划模式
+        {
+          int32_t position  = MAKEINT_32(modbus_register_get(0,17),
+                                        modbus_register_get(0,18));
+          int16_t speed     = 60;
+          
+          NON_ZERO_W(speed,modbus_register_get(0,19));
+          bool abs_rel      = modbus_register_get(0,20);
+          bool immediately  = modbus_register_get(0,21);
+
+          motor_profile_position(position,speed,abs_rel,immediately,nodeID);
+        }
+        break;
+        case PROFILE_VELOCITY_MODE://速度规划模式
+        {
+          int16_t speed = modbus_register_get(0,17);
+          motor_profile_velocity(speed,nodeID);
+        }
+        break;
+        case PROFILE_TORQUE_MODE://扭矩规划模式
+        break;
+        case HOMING_MODE://原点复归模式
+        {
+          bool zero_flag = modbus_register_get(0,17);
+          motor_homing_mode(zero_flag,nodeID);
+        }
+        break;
+        case INTERPOLATED_POSITION_MODE://插补位置模式
+//        motor_interpolation_position();
+        break;
+      }
+    }
     break;
     case MBKEY_DISABLE: //松开处理事件
     break;
     case MBKEY_PRESS:   //松开到按下事件
+    {
+      switch(motor_mode)
+      {
+        case PROFILE_POSITION_MODE://位置规划模式
+          motor_on_profile_position(nodeID);
+        break;
+        case PROFILE_VELOCITY_MODE://速度规划模式
+          motor_on_profile_velocity(nodeID);
+        break;
+        case PROFILE_TORQUE_MODE://扭矩规划模式
+        break;
+        case HOMING_MODE://原点复归模式
+        {
+          int32_t offset      = MAKEINT_32(modbus_register_get(0,12),
+                                           modbus_register_get(0,13));
+          uint8_t method      = 34;
+          float switch_speed  = 100;
+          float zero_speed    = 20;
+
+          NON_ZERO_W(method,modbus_register_get(0,14));
+          NON_ZERO_W(method,modbus_register_get(0,modbus_register_get(0,15) / 10.0f));
+          NON_ZERO_W(method,modbus_register_get(0,modbus_register_get(0,16) / 10.0f));
+
+          motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
+        }
+        break;
+        case INTERPOLATED_POSITION_MODE://插补位置模式
+//        motor_interpolation_position();
+        break;
+      }
+    }
     break;
     case MBKEY_RAISE:   //按下到松开事件
+      motor_off(nodeID);
+      modbus_register_reset(0,11,20);//清除数据
     break;    
   }
 }
@@ -268,6 +352,8 @@ void mbkey_handler(void *p)
   {
     rt_thread_mdelay(1);
     read_status();
+    nodeID = modbus_register_get(0,1);
+    motor_mode = modbus_register_get(0,11);
     for(i = 0;i < MBKEY_NUM;i++)
     {
         operation[i](&mbkey_buf[i].status.key_event);
@@ -304,7 +390,7 @@ static int mbkey_init(void)
   };
   creat_key(init);// 调用按键初始化函数
   /* 创建 MODBUS线程*/
-  rt_thread_t thread = rt_thread_create( "mb key",    /* 线程名字 */
+  rt_thread_t thread = rt_thread_create( "mb_key",    /* 线程名字 */
                                          mbkey_handler,/* 线程入口函数 */
                                          RT_NULL,       /* 线程入口函数参数 */
                                          THREAD_STACK_SIZE, /* 线程栈大小 */
