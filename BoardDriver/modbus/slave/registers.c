@@ -15,16 +15,12 @@
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
 /* Private typedef -----------------------------------------------------------*/
-enum input_registers_name
-{
-  node_id = 0X01,
 
-};
 /* Private define ------------------------------------------------------------*/
 #define REG_START 0x00
 
-#define CAN_START 1
-#define CAN_END   10
+#define CAN_START   0
+#define CAN_END     10
 #define MOTOR_START 11
 #define MOTOR_END   20
 /* Private macro -------------------------------------------------------------*/
@@ -40,8 +36,20 @@ static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
 */
 int modbus_slave_register_default(void)
 {
-  _tab_registers[node_id] = 1;
-
+  _tab_registers[1] = 1;  //设置需操作的节点ID
+  //02D~10D CAN保留区域
+  _tab_registers[11] = 0; //设置电机模式
+  _tab_registers[12] = 0; //原点偏移值高位
+  _tab_registers[13] = 0; //原点偏移值低位
+  _tab_registers[14] = 0; //回原方式
+  _tab_registers[15] = 0; //寻找原点开关速度
+  _tab_registers[16] = 0; //寻找 Z脉冲速度
+  _tab_registers[17] = 0; //电机运动参数1
+  _tab_registers[18] = 0; //电机运动参数2
+  _tab_registers[19] = 0; //电机运动参数3
+  _tab_registers[20] = 0; //电机运动参数4
+  _tab_registers[21] = 0; //电机运动参数5
+  //22D~30D 电机保留区域
   return RT_EOK;
 }
 INIT_DEVICE_EXPORT(modbus_slave_register_default);
@@ -77,6 +85,19 @@ uint16_t modbus_register_get(uint16_t index,uint16_t sub_index)
 void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data)
 {
   _tab_registers[sub_index] = data;
+}
+/**
+  * @brief  设置MODBUS保持寄存器数据清零
+  * @param  index:开始数组索引
+  * @param  index:开始数组子索引
+  * @param  len:长度
+  * @retval None
+  * @note   None
+*/
+void modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t len)
+{
+  uint16_t *ptr = (uint16_t *)_tab_registers + start_sub_index;
+  rt_memset(ptr,0,len);
 }
 /**
   * @brief  
@@ -116,6 +137,7 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 */
 const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM] = 
 {
-   //起始地址   结束地址 获取接口   设置接口 
-    {CAN_START, CAN_END, get_map_buf, set_map_buf},
+   //起始地址     结束地址      获取接口   设置接口 
+   {CAN_START,    CAN_END,    get_map_buf, set_map_buf},
+   {MOTOR_START,  MOTOR_END,  get_map_buf, set_map_buf},
 };
