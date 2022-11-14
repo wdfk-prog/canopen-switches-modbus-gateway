@@ -67,6 +67,7 @@ extern void modbus_slave_write(void);
 
 extern uint16_t modbus_register_get(uint16_t index,uint16_t sub_index);
 extern void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data);
+extern void modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t len);
 
 extern uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index);
 

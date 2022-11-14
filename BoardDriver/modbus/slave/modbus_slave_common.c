@@ -37,6 +37,7 @@ void modbus_slave_write(void)
     modbus_slave_register_write();
     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }
+#ifdef RT_USING_MSH
 /**
   * @brief  打印MODBUS列表
   * @param  第一个参数，int型的argc，为整型，用来统计程序运行时发送给main函数的命令行参数的个数
@@ -352,3 +353,4 @@ static void modbus_set(int argc, char**argv)
   }
 }
 MSH_CMD_EXPORT_ALIAS(modbus_set,modbus_set,modbus_set <type|addr|num>);
+#endif
