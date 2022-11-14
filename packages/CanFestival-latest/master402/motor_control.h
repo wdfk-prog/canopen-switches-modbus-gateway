@@ -18,6 +18,7 @@ extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
 #include "canfestival.h"
+#include <stdbool.h>
 /* Exported types ------------------------------------------------------------*/
 /*
  * INTEGER8地图变量结构体
@@ -59,7 +60,18 @@ typedef struct
 extern Map_Val_UNS16 Controlword_Node[];
 extern Map_Val_INTEGER8 Modes_of_operation_Node[];
 /* Exported functions prototypes ---------------------------------------------*/
- 
+extern UNS8 motor_on_profile_position(UNS8 nodeId);
+extern UNS8 motor_on_interpolated_position(UNS8 nodeId);
+extern UNS8 motor_on_homing_mode(int32_t offset,uint8_t method,float switch_speed,float zero_speed,UNS8 nodeId);
+extern UNS8 motor_on_profile_velocity(UNS8 nodeId);
+/******************************运动模式操作函数******************************************************************/
+extern UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,bool immediately,UNS8 nodeId);
+extern UNS8 motor_interpolation_position (UNS8 nodeId);
+extern UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId);
+extern UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId);
+/******************************运动关闭及查询函数******************************************************************/
+extern UNS8 motor_off(UNS8 nodeId);
+
 #ifdef __cplusplus
 }
 #endif

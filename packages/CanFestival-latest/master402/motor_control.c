@@ -61,7 +61,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "motor_control.h"
 /* Private includes ----------------------------------------------------------*/
-#include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
 #include <rtthread.h>
@@ -255,7 +254,7 @@ static UNS8 block_query_BIT_change(UNS16 *value,UNS8 bit,uint16_t timeout,uint16
   * @retval 成功返回0X00,失败返回0XFF
   * @note   None
 */
-static UNS8 motor_on_profile_position(UNS8 nodeId)
+UNS8 motor_on_profile_position(UNS8 nodeId)
 {
   NODE_DECISION;
   *Target_position_Node[nodeId - 2].map_val = 0;
@@ -274,7 +273,7 @@ static UNS8 motor_on_profile_position(UNS8 nodeId)
   * @retval 成功返回0X00,失败返回0XFF
   * @note   None
 */
-static UNS8 motor_on_interpolated_position(UNS8 nodeId)
+UNS8 motor_on_interpolated_position(UNS8 nodeId)
 {
   NODE_DECISION;
   pos_cmd1 = *Position_actual_value_Node[nodeId - 2].map_val;
@@ -298,7 +297,7 @@ static UNS8 motor_on_interpolated_position(UNS8 nodeId)
   * @retval 成功返回0X00,失败返回0XFF
   * @note   None
 */
-static UNS8 motor_on_homing_mode(int32_t offset,uint8_t method,float switch_speed,float zero_speed,UNS8 nodeId)
+UNS8 motor_on_homing_mode(int32_t offset,uint8_t method,float switch_speed,float zero_speed,UNS8 nodeId)
 {
   NODE_DECISION;
   FAILED_EXIT(Write_SLAVE_Modes_of_operation(nodeId,HOMING_MODE));
@@ -325,7 +324,7 @@ rfg unlock      0     Ramp output value is locked to current output value.
                 1     Ramp output value follows ramp input value.
 rfg use ref     0     Ramp input value is set to zero.
                 1     Ramp input value accords to ramp reference.*/
-static UNS8 motor_on_profile_velocity(UNS8 nodeId)
+UNS8 motor_on_profile_velocity(UNS8 nodeId)
 {
   NODE_DECISION;
   *Target_velocity_Node[nodeId - 2].map_val = 0;
@@ -365,7 +364,7 @@ static UNS8 motor_on_profile_velocity(UNS8 nodeId)
   当位置误差 (60F4h) 超过此设定范围时，伺服即跳异警 AL009位置误差过大。 
   位置误差警告条件  6065h:默认值50331648PUU //50331648 / 16777216 = 3
   */
-static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,bool immediately,UNS8 nodeId)
+UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,bool immediately,UNS8 nodeId)
 {
   NODE_DECISION;
   UNS16 value = 0;
@@ -409,7 +408,7 @@ static UNS8 motor_profile_position(int32_t position,uint32_t speed,bool abs_rel,
   * @retval 成功返回0X00,失败返回0XFF.
   * @note   None
 */
-static UNS8 motor_interpolation_position (UNS8 nodeId)
+UNS8 motor_interpolation_position (UNS8 nodeId)
 {
   NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != INTERPOLATED_POSITION_MODE)
@@ -432,7 +431,7 @@ static UNS8 motor_interpolation_position (UNS8 nodeId)
   * @retval 成功返回0X00,失败返回0XFF.
   * @note   None
 */
-static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
+UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
 {
   NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != HOMING_MODE)
@@ -479,7 +478,7 @@ static UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   * @retval 成功返回0X00,失败返回0XFF
   * @note   可以重复此函数用来控制电机运动不同位置。 置一od 0x2124开启S型加减速
   */
-static UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
+UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
 {
   NODE_DECISION;
   UNS16 value = 0;
@@ -501,7 +500,7 @@ static UNS8 motor_profile_velocity(uint32_t speed,UNS8 nodeId)
   * @note   可以用来急停
   急停减速时间斜率  6085h 默认值 200ms [3000 rpm减速到 0    rpm所需要的时间]
 */
-static UNS8 motor_off(UNS8 nodeId)
+UNS8 motor_off(UNS8 nodeId)
 {
   NODE_DECISION;
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
