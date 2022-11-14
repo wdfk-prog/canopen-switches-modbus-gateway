@@ -1,31 +1,31 @@
 /**
  * @file    agile_modbus.c
- * @brief   Agile Modbus è½¯ä»¶åŒ…é€šç”¨æºæ–‡ä»¶
- * @author  é©¬é¾™ä¼Ÿ (2544047213@qq.com)
+ * @brief   Agile Modbus Èí¼ş°üÍ¨ÓÃÔ´ÎÄ¼ş
+ * @author  ÂíÁúÎ° (2544047213@qq.com)
  * @date    2022-07-28
  *
  @verbatim
-    ä½¿ç”¨ï¼š
-    ç”¨æˆ·éœ€è¦å®ç°ç¡¬ä»¶æ¥å£çš„ `å‘é€æ•°æ®` ã€ `ç­‰å¾…æ•°æ®æ¥æ”¶ç»“æŸ` ã€ `æ¸…ç©ºæ¥æ”¶ç¼“å­˜` å‡½æ•°
+    Ê¹ÓÃ£º
+    ÓÃ»§ĞèÒªÊµÏÖÓ²¼ş½Ó¿ÚµÄ `·¢ËÍÊı¾İ` ¡¢ `µÈ´ıÊı¾İ½ÓÊÕ½áÊø` ¡¢ `Çå¿Õ½ÓÊÕ»º´æ` º¯Êı
 
-    - ä¸»æœºï¼š
-        1. `agile_modbus_rtu_init` / `agile_modbus_tcp_init` åˆå§‹åŒ– `RTU/TCP` ç¯å¢ƒ
-        2. `agile_modbus_set_slave` è®¾ç½®ä»æœºåœ°å€
-        3. `æ¸…ç©ºæ¥æ”¶ç¼“å­˜`
-        4. `agile_modbus_serialize_xxx` æ‰“åŒ…è¯·æ±‚æ•°æ®
-        5. `å‘é€æ•°æ®`
-        6. `ç­‰å¾…æ•°æ®æ¥æ”¶ç»“æŸ`
-        7. `agile_modbus_deserialize_xxx` è§£æå“åº”æ•°æ®
-        8. ç”¨æˆ·å¤„ç†å¾—åˆ°çš„æ•°æ®
+    - Ö÷»ú£º
+        1. `agile_modbus_rtu_init` / `agile_modbus_tcp_init` ³õÊ¼»¯ `RTU/TCP` »·¾³
+        2. `agile_modbus_set_slave` ÉèÖÃ´Ó»úµØÖ·
+        3. `Çå¿Õ½ÓÊÕ»º´æ`
+        4. `agile_modbus_serialize_xxx` ´ò°üÇëÇóÊı¾İ
+        5. `·¢ËÍÊı¾İ`
+        6. `µÈ´ıÊı¾İ½ÓÊÕ½áÊø`
+        7. `agile_modbus_deserialize_xxx` ½âÎöÏìÓ¦Êı¾İ
+        8. ÓÃ»§´¦ÀíµÃµ½µÄÊı¾İ
 
-    - ä»æœºï¼š
-        1. å®ç° `agile_modbus_slave_callback_t` ç±»å‹å›è°ƒå‡½æ•°
-        2. `agile_modbus_rtu_init` / `agile_modbus_tcp_init` åˆå§‹åŒ– `RTU/TCP` ç¯å¢ƒ
-        3. `agile_modbus_set_slave` è®¾ç½®ä»æœºåœ°å€
-        4. `ç­‰å¾…æ•°æ®æ¥æ”¶ç»“æŸ`
-        5. `agile_modbus_slave_handle` å¤„ç†è¯·æ±‚æ•°æ®
-        6. `æ¸…ç©ºæ¥æ”¶ç¼“å­˜` (å¯é€‰)
-        7. `å‘é€æ•°æ®`
+    - ´Ó»ú£º
+        1. ÊµÏÖ `agile_modbus_slave_callback_t` ÀàĞÍ»Øµ÷º¯Êı
+        2. `agile_modbus_rtu_init` / `agile_modbus_tcp_init` ³õÊ¼»¯ `RTU/TCP` »·¾³
+        3. `agile_modbus_set_slave` ÉèÖÃ´Ó»úµØÖ·
+        4. `µÈ´ıÊı¾İ½ÓÊÕ½áÊø`
+        5. `agile_modbus_slave_handle` ´¦ÀíÇëÇóÊı¾İ
+        6. `Çå¿Õ½ÓÊÕ»º´æ` (¿ÉÑ¡)
+        7. `·¢ËÍÊı¾İ`
 
  @endverbatim
  *
@@ -39,6 +39,9 @@
 #include "agile_modbus.h"
 #include <string.h>
 
+#include <rtthread.h>
+#define memcpy(dst, src, count) rt_memcpy(dst, src, count)
+
 /** @defgroup COMMON Common
  * @{
  */
@@ -46,7 +49,7 @@
 /** @defgroup COMMON_Private_Constants Common Private Constants
  * @{
  */
-#define AGILE_MODBUS_MSG_LENGTH_UNDEFINED -1 /**< å¯¹åº”åŠŸèƒ½ç æ•°æ®é•¿åº¦æœªå®šä¹‰ */
+#define AGILE_MODBUS_MSG_LENGTH_UNDEFINED -1 /**< ¶ÔÓ¦¹¦ÄÜÂëÊı¾İ³¤¶ÈÎ´¶¨Òå */
 /**
  * @}
  */
@@ -56,13 +59,13 @@
  */
 
 /**
- * @brief   è®¡ç®—åŠŸèƒ½ç åè¦æ¥æ”¶çš„æ•°æ®å…ƒé•¿åº¦
+ * @brief   ¼ÆËã¹¦ÄÜÂëºóÒª½ÓÊÕµÄÊı¾İÔª³¤¶È
  @verbatim
     ---------- Request     Indication ----------
     | Client | ---------------------->| Server |
     ---------- Confirmation  Response ----------
 
-    ä»¥ 03 åŠŸèƒ½ç è¯·æ±‚æŠ¥æ–‡ä¸¾ä¾‹
+    ÒÔ 03 ¹¦ÄÜÂëÇëÇó±¨ÎÄ¾ÙÀı
 
     ---------- ------ --------------- ---------
     | header | | 03 | | 00 00 00 01 | | CRC16 |
@@ -71,19 +74,19 @@
     ----------
     | header |
     ----------
-        RTU: è®¾å¤‡åœ°å€
-        TCP: | äº‹åŠ¡å¤„ç†æ ‡è¯†  åè®®æ ‡è¯†  é•¿åº¦  å•å…ƒæ ‡è¯†ç¬¦ |
+        RTU: Éè±¸µØÖ·
+        TCP: | ÊÂÎñ´¦Àí±êÊ¶  Ğ­Òé±êÊ¶  ³¤¶È  µ¥Ôª±êÊ¶·û |
 
     ---------------
     | 00 00 00 01 |
     ---------------
-        æ•°æ®å…ƒ: ä¸åŠŸèƒ½ç ç›¸å…³çš„æ•°æ®ï¼Œå¦‚ 03 åŠŸèƒ½ç æ•°æ®å…ƒä¸­åŒ…å«å¯„å­˜å™¨èµ·å§‹åœ°å€å’Œå¯„å­˜å™¨é•¿åº¦
+        Êı¾İÔª: Óë¹¦ÄÜÂëÏà¹ØµÄÊı¾İ£¬Èç 03 ¹¦ÄÜÂëÊı¾İÔªÖĞ°üº¬¼Ä´æÆ÷ÆğÊ¼µØÖ·ºÍ¼Ä´æÆ÷³¤¶È
 
  @endverbatim
- * @param   ctx modbus å¥æŸ„
- * @param   function åŠŸèƒ½ç 
- * @param   msg_type æ¶ˆæ¯ç±»å‹
- * @return  æ•°æ®å…ƒé•¿åº¦
+ * @param   ctx modbus ¾ä±ú
+ * @param   function ¹¦ÄÜÂë
+ * @param   msg_type ÏûÏ¢ÀàĞÍ
+ * @return  Êı¾İÔª³¤¶È
  */
 static uint8_t agile_modbus_compute_meta_length_after_function(agile_modbus_t *ctx, int function, agile_modbus_msg_type_t msg_type)
 {
@@ -139,13 +142,13 @@ static uint8_t agile_modbus_compute_meta_length_after_function(agile_modbus_t *c
 }
 
 /**
- * @brief   è®¡ç®—æ•°æ®å…ƒä¹‹åè¦æ¥æ”¶çš„æ•°æ®é•¿åº¦
+ * @brief   ¼ÆËãÊı¾İÔªÖ®ºóÒª½ÓÊÕµÄÊı¾İ³¤¶È
  @verbatim
     ---------- Request     Indication ----------
     | Client | ---------------------->| Server |
     ---------- Confirmation  Response ----------
 
-    ä»¥ 03 åŠŸèƒ½ç å“åº”æŠ¥æ–‡ä¸¾ä¾‹
+    ÒÔ 03 ¹¦ÄÜÂëÏìÓ¦±¨ÎÄ¾ÙÀı
 
     ---------- ------ ------ --------- ---------
     | header | | 03 | | 02 | | 00 00 | | CRC16 |
@@ -154,25 +157,25 @@ static uint8_t agile_modbus_compute_meta_length_after_function(agile_modbus_t *c
     ----------
     | header |
     ----------
-        RTU: è®¾å¤‡åœ°å€
-        TCP: | äº‹åŠ¡å¤„ç†æ ‡è¯†  åè®®æ ‡è¯†  é•¿åº¦  å•å…ƒæ ‡è¯†ç¬¦ |
+        RTU: Éè±¸µØÖ·
+        TCP: | ÊÂÎñ´¦Àí±êÊ¶  Ğ­Òé±êÊ¶  ³¤¶È  µ¥Ôª±êÊ¶·û |
 
     ------
     | 02 |
     ------
-        æ•°æ®å…ƒ: ä¸¤ä¸ªå­—èŠ‚æ•°æ®
+        Êı¾İÔª: Á½¸ö×Ö½ÚÊı¾İ
 
     ---------
     | 00 00 |
     ---------
-        æ•°æ®
+        Êı¾İ
 
  @endverbatim
- * @param   ctx modbus å¥æŸ„
- * @param   msg æ¶ˆæ¯æŒ‡é’ˆ
- * @param   msg_length æ¶ˆæ¯é•¿åº¦
- * @param   msg_type æ¶ˆæ¯ç±»å‹
- * @return  æ•°æ®é•¿åº¦
+ * @param   ctx modbus ¾ä±ú
+ * @param   msg ÏûÏ¢Ö¸Õë
+ * @param   msg_length ÏûÏ¢³¤¶È
+ * @param   msg_type ÏûÏ¢ÀàĞÍ
+ * @return  Êı¾İ³¤¶È
  */
 static int agile_modbus_compute_data_length_after_meta(agile_modbus_t *ctx, uint8_t *msg, int msg_length, agile_modbus_msg_type_t msg_type)
 {
@@ -214,12 +217,12 @@ static int agile_modbus_compute_data_length_after_meta(agile_modbus_t *ctx, uint
 }
 
 /**
- * @brief   æ£€éªŒæ¥æ”¶æ•°æ®æ­£ç¡®æ€§
- * @param   ctx modbus å¥æŸ„
- * @param   msg æ¶ˆæ¯æŒ‡é’ˆ
- * @param   msg_length æ¶ˆæ¯é•¿åº¦
- * @param   msg_type æ¶ˆæ¯ç±»å‹
- * @return  >0:æ­£ç¡®ï¼Œmodbus æ•°æ®å¸§é•¿åº¦; å…¶ä»–:å¼‚å¸¸
+ * @brief   ¼ìÑé½ÓÊÕÊı¾İÕıÈ·ĞÔ
+ * @param   ctx modbus ¾ä±ú
+ * @param   msg ÏûÏ¢Ö¸Õë
+ * @param   msg_length ÏûÏ¢³¤¶È
+ * @param   msg_type ÏûÏ¢ÀàĞÍ
+ * @return  >0:ÕıÈ·£¬modbus Êı¾İÖ¡³¤¶È; ÆäËû:Òì³£
  */
 static int agile_modbus_receive_msg_judge(agile_modbus_t *ctx, uint8_t *msg, int msg_length, agile_modbus_msg_type_t msg_type)
 {
@@ -247,12 +250,12 @@ static int agile_modbus_receive_msg_judge(agile_modbus_t *ctx, uint8_t *msg, int
  */
 
 /**
- * @brief   åˆå§‹åŒ– modbus å¥æŸ„
- * @param   ctx modbus å¥æŸ„
- * @param   send_buf å‘é€ç¼“å†²åŒº
- * @param   send_bufsz å‘é€ç¼“å†²åŒºå¤§å°
- * @param   read_buf æ¥æ”¶ç¼“å†²åŒº
- * @param   read_bufsz æ¥æ”¶ç¼“å†²åŒºå¤§å°
+ * @brief   ³õÊ¼»¯ modbus ¾ä±ú
+ * @param   ctx modbus ¾ä±ú
+ * @param   send_buf ·¢ËÍ»º³åÇø
+ * @param   send_bufsz ·¢ËÍ»º³åÇø´óĞ¡
+ * @param   read_buf ½ÓÊÕ»º³åÇø
+ * @param   read_bufsz ½ÓÊÕ»º³åÇø´óĞ¡
  */
 void agile_modbus_common_init(agile_modbus_t *ctx, uint8_t *send_buf, int send_bufsz, uint8_t *read_buf, int read_bufsz)
 {
@@ -265,10 +268,10 @@ void agile_modbus_common_init(agile_modbus_t *ctx, uint8_t *send_buf, int send_b
 }
 
 /**
- * @brief   è®¾ç½®åœ°å€
- * @param   ctx modbus å¥æŸ„
- * @param   slave åœ°å€
- * @return  0:æˆåŠŸ
+ * @brief   ÉèÖÃµØÖ·
+ * @param   ctx modbus ¾ä±ú
+ * @param   slave µØÖ·
+ * @return  0:³É¹¦
  */
 int agile_modbus_set_slave(agile_modbus_t *ctx, int slave)
 {
@@ -276,9 +279,9 @@ int agile_modbus_set_slave(agile_modbus_t *ctx, int slave)
 }
 
 /**
- * @brief   è®¾ç½® modbus å¯¹è±¡çš„è®¡ç®—åŠŸèƒ½ç åè¦æ¥æ”¶çš„æ•°æ®å…ƒé•¿åº¦å›è°ƒå‡½æ•°
- * @param   ctx modbus å¥æŸ„
- * @param   cb è®¡ç®—åŠŸèƒ½ç åè¦æ¥æ”¶çš„æ•°æ®å…ƒé•¿åº¦å›è°ƒå‡½æ•°
+ * @brief   ÉèÖÃ modbus ¶ÔÏóµÄ¼ÆËã¹¦ÄÜÂëºóÒª½ÓÊÕµÄÊı¾İÔª³¤¶È»Øµ÷º¯Êı
+ * @param   ctx modbus ¾ä±ú
+ * @param   cb ¼ÆËã¹¦ÄÜÂëºóÒª½ÓÊÕµÄÊı¾İÔª³¤¶È»Øµ÷º¯Êı
  * @see     agile_modbus_compute_meta_length_after_function
  */
 void agile_modbus_set_compute_meta_length_after_function_cb(agile_modbus_t *ctx,
@@ -289,9 +292,9 @@ void agile_modbus_set_compute_meta_length_after_function_cb(agile_modbus_t *ctx,
 }
 
 /**
- * @brief   è®¾ç½® modbus å¯¹è±¡çš„è®¡ç®—æ•°æ®å…ƒä¹‹åè¦æ¥æ”¶çš„æ•°æ®é•¿åº¦å›è°ƒå‡½æ•°
- * @param   ctx modbus å¥æŸ„
- * @param   cb è®¡ç®—æ•°æ®å…ƒä¹‹åè¦æ¥æ”¶çš„æ•°æ®é•¿åº¦å›è°ƒå‡½æ•°
+ * @brief   ÉèÖÃ modbus ¶ÔÏóµÄ¼ÆËãÊı¾İÔªÖ®ºóÒª½ÓÊÕµÄÊı¾İ³¤¶È»Øµ÷º¯Êı
+ * @param   ctx modbus ¾ä±ú
+ * @param   cb ¼ÆËãÊı¾İÔªÖ®ºóÒª½ÓÊÕµÄÊı¾İ³¤¶È»Øµ÷º¯Êı
  * @see     agile_modbus_compute_data_length_after_meta
  */
 void agile_modbus_set_compute_data_length_after_meta_cb(agile_modbus_t *ctx,
@@ -302,12 +305,12 @@ void agile_modbus_set_compute_data_length_after_meta_cb(agile_modbus_t *ctx,
 }
 
 /**
- * @brief   æ ¡éªŒæ¥æ”¶æ•°æ®æ­£ç¡®æ€§
- * @note    è¯¥ API è¿”å›çš„æ˜¯ modbus æ•°æ®å¸§é•¿åº¦ï¼Œæ¯”å¦‚ 8 ä¸ªå­—èŠ‚çš„ modbus æ•°æ®å¸§ + 2 ä¸ªå­—èŠ‚çš„è„æ•°æ®ï¼Œè¿”å› 8
- * @param   ctx modbus å¥æŸ„
- * @param   msg_length æ¥æ”¶æ•°æ®é•¿åº¦
- * @param   msg_type æ¶ˆæ¯ç±»å‹
- * @return  >0:æ­£ç¡®ï¼Œmodbus æ•°æ®å¸§é•¿åº¦; å…¶ä»–:å¼‚å¸¸
+ * @brief   Ğ£Ñé½ÓÊÕÊı¾İÕıÈ·ĞÔ
+ * @note    ¸Ã API ·µ»ØµÄÊÇ modbus Êı¾İÖ¡³¤¶È£¬±ÈÈç 8 ¸ö×Ö½ÚµÄ modbus Êı¾İÖ¡ + 2 ¸ö×Ö½ÚµÄÔàÊı¾İ£¬·µ»Ø 8
+ * @param   ctx modbus ¾ä±ú
+ * @param   msg_length ½ÓÊÕÊı¾İ³¤¶È
+ * @param   msg_type ÏûÏ¢ÀàĞÍ
+ * @return  >0:ÕıÈ·£¬modbus Êı¾İÖ¡³¤¶È; ÆäËû:Òì³£
  */
 int agile_modbus_receive_judge(agile_modbus_t *ctx, int msg_length, agile_modbus_msg_type_t msg_type)
 {
@@ -332,12 +335,12 @@ int agile_modbus_receive_judge(agile_modbus_t *ctx, int msg_length, agile_modbus
  */
 
 /**
- * @brief   è®¡ç®—é¢„æœŸå“åº”æ•°æ®é•¿åº¦
- * @note    å¦‚æœæ˜¯ç‰¹æ®Šçš„åŠŸèƒ½ç ï¼Œè¿”å› AGILE_MODBUS_MSG_LENGTH_UNDEFINED ï¼Œä½†è¿™ä¸ä»£è¡¨å¼‚å¸¸ã€‚
- *          agile_modbus_check_confirmation è°ƒç”¨è¯¥ API å¤„ç†æ—¶è®¤ä¸º AGILE_MODBUS_MSG_LENGTH_UNDEFINED è¿”å›å€¼ä¹Ÿæ˜¯æœ‰æ•ˆçš„ã€‚
- * @param   ctx modbus å¥æŸ„
- * @param   req è¯·æ±‚æ•°æ®æŒ‡é’ˆ
- * @return  é¢„æœŸå“åº”æ•°æ®é•¿åº¦
+ * @brief   ¼ÆËãÔ¤ÆÚÏìÓ¦Êı¾İ³¤¶È
+ * @note    Èç¹ûÊÇÌØÊâµÄ¹¦ÄÜÂë£¬·µ»Ø AGILE_MODBUS_MSG_LENGTH_UNDEFINED £¬µ«Õâ²»´ú±íÒì³£¡£
+ *          agile_modbus_check_confirmation µ÷ÓÃ¸Ã API ´¦ÀíÊ±ÈÏÎª AGILE_MODBUS_MSG_LENGTH_UNDEFINED ·µ»ØÖµÒ²ÊÇÓĞĞ§µÄ¡£
+ * @param   ctx modbus ¾ä±ú
+ * @param   req ÇëÇóÊı¾İÖ¸Õë
+ * @return  Ô¤ÆÚÏìÓ¦Êı¾İ³¤¶È
  */
 static int agile_modbus_compute_response_length_from_request(agile_modbus_t *ctx, uint8_t *req)
 {
@@ -380,13 +383,13 @@ static int agile_modbus_compute_response_length_from_request(agile_modbus_t *ctx
 }
 
 /**
- * @brief   æ£€æŸ¥ç¡®è®¤ä»æœºå“åº”çš„æ•°æ®
- * @param   ctx modbus å¥æŸ„
- * @param   req è¯·æ±‚æ•°æ®æŒ‡é’ˆ
- * @param   rsp å“åº”æ•°æ®æŒ‡é’ˆ
- * @param   rsp_length å“åº”æ•°æ®é•¿åº¦
- * @return  >=0:å¯¹åº”åŠŸèƒ½ç å“åº”å¯¹è±¡çš„é•¿åº¦(å¦‚ 03 åŠŸèƒ½ç ï¼Œå€¼ä»£è¡¨å¯„å­˜å™¨ä¸ªæ•°);
- *          å…¶ä»–:å¼‚å¸¸ (-1ï¼šæŠ¥æ–‡é”™è¯¯ï¼›å…¶ä»–ï¼šå¯æ ¹æ® `-128 - $è¿”å›å€¼` å¾—åˆ°å¼‚å¸¸ç )
+ * @brief   ¼ì²éÈ·ÈÏ´Ó»úÏìÓ¦µÄÊı¾İ
+ * @param   ctx modbus ¾ä±ú
+ * @param   req ÇëÇóÊı¾İÖ¸Õë
+ * @param   rsp ÏìÓ¦Êı¾İÖ¸Õë
+ * @param   rsp_length ÏìÓ¦Êı¾İ³¤¶È
+ * @return  >=0:¶ÔÓ¦¹¦ÄÜÂëÏìÓ¦¶ÔÏóµÄ³¤¶È(Èç 03 ¹¦ÄÜÂë£¬Öµ´ú±í¼Ä´æÆ÷¸öÊı);
+ *          ÆäËû:Òì³£ (-1£º±¨ÎÄ´íÎó£»ÆäËû£º¿É¸ù¾İ `-128 - $·µ»ØÖµ` µÃµ½Òì³£Âë)
  */
 static int agile_modbus_check_confirmation(agile_modbus_t *ctx, uint8_t *req,
                                            uint8_t *rsp, int rsp_length)
@@ -473,18 +476,18 @@ static int agile_modbus_check_confirmation(agile_modbus_t *ctx, uint8_t *req,
  */
 
 /** @defgroup Master_Common_Operation_Functions Master Common Operation Functions
- *  @brief    å¸¸ç”¨ modbus ä¸»æœºæ“ä½œå‡½æ•°
+ *  @brief    ³£ÓÃ modbus Ö÷»ú²Ù×÷º¯Êı
  @verbatim
-    API å½¢å¼å¦‚ä¸‹ï¼š
-    - agile_modbus_serialize_xxx    æ‰“åŒ…è¯·æ±‚æ•°æ®
-    è¿”å›å€¼:
-        >0:è¯·æ±‚æ•°æ®é•¿åº¦
-        å…¶ä»–:å¼‚å¸¸
+    API ĞÎÊ½ÈçÏÂ£º
+    - agile_modbus_serialize_xxx    ´ò°üÇëÇóÊı¾İ
+    ·µ»ØÖµ:
+        >0:ÇëÇóÊı¾İ³¤¶È
+        ÆäËû:Òì³£
 
-    - agile_modbus_deserialize_xxx  è§£æå“åº”æ•°æ®
-    è¿”å›å€¼:
-        >=0:å¯¹åº”åŠŸèƒ½ç å“åº”å¯¹è±¡çš„é•¿åº¦(å¦‚ 03 åŠŸèƒ½ç ï¼Œå€¼ä»£è¡¨å¯„å­˜å™¨ä¸ªæ•°)
-        å…¶ä»–:å¼‚å¸¸ (-1ï¼šæŠ¥æ–‡é”™è¯¯ï¼›å…¶ä»–ï¼šå¯æ ¹æ® `-128 - $è¿”å›å€¼` å¾—åˆ°å¼‚å¸¸ç )
+    - agile_modbus_deserialize_xxx  ½âÎöÏìÓ¦Êı¾İ
+    ·µ»ØÖµ:
+        >=0:¶ÔÓ¦¹¦ÄÜÂëÏìÓ¦¶ÔÏóµÄ³¤¶È(Èç 03 ¹¦ÄÜÂë£¬Öµ´ú±í¼Ä´æÆ÷¸öÊı)
+        ÆäËû:Òì³£ (-1£º±¨ÎÄ´íÎó£»ÆäËû£º¿É¸ù¾İ `-128 - $·µ»ØÖµ` µÃµ½Òì³£Âë)
 
  @endverbatim
  * @{
@@ -1022,11 +1025,11 @@ int agile_modbus_deserialize_report_slave_id(agile_modbus_t *ctx, int msg_length
  */
 
 /**
- * @brief   å°†åŸå§‹æ•°æ®æ‰“åŒ…æˆè¯·æ±‚æŠ¥æ–‡
- * @param   ctx modbus å¥æŸ„
- * @param   raw_req åŸå§‹æŠ¥æ–‡(PDU + Slave address)
- * @param   raw_req_length åŸå§‹æŠ¥æ–‡é•¿åº¦
- * @return  >0:è¯·æ±‚æ•°æ®é•¿åº¦; å…¶ä»–:å¼‚å¸¸
+ * @brief   ½«Ô­Ê¼Êı¾İ´ò°ü³ÉÇëÇó±¨ÎÄ
+ * @param   ctx modbus ¾ä±ú
+ * @param   raw_req Ô­Ê¼±¨ÎÄ(PDU + Slave address)
+ * @param   raw_req_length Ô­Ê¼±¨ÎÄ³¤¶È
+ * @return  >0:ÇëÇóÊı¾İ³¤¶È; ÆäËû:Òì³£
  */
 int agile_modbus_serialize_raw_request(agile_modbus_t *ctx, const uint8_t *raw_req, int raw_req_length)
 {
@@ -1064,11 +1067,11 @@ int agile_modbus_serialize_raw_request(agile_modbus_t *ctx, const uint8_t *raw_r
 }
 
 /**
- * @brief   è§£æå“åº”åŸå§‹æ•°æ®
- * @param   ctx modbus å¥æŸ„
- * @param   msg_length æ¥æ”¶æ•°æ®é•¿åº¦
- * @return  >=0:å¯¹åº”åŠŸèƒ½ç å“åº”å¯¹è±¡çš„é•¿åº¦(å¦‚ 03 åŠŸèƒ½ç ï¼Œå€¼ä»£è¡¨å¯„å­˜å™¨ä¸ªæ•°);
- *          å…¶ä»–:å¼‚å¸¸ (-1ï¼šæŠ¥æ–‡é”™è¯¯ï¼›å…¶ä»–ï¼šå¯æ ¹æ® `-128 - $è¿”å›å€¼` å¾—åˆ°å¼‚å¸¸ç )
+ * @brief   ½âÎöÏìÓ¦Ô­Ê¼Êı¾İ
+ * @param   ctx modbus ¾ä±ú
+ * @param   msg_length ½ÓÊÕÊı¾İ³¤¶È
+ * @return  >=0:¶ÔÓ¦¹¦ÄÜÂëÏìÓ¦¶ÔÏóµÄ³¤¶È(Èç 03 ¹¦ÄÜÂë£¬Öµ´ú±í¼Ä´æÆ÷¸öÊı);
+ *          ÆäËû:Òì³£ (-1£º±¨ÎÄ´íÎó£»ÆäËû£º¿É¸ù¾İ `-128 - $·µ»ØÖµ` µÃµ½Òì³£Âë)
  */
 int agile_modbus_deserialize_raw_response(agile_modbus_t *ctx, int msg_length)
 {
@@ -1104,11 +1107,11 @@ int agile_modbus_deserialize_raw_response(agile_modbus_t *ctx, int msg_length)
  */
 
 /**
- * @brief   æ‰“åŒ…å¼‚å¸¸å“åº”æ•°æ®
- * @param   ctx modbus å¥æŸ„
- * @param   sft modbus ä¿¡æ¯å¤´
- * @param   exception_code å¼‚å¸¸ç 
- * @return  å“åº”æ•°æ®é•¿åº¦
+ * @brief   ´ò°üÒì³£ÏìÓ¦Êı¾İ
+ * @param   ctx modbus ¾ä±ú
+ * @param   sft modbus ĞÅÏ¢Í·
+ * @param   exception_code Òì³£Âë
+ * @return  ÏìÓ¦Êı¾İ³¤¶È
  */
 static int agile_modbus_serialize_response_exception(agile_modbus_t *ctx, agile_modbus_sft_t *sft, int exception_code)
 {
@@ -1131,10 +1134,10 @@ static int agile_modbus_serialize_response_exception(agile_modbus_t *ctx, agile_
  */
 
 /**
- * @brief   ä»æœº IO è®¾ç½®
- * @param   buf å­˜æ”¾ IO æ•°æ®åŒº
- * @param   index IO ç´¢å¼•(ç¬¬å‡ ä¸ª IO)
- * @param   status IO çŠ¶æ€
+ * @brief   ´Ó»ú IO ÉèÖÃ
+ * @param   buf ´æ·Å IO Êı¾İÇø
+ * @param   index IO Ë÷Òı(µÚ¼¸¸ö IO)
+ * @param   status IO ×´Ì¬
  */
 void agile_modbus_slave_io_set(uint8_t *buf, int index, int status)
 {
@@ -1148,10 +1151,10 @@ void agile_modbus_slave_io_set(uint8_t *buf, int index, int status)
 }
 
 /**
- * @brief   è¯»å–ä»æœº IO çŠ¶æ€
- * @param   buf IO æ•°æ®åŒºåŸŸ
- * @param   index IO ç´¢å¼•(ç¬¬å‡ ä¸ª IO)
- * @return  IO çŠ¶æ€(1/0)
+ * @brief   ¶ÁÈ¡´Ó»ú IO ×´Ì¬
+ * @param   buf IO Êı¾İÇøÓò
+ * @param   index IO Ë÷Òı(µÚ¼¸¸ö IO)
+ * @return  IO ×´Ì¬(1/0)
  */
 uint8_t agile_modbus_slave_io_get(uint8_t *buf, int index)
 {
@@ -1164,10 +1167,10 @@ uint8_t agile_modbus_slave_io_get(uint8_t *buf, int index)
 }
 
 /**
- * @brief   ä»æœºå¯„å­˜å™¨è®¾ç½®
- * @param   buf å­˜æ”¾æ•°æ®åŒº
- * @param   index å¯„å­˜å™¨ç´¢å¼•(ç¬¬å‡ ä¸ªå¯„å­˜å™¨)
- * @param   data å¯„å­˜å™¨æ•°æ®
+ * @brief   ´Ó»ú¼Ä´æÆ÷ÉèÖÃ
+ * @param   buf ´æ·ÅÊı¾İÇø
+ * @param   index ¼Ä´æÆ÷Ë÷Òı(µÚ¼¸¸ö¼Ä´æÆ÷)
+ * @param   data ¼Ä´æÆ÷Êı¾İ
  */
 void agile_modbus_slave_register_set(uint8_t *buf, int index, uint16_t data)
 {
@@ -1176,10 +1179,10 @@ void agile_modbus_slave_register_set(uint8_t *buf, int index, uint16_t data)
 }
 
 /**
- * @brief   è¯»å–ä»æœºå¯„å­˜å™¨æ•°æ®
- * @param   buf å¯„å­˜å™¨æ•°æ®åŒºåŸŸ
- * @param   index å¯„å­˜å™¨ç´¢å¼•(ç¬¬å‡ ä¸ªå¯„å­˜å™¨)
- * @return  å¯„å­˜å™¨æ•°æ®
+ * @brief   ¶ÁÈ¡´Ó»ú¼Ä´æÆ÷Êı¾İ
+ * @param   buf ¼Ä´æÆ÷Êı¾İÇøÓò
+ * @param   index ¼Ä´æÆ÷Ë÷Òı(µÚ¼¸¸ö¼Ä´æÆ÷)
+ * @return  ¼Ä´æÆ÷Êı¾İ
  */
 uint16_t agile_modbus_slave_register_get(uint8_t *buf, int index)
 {
@@ -1189,17 +1192,18 @@ uint16_t agile_modbus_slave_register_get(uint8_t *buf, int index)
 }
 
 /**
- * @brief   ä»æœºæ•°æ®å¤„ç†
- * @param   ctx modbus å¥æŸ„
- * @param   msg_length æ¥æ”¶æ•°æ®é•¿åº¦
- * @param   slave_strict ä»æœºåœ°å€ä¸¥æ ¼æ£€æŸ¥æ ‡å¿—
- *     @arg 0: ä¸æ¯”å¯¹ä»æœºåœ°å€
- *     @arg 1: æ¯”å¯¹ä»æœºåœ°å€
- * @param   slave_cb ä»æœºå›è°ƒå‡½æ•°
- * @param   slave_data ä»æœºå›è°ƒå‡½æ•°ç§æœ‰æ•°æ®
- * @param   frame_length å­˜æ”¾ modbus æ•°æ®å¸§é•¿åº¦
- * @return  >=0:è¦å“åº”çš„æ•°æ®é•¿åº¦; å…¶ä»–:å¼‚å¸¸
+ * @brief   ´Ó»úÊı¾İ´¦Àí
+ * @param   ctx modbus ¾ä±ú
+ * @param   msg_length ½ÓÊÕÊı¾İ³¤¶È
+ * @param   slave_strict ´Ó»úµØÖ·ÑÏ¸ñ¼ì²é±êÖ¾
+ *     @arg 0: ²»±È¶Ô´Ó»úµØÖ·
+ *     @arg 1: ±È¶Ô´Ó»úµØÖ·
+ * @param   slave_cb ´Ó»ú»Øµ÷º¯Êı
+ * @param   slave_data ´Ó»ú»Øµ÷º¯ÊıË½ÓĞÊı¾İ
+ * @param   frame_length ´æ·Å modbus Êı¾İÖ¡³¤¶È
+ * @return  >=0:ÒªÏìÓ¦µÄÊı¾İ³¤¶È; ÆäËû:Òì³£
  */
+volatile struct agile_modbus_slave_info *debug_slave_info = {0};
 int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave_strict,
                               agile_modbus_slave_callback_t slave_cb, const void *slave_data, int *frame_length)
 {
@@ -1219,6 +1223,7 @@ int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave
     uint16_t address;
     int rsp_length = 0;
     int exception_code = 0;
+    int data = 0;
     agile_modbus_sft_t sft;
     uint8_t *req = ctx->read_buf;
     uint8_t *rsp = ctx->send_buf;
@@ -1234,6 +1239,7 @@ int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave
     sft.t_id = ctx->backend->prepare_response_tid(req, &req_length);
 
     struct agile_modbus_slave_info slave_info = {0};
+    debug_slave_info = &slave_info;
     slave_info.sft = &sft;
     slave_info.rsp_length = &rsp_length;
     slave_info.address = address;
@@ -1305,14 +1311,13 @@ int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave
         }
         #endif
 
-        int data = (req[offset + 3] << 8) + req[offset + 4];
+        data = (req[offset + 3] << 8) + req[offset + 4];
         if (data == 0xFF00 || data == 0x0)
             data = data ? 1 : 0;
         else {
             exception_code = AGILE_MODBUS_EXCEPTION_ILLEGAL_DATA_VALUE;
             break;
         }
-
         slave_info.buf = (uint8_t *)&data;
         rsp_length = req_length;
         if (ctx->send_bufsz < (int)(rsp_length + ctx->backend->checksum_length)) {
@@ -1331,7 +1336,7 @@ int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave
         }
         #endif
 
-        int data = (req[offset + 3] << 8) + req[offset + 4];
+        data = (req[offset + 3] << 8) + req[offset + 4];
 
         slave_info.buf = (uint8_t *)&data;
         rsp_length = req_length;
