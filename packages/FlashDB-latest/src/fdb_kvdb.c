@@ -16,6 +16,8 @@
 #include <flashdb.h>
 #include <fdb_low_lvl.h>
 
+#define memcpy(dst, src, count) rt_memcpy(dst, src, count)
+
 #define FDB_LOG_TAG "[kv]"
 /* rewrite log prefix */
 #undef  FDB_LOG_PREFIX2

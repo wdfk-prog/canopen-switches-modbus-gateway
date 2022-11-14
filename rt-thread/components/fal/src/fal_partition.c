@@ -11,7 +11,7 @@
 #include <fal.h>
 #include <string.h>
 #include <stdlib.h>
-
+#define memcpy(dst, src, count) rt_memcpy(dst, src, count)
 /* partition magic word */
 #define FAL_PART_MAGIC_WORD         0x45503130
 #define FAL_PART_MAGIC_WORD_H       0x4550L

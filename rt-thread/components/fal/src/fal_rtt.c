@@ -15,7 +15,7 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 #include <string.h>
-
+#define memcpy(dst, src, count) rt_memcpy(dst, src, count)
 /* ========================== block device ======================== */
 struct fal_blk_device
 {
