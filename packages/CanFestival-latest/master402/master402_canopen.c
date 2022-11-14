@@ -36,17 +36,15 @@ typedef struct
   char name[RT_NAME_MAX];
   e_nodeState *nmt_state;
 }node_list;
-/* 节点配置状态结构体
- * err_code:配置参数错误代码 0xff,配置未发送,本地字典出错。
-                             0x03,配置回复未响应，节点字典出错
-                             0X01,节点重新上线
+/* 
+ * 节点配置状态结构体
 */
 typedef struct 
 {
   node_list *list;
 	uint8_t state;
 	uint8_t try_cnt;
-  uint8_t err_code;
+  uint16_t err_code;
   struct rt_semaphore finish_sem;
 }node_config_state;
 /* Private define ------------------------------------------------------------*/
@@ -146,15 +144,15 @@ static void Exit(CO_Data* d, UNS32 id)
   * @retval 返回节点名称
   * @note   若输入节点ID不正确，将返回空指针
 */
-char *nodeID_get_name(char* des,uint8_t nodeid)
+char *nodeID_get_name(char* des,uint8_t nodeID)
 {
   char* r = des;
 
   ASSERT(des != NULL);
 
-  if(nodeid == can_node[nodeid - 1].nodeID)
+  if(nodeID == can_node[nodeID - 1].nodeID)
   {
-    rt_memcpy(des,can_node[nodeid - 1].name,RT_NAME_MAX);
+    rt_memcpy(des,can_node[nodeID - 1].name,RT_NAME_MAX);
     return des;
   }
   else
@@ -166,12 +164,38 @@ char *nodeID_get_name(char* des,uint8_t nodeid)
   * @retval 返回NMT状态
   * @note   若输入节点ID不正确，将返回0XFF
 */
-e_nodeState nodeID_get_nmt(uint8_t nodeid)
+e_nodeState nodeID_get_nmt(uint8_t nodeID)
 {
-  if(nodeid == can_node[nodeid - 1].nodeID)
-    return *can_node[nodeid - 1].nmt_state;
+  ASSERT(!(nodeID == MAX_NODE_COUNT));
+  if(nodeID == can_node[nodeID - 1].nodeID)
+    return *can_node[nodeID - 1].nmt_state;
   else
     return 0XFF;
+}
+/**
+  * @brief  设置节点错误代码.
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+void nodeID_set_errcode(uint8_t nodeID,uint16_t errcode)
+{
+  ASSERT(!(nodeID >= MAX_NODE_COUNT));
+  slave_conf[nodeID - 2].err_code = errcode;
+}
+/**
+  * @brief  查看节点错误代码.
+  * @param  None.
+  * @retval None.
+  * @note   None.
+*/
+uint16_t nodeID_get_errcode(uint8_t nodeID)
+{
+  ASSERT(!(nodeID >= MAX_NODE_COUNT));
+  if(nodeID == CONTROLLER_NODEID)
+    return 0;
+  else
+    return slave_conf[nodeID - 2].err_code;
 }
 #ifdef RT_USING_MSH
 /**
@@ -389,13 +413,13 @@ static void config_node_param_cb(CO_Data* d, UNS8 nodeId)
 			rt_sem_release(&(conf->finish_sem));
 			conf->state = 0;
 			conf->try_cnt = 0;
-      conf->err_code = 0x03;
+      conf->err_code = NODEID_CONFIG_NO_RESPOND;
 			LOG_E("SDO config try count > 3, config failed!,error = %d",conf->err_code);
 		}
 	}
 	else
 	{
-    conf->err_code = 0;
+    conf->err_code = NODEID_CONFIG_SUCCESS;
 		conf->state++;
 		conf->try_cnt = 0;
 		config_node_param(nodeId, conf);
@@ -415,6 +439,7 @@ void config_node(uint8_t nodeId)
       rt_sem_init(&(slave_conf[nodeId - 2].finish_sem), "servocnf", 0, RT_IPC_FLAG_FIFO);
       if(rt_sem_take(&(slave_conf[nodeId - 2].finish_sem), SDO_REPLY_TIMEOUT) != RT_EOK)
       {
+        slave_conf[nodeId - 2].err_code = NODEID_CONFIG_NO_RESPOND;
         //掉线情况执行，重新上电情况无需处理
         LOG_W("Waiting for the repair to complete, CAN communication is currently unavailable");
         master402_fix_config_err(OD_Data,nodeId);
@@ -437,11 +462,11 @@ void config_node(uint8_t nodeId)
       if(slave_conf[nodeId - 2].err_code != 0X00)//因配置错误导致的退出
       {
         LOG_E("Failed to configure the dictionary for node %d",nodeId);
-        if(slave_conf[nodeId - 2].err_code == 0XFF)
+        if(slave_conf[nodeId - 2].err_code == NODEID_CONFIG_NO_SEND)
         {
           LOG_E("The configuration was not sent because the local dictionary failed");
         }
-        else if(slave_conf[nodeId - 2].err_code == 0X03)
+        else if(slave_conf[nodeId - 2].err_code == NODEID_CONFIG_NO_RESPOND)
         {
           LOG_E("The configuration reply did not respond, and the node dictionary failed");
         }
@@ -1599,6 +1624,6 @@ static void config_node_param(uint8_t nodeId, node_config_state *conf)
   }
   else
   {
-    conf->err_code = 0;
+    conf->err_code = NODEID_CONFIG_SUCCESS;
   }
 }

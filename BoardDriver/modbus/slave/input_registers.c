@@ -17,7 +17,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define CAN_START 1
+#define CAN_START 0
 #define CAN_END   10
 #define MOTOR_START 11
 #define MOTOR_END   20
@@ -34,9 +34,13 @@ static uint16_t _tab_input_registers[MODBUS_REG_MAX_NUM];
 */
 int modbus_slave_input_register_default(void)
 {
-  _tab_input_registers[1]  = MAX_NODE_COUNT - 1; //节点数量
-  _tab_input_registers[2] = 0X0F;                //节点NMT状态
-  nodeID_get_name((char *)&_tab_input_registers[3],modbus_register_get(0,1));//节点名称
+  _tab_input_registers[1]  = MAX_NODE_COUNT - 1;  //节点数量
+  _tab_input_registers[2] = 0X0F;                 //节点NMT状态
+  //从0X03~0X06
+  nodeID_get_name((char *)&_tab_input_registers[3],
+                   modbus_register_get(0,1));     //节点名称
+  _tab_input_registers[7] = 0X00;                 //节点错误代码
+
   return RT_EOK;
 }
 INIT_COMPONENT_EXPORT(modbus_slave_input_register_default);
@@ -48,9 +52,12 @@ INIT_COMPONENT_EXPORT(modbus_slave_input_register_default);
 */
 void modbus_slave_input_register_write(void)
 {
-    uint8_t nodeID = modbus_register_get(0,1);
-    _tab_input_registers[2] = nodeID_get_nmt(nodeID);
-    nodeID_get_name((char *)&_tab_input_registers[3],nodeID);//节点名称
+  uint8_t nodeID = modbus_register_get(0,1);
+
+  _tab_input_registers[2] = nodeID_get_nmt(nodeID);         //节点NMT状态
+  //从0X03~0X06
+  nodeID_get_name((char *)&_tab_input_registers[3],nodeID); //节点名称
+  _tab_input_registers[7] = nodeID_get_errcode(nodeID);     //节点错误代码
 }
 /**
   * @brief  获取MODBUS输入寄存器数据
@@ -71,10 +78,10 @@ uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index)
 */
 static int get_map_buf(void *buf, int bufsz)
 {
-    uint16_t *ptr = (uint16_t *)buf;
-    //使用memcpy比数组赋值快15us左右
-    rt_memcpy(ptr,_tab_input_registers + MODBUS_START_ADDR,sizeof(_tab_input_registers));
-    return 0;
+  uint16_t *ptr = (uint16_t *)buf;
+  //使用memcpy比数组赋值快15us左右
+  rt_memcpy(ptr,_tab_input_registers + MODBUS_START_ADDR,sizeof(_tab_input_registers));
+  return 0;
 }
 /**
   * @brief  
@@ -84,7 +91,7 @@ static int get_map_buf(void *buf, int bufsz)
 */
 const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MAPS_NUM] = 
 {
-    //起始地址    结束地址    获取接口      设置接口 
-    {CAN_START,   CAN_END,    get_map_buf,    NULL},
-    {MOTOR_START, MOTOR_END,  get_map_buf,    NULL},
+  //起始地址    结束地址    获取接口      设置接口 
+  {CAN_START,   CAN_END,    get_map_buf,    NULL},
+  {MOTOR_START, MOTOR_END,  get_map_buf,    NULL},
 };
