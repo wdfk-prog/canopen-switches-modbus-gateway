@@ -14,15 +14,11 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
+#include "stm32f4xx_hal.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define REG_START 0x00
 
-#define CAN_START   0
-#define CAN_END     10
-#define MOTOR_START 11
-#define MOTOR_END   20
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -88,16 +84,24 @@ void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data)
 }
 /**
   * @brief  设置MODBUS保持寄存器数据清零
-  * @param  index:开始数组索引
-  * @param  index:开始数组子索引
-  * @param  len:长度
-  * @retval None
+  * @param  start_index:开始数组索引
+  * @param  start_sub_index:开始数组子索引
+  * @param  end_index:结束数组索引
+  * @param  end_sub_index:结束数组子索引
+  * @retval 成功返回0，失败返回0XFF
   * @note   None
 */
-void modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t len)
+uint8_t modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t end_index,uint16_t end_sub_index)
 {
   uint16_t *ptr = (uint16_t *)_tab_registers + start_sub_index;
-  rt_memset(ptr,0,len);
+  int16_t len = end_sub_index - start_sub_index;
+  if(len <= 0)
+    return 0XFF;
+  else
+  {
+    rt_memset(ptr,0,len);
+    return 0x00;
+  }
 }
 /**
   * @brief  
@@ -121,11 +125,6 @@ static int get_map_buf(void *buf, int bufsz)
 static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
-
-//    for (int i = 0; i < len; i++) 
-//    {
-//        _tab_registers[MODBUS_START_ADDR + index + i] = ptr[index + i];
-//    }
     rt_memcpy(_tab_registers + MODBUS_START_ADDR + index,ptr + index,len);
     return 0;
 }
@@ -137,7 +136,6 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 */
 const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM] = 
 {
-   //起始地址     结束地址      获取接口   设置接口 
-   {CAN_START,    CAN_END,    get_map_buf, set_map_buf},
-   {MOTOR_START,  MOTOR_END,  get_map_buf, set_map_buf},
+   //起始地址                     结束地址                          获取接口   设置接口 
+   {0,        sizeof(_tab_registers) / sizeof(_tab_registers[0]),    get_map_buf, set_map_buf},
 };
