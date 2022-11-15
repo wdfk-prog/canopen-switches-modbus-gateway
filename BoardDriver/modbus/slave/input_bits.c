@@ -33,7 +33,9 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
+    modbus_mutex_lock();
     rt_memcpy(ptr,_tab_input_bits + MODBUS_START_ADDR,sizeof(_tab_input_bits));
+    modbus_mutex_unlock();
     return 0;
 }
 /**

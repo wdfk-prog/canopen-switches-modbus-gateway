@@ -45,7 +45,9 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
+    modbus_mutex_lock();
     rt_memcpy(ptr,_tab_bits + MODBUS_START_ADDR,sizeof(_tab_bits));
+    modbus_mutex_unlock();
     return 0;
 }
 /**
@@ -58,8 +60,9 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
 
-
+    modbus_mutex_lock();
     rt_memcpy(_tab_bits + MODBUS_START_ADDR + index,ptr + index,len * sizeof(uint8_t));
+    modbus_mutex_unlock();
     return 0;
 }
 /**

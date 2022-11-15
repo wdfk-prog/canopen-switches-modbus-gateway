@@ -14,17 +14,67 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "gpio.h"
+
+/*ulog include*/
+#define LOG_TAG              "mb_s_com" 
+#define LOG_LVL              DBG_INFO
+#include <ulog.h>
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-
+#define MAX_MUTEX_WAIT_TIME 10      //互斥量等待时间
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-
+rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
+extern int modbus_slave_register_default(void);
+extern int modbus_slave_input_register_default(void);
+
 extern void modbus_slave_input_register_write(void);
 extern void modbus_slave_register_write(void);
+/**
+  * @brief  写入MODBUS默认值
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+static int modbus_default(void)
+{
+  modbus_slave_register_default();
+  modbus_slave_input_register_default();
+
+  modbus_mutex = rt_mutex_create("modbus",RT_IPC_FLAG_PRIO);
+
+  return RT_EOK;
+}
+INIT_COMPONENT_EXPORT(modbus_default);
+/**
+  * @brief  锁定
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_mutex_lock(void)
+{
+	if(rt_mutex_take(modbus_mutex, MAX_MUTEX_WAIT_TIME) != RT_EOK) 
+  {
+		LOG_E("canfestival take mutex failed!");
+	}
+}
+/**
+  * @brief  解锁
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_mutex_unlock(void)
+{
+	if(rt_mutex_release(modbus_mutex) != RT_EOK) 
+  {
+		LOG_E("canfestival release mutex failed!");
+	}
+}
 /**
   * @brief  对共享地址写入本机数据
   * @param  None

@@ -62,18 +62,21 @@ static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave
 
     return 0;
 }
-
+//保护资源
+extern void modbus_mutex_lock(void);
+extern void modbus_mutex_unlock(void);
+//写入资源
 extern void modbus_slave_write(void);
-
+//保持寄存器
 extern uint16_t modbus_register_get(uint16_t index,uint16_t sub_index);
 extern void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data);
 extern uint8_t modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t end_index,uint16_t end_sub_index);
-
+//输入寄存器
 extern uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index);
-
+//线圈寄存器
 extern uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index);
 extern void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data);
-
+//离散输入线圈寄存器
 extern uint8_t modbus_input_bits_get(uint16_t index,uint16_t sub_index);
 
 #ifdef __cplusplus

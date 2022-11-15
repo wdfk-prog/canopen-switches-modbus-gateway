@@ -40,7 +40,7 @@ int modbus_slave_input_register_default(void)
   //08~10DCAN保留区域
   return RT_EOK;
 }
-INIT_COMPONENT_EXPORT(modbus_slave_input_register_default);
+
 /**
   * @brief  写入本机数据至输入寄存器中
   * @param  None
@@ -77,8 +77,11 @@ uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index)
 static int get_map_buf(void *buf, int bufsz)
 {
   uint16_t *ptr = (uint16_t *)buf;
+
+  modbus_mutex_lock();
   //使用memcpy比数组赋值快15us左右
   rt_memcpy(ptr,_tab_input_registers + MODBUS_START_ADDR,sizeof(_tab_input_registers));
+  modbus_mutex_unlock();
   return 0;
 }
 /**

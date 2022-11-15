@@ -48,7 +48,6 @@ int modbus_slave_register_default(void)
   //22D~30D 电机保留区域
   return RT_EOK;
 }
-INIT_DEVICE_EXPORT(modbus_slave_register_default);
 /**
   * @brief  写入本机数据至保持寄存器中
   * @param  None
@@ -113,7 +112,9 @@ static int get_map_buf(void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
 
+    modbus_mutex_lock();
     rt_memcpy(ptr,_tab_registers + MODBUS_START_ADDR,sizeof(_tab_registers));
+    modbus_mutex_unlock();
     return 0;
 }
 /**
@@ -126,7 +127,9 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
 
+    modbus_mutex_lock();
     rt_memcpy(_tab_registers + MODBUS_START_ADDR + index,ptr + index,len * sizeof(uint16_t));
+    modbus_mutex_unlock();
     return 0;
 }
 /**
