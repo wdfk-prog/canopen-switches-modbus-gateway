@@ -141,8 +141,9 @@ static void Exit(CO_Data* d, UNS32 id)
 /************************外部调用函数********************************************************/
 /**
   * @brief  获取节点名称
-  * @param  None
-  * @retval 返回节点名称
+  * @param  des:目标地址
+  * @param  nodeID:节点ID
+  * @retval des:目标地址
   * @note   若输入节点ID不正确，将返回空指针
 */
 char *nodeID_get_name(char* des,uint8_t nodeID)
@@ -161,7 +162,7 @@ char *nodeID_get_name(char* des,uint8_t nodeID)
 }
 /**
   * @brief  获取节点NMT状态
-  * @param  None
+  * @param  nodeID:节点ID
   * @retval 返回NMT状态
   * @note   若输入节点ID不正确，将返回0XFF
 */
@@ -175,7 +176,8 @@ e_nodeState nodeID_get_nmt(uint8_t nodeID)
 }
 /**
   * @brief  设置节点错误代码.
-  * @param  None.
+  * @param  nodeID:节点ID
+  * @param  errcode:错误代码
   * @retval None.
   * @note   None.
 */
@@ -186,8 +188,8 @@ void nodeID_set_errcode(uint8_t nodeID,uint16_t errcode)
 }
 /**
   * @brief  查看节点错误代码.
-  * @param  None.
-  * @retval None.
+  * @param  nodeID:节点ID
+  * @retval 成功返回节点错误代码.失败返回0
   * @note   None.
 */
 uint16_t nodeID_get_errcode(uint8_t nodeID)
@@ -215,7 +217,7 @@ void nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5])
   * @brief  获取节点具体错误
   * @param  des:目标地址
   * @param  nodeID:节点ID
-  * @retval None.
+  * @retval des:目标地址
   * @note   None.
 */
 char* nodeID_get_errSpec(char* des,uint8_t nodeID)
