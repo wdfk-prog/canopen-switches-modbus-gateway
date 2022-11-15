@@ -29,6 +29,7 @@
 typedef enum
 {
 	KEY_MOTOR_ENABLE,                //电机使能
+  KEY_MOTOR_DISABLE,               //电机使能
   MBKEY_NUM,// 必须要有的记录按钮数量，必须在最后
 }mbkey_list;
 /** 
@@ -127,6 +128,13 @@ static mbkey mbkey_buf[MBKEY_NUM];	// 创建按键数组
 static uint8_t nodeID;//节点ID
 static MODE_OPERATION motor_mode;//电机模式
 /* private function prototypes -----------------------------------------------*/
+/** 
+  * @brief  电机使能控制
+  * @note   写入True使能电机控制,优先级小于禁用电机。
+  * @attention 
+注意置一后,对电机模式设置前，请注意电机运动参数是否修改为合适值。
+电机运动参数被多个控制模式所共用，并且有进行数据拼接操作。
+  */ 
 static void key_motor_enable(mbkey_status *event)
 {
   if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
@@ -153,6 +161,10 @@ static void key_motor_enable(mbkey_status *event)
           if(motor_profile_position(position,speed,abs_rel,immediately,nodeID) == 0XFF)
           {
             motor_on_profile_position(nodeID);
+          }
+          else
+          {
+            modbus_bits_set(0,1,0);
           }
         }
         break;
@@ -183,8 +195,12 @@ static void key_motor_enable(mbkey_status *event)
             REG_WRITE_VALUE(0,14,method,1);
             REG_WRITE_VALUE(0,15,switch_speed,10.0f);
             REG_WRITE_VALUE(0,16,zero_speed,10.0f);
-
+            
             motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
+          }
+          else
+          {
+            modbus_bits_set(0,1,0);
           }
         }
         break;
@@ -199,15 +215,49 @@ static void key_motor_enable(mbkey_status *event)
     case MBKEY_PRESS:   //松开到按下事件
     break;
     case MBKEY_RAISE:   //按下到松开事件
+    break;    
+  }
+}
+/** 
+  * @brief  电机禁用控制
+  * @note   写入True禁用电机控制,优先级高于使用电机。禁用电机将关闭电机使能状态。
+  */ 
+static void key_motor_disable(mbkey_status *event)
+{
+  if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
+  {
+    modbus_bits_set(0,2,1);
+    return;
+  }
+  switch(*event)
+  {
+    case MBKEY_ENABLE:  //按下处理事件
+      modbus_bits_set(0,1,0);
+    break;
+    case MBKEY_DISABLE: //松开处理事件
+    break;
+    case MBKEY_PRESS:   //松开到按下事件
       motor_off(nodeID);
-      if(modbus_register_reset(0,11,0,30) == 0XFF)//清除数据
-      {
-        LOG_W("Failed to clear data.");
-      }
+      modbus_register_reset(0,11,0,30);//清除数据
+    break;
+    case MBKEY_RAISE:   //按下到松开事件
     break;    
   }
 }
 /**************************状态机**********************************************/
+/**
+  * @brief  函数指针数组.
+  * @param  none.
+  * @retval none.
+  * @note   
+注意函数的顺序和数组越界问题
+https://blog.csdn.net/feimeng116/article/details/107515317
+*/
+static void (*operation[MBKEY_NUM])(mbkey_status *event) = 
+{
+  key_motor_enable,
+  key_motor_disable,
+};
 /** 
   * @brief  获取io电平的函数
   按键读取函数
@@ -331,18 +381,6 @@ static void read_status(void)
   }
 }
 /**
-  * @brief  函数指针数组.
-  * @param  none.
-  * @retval none.
-  * @note   
-注意函数的顺序和数组越界问题
-https://blog.csdn.net/feimeng116/article/details/107515317
-*/
-static void (*operation[MBKEY_NUM])(mbkey_status *event) = 
-{
-  key_motor_enable,
-};
-/**
   * @brief  处理函数
   * @param  none.
   * @retval none.
@@ -376,7 +414,7 @@ void mbkey_handler(void *p)
 void mbkey_shield_operate(uint8_t num,mbkey_enable_status option)
 {
   mbkey_buf[num].status.shield       = option;
-  mbkey_buf[num].status.key_event    = MBKEY_DISABLE;//退出刹车事件
+  mbkey_buf[num].status.key_event    = MBKEY_DISABLE;//退出事件
 }
 /**
   * @brief  io初始化初始化
@@ -392,6 +430,7 @@ static int mbkey_init(void)
   { 
     //激活电平 索引 子索引
     {PULLUP,    0,    1}, //电机使能
+    {PULLUP,    0,    2}, //电机禁用
   };
   creat_key(init);// 调用按键初始化函数
   /* 创建 MODBUS线程*/

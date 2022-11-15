@@ -31,7 +31,8 @@ static uint8_t _tab_bits[MODBUS_BIT_MAX_NUM];
 */
 int modbus_slave_bits_default(void)
 {
-  _tab_bits[1] = 0;  //电机使能控制
+  _tab_bits[1] = 0;  //电机控制使能
+  _tab_bits[2] = 1;  //电机控制禁用
   return RT_EOK;
 }
 INIT_DEVICE_EXPORT(modbus_slave_bits_default);
