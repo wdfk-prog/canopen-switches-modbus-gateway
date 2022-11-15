@@ -15,6 +15,8 @@
 
 /* private includes ----------------------------------------------------------*/
 #include "modbus_slave_common.h"
+
+#include "master402_canopen.h"
 #include "motor_control.h"
 /*ulog include*/
 #define log_tag              "mb key"
@@ -106,15 +108,20 @@ typedef struct
  * H:16位高位
  * L:16位低位
 */
-#define MAKEINT_32(H,L) (uint32_t)((uint16_t)(H) << 16 | (uint16_t)(L))
-/*
- * 非零赋值
- * x:判断是否为零数，并是写入数
- * y:被写入数
+#define MAKEINT_32(H,L) (((int32_t)(H) << 16) | (uint16_t)(L))
+/**
+  * @brief  保持寄存器写入数值
+  * @param  index:索引
+  * @param  sub_index:子索引
+  * @param  value:值
+  * @param  factor:放大系数
+  * @retval none.
+  * @note   当前保持寄存器为0，写入value。否则将保持寄存器值写入value中
 */
-#define NON_ZERO_W(X,Y)   \
-  if(!(Y)){               \
-  (X) = (Y);}
+#define REG_WRITE_VALUE(index,sub_index,value,factor)                 \
+if(modbus_register_get((index),(sub_index)) == 0){                    \
+modbus_register_set((index),(sub_index),(value) * (factor));}         \
+else{(value) = modbus_register_get((index),(sub_index)) / (factor);}  \
 /* private variables ---------------------------------------------------------*/
 static mbkey mbkey_buf[MBKEY_NUM];	// 创建按键数组
 static uint8_t nodeID;//节点ID
@@ -122,6 +129,11 @@ static MODE_OPERATION motor_mode;//电机模式
 /* private function prototypes -----------------------------------------------*/
 static void key_motor_enable(mbkey_status *event)
 {
+  if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
+  {
+    modbus_bits_set(0,1,0);
+    return;
+  }
   switch(*event)
   {
     case MBKEY_ENABLE:  //按下处理事件
@@ -130,21 +142,28 @@ static void key_motor_enable(mbkey_status *event)
       {
         case PROFILE_POSITION_MODE://位置规划模式
         {
-          int32_t position  = MAKEINT_32(modbus_register_get(0,17),
-                                        modbus_register_get(0,18));
           int16_t speed     = 60;
+          int32_t position  = MAKEINT_32(modbus_register_get(0,18),
+                                         modbus_register_get(0,17));
           
-          NON_ZERO_W(speed,modbus_register_get(0,19));
+          REG_WRITE_VALUE(0,19,speed,1);
           bool abs_rel      = modbus_register_get(0,20);
           bool immediately  = modbus_register_get(0,21);
 
-          motor_profile_position(position,speed,abs_rel,immediately,nodeID);
+          if(motor_profile_position(position,speed,abs_rel,immediately,nodeID) == 0XFF)
+          {
+            motor_on_profile_position(nodeID);
+          }
         }
         break;
         case PROFILE_VELOCITY_MODE://速度规划模式
         {
           int16_t speed = modbus_register_get(0,17);
-          motor_profile_velocity(speed,nodeID);
+          
+          if(motor_profile_velocity(speed,nodeID) == 0xFF)
+          {
+            motor_on_profile_velocity(nodeID);
+          }
         }
         break;
         case PROFILE_TORQUE_MODE://扭矩规划模式
@@ -152,7 +171,21 @@ static void key_motor_enable(mbkey_status *event)
         case HOMING_MODE://原点复归模式
         {
           bool zero_flag = modbus_register_get(0,17);
-          motor_homing_mode(zero_flag,nodeID);
+
+          if(motor_homing_mode(zero_flag,nodeID) == 0XFF)
+          {
+            uint8_t method      = 34;
+            float switch_speed  = 100;
+            float zero_speed    = 20;
+            int32_t offset      = MAKEINT_32(modbus_register_get(0,13),
+                                  modbus_register_get(0,12));
+
+            REG_WRITE_VALUE(0,14,method,1);
+            REG_WRITE_VALUE(0,15,switch_speed,10.0f);
+            REG_WRITE_VALUE(0,16,zero_speed,10.0f);
+
+            motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
+          }
         }
         break;
         case INTERPOLATED_POSITION_MODE://插补位置模式
@@ -164,41 +197,13 @@ static void key_motor_enable(mbkey_status *event)
     case MBKEY_DISABLE: //松开处理事件
     break;
     case MBKEY_PRESS:   //松开到按下事件
-    {
-      switch(motor_mode)
-      {
-        case PROFILE_POSITION_MODE://位置规划模式
-          motor_on_profile_position(nodeID);
-        break;
-        case PROFILE_VELOCITY_MODE://速度规划模式
-          motor_on_profile_velocity(nodeID);
-        break;
-        case PROFILE_TORQUE_MODE://扭矩规划模式
-        break;
-        case HOMING_MODE://原点复归模式
-        {
-          int32_t offset      = MAKEINT_32(modbus_register_get(0,12),
-                                           modbus_register_get(0,13));
-          uint8_t method      = 34;
-          float switch_speed  = 100;
-          float zero_speed    = 20;
-
-          NON_ZERO_W(method,modbus_register_get(0,14));
-          NON_ZERO_W(method,modbus_register_get(0,modbus_register_get(0,15) / 10.0f));
-          NON_ZERO_W(method,modbus_register_get(0,modbus_register_get(0,16) / 10.0f));
-
-          motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
-        }
-        break;
-        case INTERPOLATED_POSITION_MODE://插补位置模式
-//        motor_interpolation_position();
-        break;
-      }
-    }
     break;
     case MBKEY_RAISE:   //按下到松开事件
       motor_off(nodeID);
-      modbus_register_reset(0,11,20);//清除数据
+      if(modbus_register_reset(0,11,0,30) == 0XFF)//清除数据
+      {
+        LOG_W("Failed to clear data.");
+      }
     break;    
   }
 }
