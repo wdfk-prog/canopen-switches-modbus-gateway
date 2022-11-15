@@ -153,12 +153,12 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>map_buf</ItemText>
+          <ItemText>_tab_input_registers</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>_tab_registers</ItemText>
+          <ItemText>slave_conf</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -2307,7 +2307,7 @@
 
   <Group>
     <GroupName>Master402</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

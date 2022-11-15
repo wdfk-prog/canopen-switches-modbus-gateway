@@ -32,12 +32,15 @@ static uint16_t _tab_input_registers[MODBUS_REG_MAX_NUM];
 int modbus_slave_input_register_default(void)
 {
   _tab_input_registers[1]  = MAX_NODE_COUNT - 1;  //节点数量
-  _tab_input_registers[2] = 0X0F;                 //节点NMT状态
+  _tab_input_registers[2]  = 0X0F;                 //节点NMT状态
   //从03D~06D
   nodeID_get_name((char *)&_tab_input_registers[3],
                    modbus_register_get(0,1));     //节点名称
-  _tab_input_registers[7] = 0X00;                 //节点错误代码
-  //08~10DCAN保留区域
+  _tab_input_registers[7]  = 0X00;                 //节点错误代码
+  //08D~10D节点具体错误
+  _tab_input_registers[8]  = 0X00;                 //节点具体错误
+  _tab_input_registers[9]  = 0X00;                 //节点具体错误
+  _tab_input_registers[10] = 0X00;                 //节点具体错误
   return RT_EOK;
 }
 
@@ -55,7 +58,8 @@ void modbus_slave_input_register_write(void)
    //从03D~06D
   nodeID_get_name((char *)&_tab_input_registers[3],nodeID); //节点名称
   _tab_input_registers[7] = nodeID_get_errcode(nodeID);     //节点错误代码
-  //08~10DCAN保留区域
+  //08D~10D节点具体错误
+  nodeID_get_errSpec((char *)&_tab_input_registers[8],nodeID);
 }
 /**
   * @brief  获取MODBUS输入寄存器数据
