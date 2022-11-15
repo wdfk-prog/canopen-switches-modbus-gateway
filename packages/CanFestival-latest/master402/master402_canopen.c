@@ -69,7 +69,7 @@ typedef struct
 CO_Data *OD_Data = &master402_Data;
 static node_list can_node[MAX_NODE_COUNT - 1] = 
 {
-  {CONTROLLER_NODEID, "master",},
+  {MASTER_NODEID,   "master",},
   {SERVO_NODEID_1,    "walk",},
   {SERVO_NODEID_2,    "turn",},
 };
@@ -87,7 +87,7 @@ static void config_node_param(uint8_t nodeId, node_config_state *conf);
 */
 static void InitNodes(CO_Data* d, UNS32 id)
 {
-	setNodeId(OD_Data,CONTROLLER_NODEID);
+	setNodeId(OD_Data,MASTER_NODEID);
 	setState(OD_Data, Initialisation);
 }
 /**
@@ -192,7 +192,7 @@ void nodeID_set_errcode(uint8_t nodeID,uint16_t errcode)
 uint16_t nodeID_get_errcode(uint8_t nodeID)
 {
   ASSERT(!(nodeID >= MAX_NODE_COUNT));
-  if(nodeID == CONTROLLER_NODEID)
+  if(nodeID == MASTER_NODEID)
     return 0;
   else
     return slave_conf[nodeID - 2].err_code;
@@ -1241,7 +1241,7 @@ static UNS8 NODE2_Write_SLAVE_P_heartbeat(uint8_t nodeId)
 static UNS8 NODE2_Write_SLAVE_C_heartbeat(uint8_t nodeId)
 {
   //需要本地字典写入生产者心跳时间，不然驱动器报错
-  UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(CONTROLLER_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点1的心跳时间
+  UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(MASTER_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点1的心跳时间
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1016, 1, 
     4, uint16, &consumer_heartbeat_time, config_node_param_cb, 0);
 }
@@ -1514,7 +1514,7 @@ static UNS8 NODE3_Write_SLAVE_P_heartbeat(uint8_t nodeId)
 static UNS8 NODE3_Write_SLAVE_C_heartbeat(uint8_t nodeId)
 {
   //需要本地字典写入生产者心跳时间，不然驱动器报错
-  UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(CONTROLLER_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点1的心跳时间
+  UNS32 consumer_heartbeat_time = HEARTBEAT_FORMAT(MASTER_NODEID,CONSUMER_HEARTBEAT_TIME);//写入节点1的心跳时间
   return writeNetworkDictCallBack(OD_Data, nodeId, 0x1016, 1, 
     4, uint16, &consumer_heartbeat_time, config_node_param_cb, 0);
 }

@@ -39,7 +39,7 @@ typedef enum
   NODEID_CONFIG_NO_SEND,      //配置未发送,本地字典出错
 }NODEID_ERRCODE;
 /* Exported constants --------------------------------------------------------*/
-#define CONTROLLER_NODEID 	  1//控制器ID
+#define MASTER_NODEID 	  1//控制器ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
 
 #define SDO_REPLY_TIMEOUT     50//50ms等待超时
