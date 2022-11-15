@@ -17,10 +17,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define CAN_START 0
-#define CAN_END   10
-#define MOTOR_START 11
-#define MOTOR_END   20
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -92,7 +89,6 @@ static int get_map_buf(void *buf, int bufsz)
 */
 const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MAPS_NUM] = 
 {
-  //起始地址    结束地址    获取接口      设置接口 
-  {CAN_START,   CAN_END,    get_map_buf,    NULL},
-  {MOTOR_START, MOTOR_END,  get_map_buf,    NULL},
+  //起始地址                          结束地址                                  获取接口      设置接口 
+  {0,         sizeof(_tab_input_registers) / sizeof(_tab_input_registers[0]),    get_map_buf,    NULL},
 };

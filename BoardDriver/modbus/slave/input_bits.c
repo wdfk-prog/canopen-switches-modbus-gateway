@@ -17,7 +17,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define INPUT_BITS_START 0x01
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -55,6 +55,6 @@ uint8_t modbus_input_bits_get(uint16_t index,uint16_t sub_index)
 */
 const agile_modbus_slave_util_map_t input_bit_maps[INPUT_BIT_MAPS_NUM] = 
 {
-   //起始地址           结束地址                                                                获取接口      设置接口 
-    {INPUT_BITS_START, INPUT_BITS_START + sizeof(_tab_input_bits) / sizeof(_tab_input_bits[0]), get_map_buf,    NULL}
+   //起始地址           结束地址                                   获取接口      设置接口 
+    {0,       sizeof(_tab_input_bits) / sizeof(_tab_input_bits[0]), get_map_buf,    NULL}
 };

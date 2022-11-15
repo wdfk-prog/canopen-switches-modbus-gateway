@@ -17,7 +17,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define BITS_START 0x01
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -93,6 +93,6 @@ void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data)
 */
 const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM] = 
 {
-   //起始地址     结束地址           获取接口   设置接口 
-   {0, MODBUS_BIT_MAX_NUM, get_map_buf, set_map_buf}
+   //起始地址               结束地址                      获取接口   设置接口 
+   {0,        sizeof(_tab_bits) / sizeof(_tab_bits[0]), get_map_buf, set_map_buf}
 };
