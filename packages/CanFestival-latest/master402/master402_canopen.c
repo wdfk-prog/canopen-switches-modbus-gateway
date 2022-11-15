@@ -45,6 +45,7 @@ typedef struct
 	uint8_t state;
 	uint8_t try_cnt;
   uint16_t err_code;
+  uint8_t errSpec[5];
   struct rt_semaphore finish_sem;
 }node_config_state;
 /* Private define ------------------------------------------------------------*/
@@ -196,6 +197,51 @@ uint16_t nodeID_get_errcode(uint8_t nodeID)
     return 0;
   else
     return slave_conf[nodeID - 2].err_code;
+}
+/**
+  * @brief  设置节点具体错误
+  * @param  nodeID:节点ID
+  * @param  errSpec:具体错误
+  * @retval None.
+  * @note   None.
+*/
+void nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5])
+{
+  ASSERT(!(nodeID >= MAX_NODE_COUNT));
+  
+  rt_memcpy(slave_conf[nodeID - 2].errSpec,errSpec,5);
+}
+/**
+  * @brief  获取节点具体错误
+  * @param  des:目标地址
+  * @param  nodeID:节点ID
+  * @retval None.
+  * @note   None.
+*/
+char* nodeID_get_errSpec(char* des,uint8_t nodeID)
+{
+  char* r = des;
+
+  ASSERT(des != NULL);
+
+  if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
+  {
+    return RT_NULL;
+  }
+  else
+  {
+    if(slave_conf[nodeID - 2].errSpec[0] + slave_conf[nodeID - 2].errSpec[1] + \
+       slave_conf[nodeID - 2].errSpec[2] + slave_conf[nodeID - 2].errSpec[3] + 
+       slave_conf[nodeID - 2].errSpec[4])
+    {
+      rt_memcpy(des,slave_conf[nodeID - 2].errSpec,5);
+      return des;
+    }
+    else
+    {
+      return RT_NULL;
+    }
+  }
 }
 #ifdef RT_USING_MSH
 /**

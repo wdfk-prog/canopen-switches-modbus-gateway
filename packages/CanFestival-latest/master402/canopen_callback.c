@@ -231,7 +231,8 @@ void master402_post_emcy(CO_Data* d, UNS8 nodeID, UNS16 errCode, UNS8 errReg, co
         LOG_E("received EMCY message. Node: %2.2x  ErrorCode: %4.4x  ErrorRegister: %2.2x", nodeID, errCode, errReg);
         if(errSpec[0]+errSpec[1]+errSpec[2]+errSpec[3]+errSpec[4])
         {
-          LOG_E("Manufacturer Specific: 0X%X %2.2X %2.2X %2.2X %2.2X",errSpec[0],errSpec[1],errSpec[2],errSpec[3],errSpec[4]);
+          nodeID_set_errSpec(nodeID,errSpec);
+          LOG_E("Manufacturer Specific: 0X%2.2X %2.2X %2.2X %2.2X %2.2X",errSpec[0],errSpec[1],errSpec[2],errSpec[3],errSpec[4]);
         }
       }
   }
