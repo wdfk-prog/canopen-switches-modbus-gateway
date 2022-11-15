@@ -376,13 +376,13 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
     if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,5000,1) != 0x00)
     {
       LOG_W("Motor runing zero time out");
+      return 0XFF;
     }
     else
     {
       LOG_I("Motor return to zero is complete");
     }
   }
-  
   return 0;
 }
 /**
