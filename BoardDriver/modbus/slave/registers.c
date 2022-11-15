@@ -125,7 +125,8 @@ static int get_map_buf(void *buf, int bufsz)
 static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
-    rt_memcpy(_tab_registers + MODBUS_START_ADDR + index,ptr + index,len);
+
+    rt_memcpy(_tab_registers + MODBUS_START_ADDR + index,ptr + index,len * sizeof(uint16_t));
     return 0;
 }
 /**

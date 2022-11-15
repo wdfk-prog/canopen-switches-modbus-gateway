@@ -59,7 +59,7 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
     uint8_t *ptr = (uint8_t *)buf;
 
 
-    rt_memcpy(_tab_bits + MODBUS_START_ADDR + index,ptr + index,len);
+    rt_memcpy(_tab_bits + MODBUS_START_ADDR + index,ptr + index,len * sizeof(uint8_t));
     return 0;
 }
 /**
