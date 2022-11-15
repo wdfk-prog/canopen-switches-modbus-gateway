@@ -219,7 +219,7 @@ UNS8 motor_on_homing_mode(int32_t offset,uint8_t method,float switch_speed,float
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
 	FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
-
+  SYNC_DELAY;//延时给驱动器响应时间，以免太快发送触发命令导致驱动器未响应
   return 0x00;
 }
 /**
@@ -342,7 +342,7 @@ UNS8 motor_interpolation_position (UNS8 nodeId)
   * @brief  控制电机进入原点复归模式
   * @param  zero_flag：0，无需返回0点位置。 zero_flag：1，返回0点位置
   * @param  nodeId:节点ID
-  * @retval 成功返回0X00,失败返回0XFF.
+  * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE
   * @note   None
 */
 UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
@@ -354,13 +354,12 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
     return 0xFF;
   }
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
-  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | NEW_SET_POINT));//由于命令触发是正缘触发，Bit 4切为再切至 on。 
   LOG_I("Motor runing homing");
   if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,HOMING_ATTAINED,5000,1) != 0x00)
   {
     LOG_W("Motor runing homing time out");
-    return 0XFF;
+    return 0XFE;
   }
   else
   {
@@ -376,7 +375,7 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
     if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,5000,1) != 0x00)
     {
       LOG_W("Motor runing zero time out");
-      return 0XFF;
+      return 0XFE;
     }
     else
     {
