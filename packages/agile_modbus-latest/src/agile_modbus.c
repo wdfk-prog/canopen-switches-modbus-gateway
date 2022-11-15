@@ -1203,7 +1203,6 @@ uint16_t agile_modbus_slave_register_get(uint8_t *buf, int index)
  * @param   frame_length 存放 modbus 数据帧长度
  * @return  >=0:要响应的数据长度; 其他:异常
  */
-volatile struct agile_modbus_slave_info *debug_slave_info = {0};
 int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave_strict,
                               agile_modbus_slave_callback_t slave_cb, const void *slave_data, int *frame_length)
 {
@@ -1239,7 +1238,6 @@ int agile_modbus_slave_handle(agile_modbus_t *ctx, int msg_length, uint8_t slave
     sft.t_id = ctx->backend->prepare_response_tid(req, &req_length);
 
     struct agile_modbus_slave_info slave_info = {0};
-    debug_slave_info = &slave_info;
     slave_info.sft = &sft;
     slave_info.rsp_length = &rsp_length;
     slave_info.address = address;
