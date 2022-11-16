@@ -32,8 +32,10 @@ static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
 */
 int modbus_slave_register_default(void)
 {
+  //节点参数区域
   _tab_registers[1] = 1;  //设置需操作的节点ID
   //02D~10D CAN保留区域
+  //电机参数区域
   _tab_registers[11] = 0; //设置电机模式
   _tab_registers[12] = 0; //原点偏移值高位
   _tab_registers[13] = 0; //原点偏移值低位
