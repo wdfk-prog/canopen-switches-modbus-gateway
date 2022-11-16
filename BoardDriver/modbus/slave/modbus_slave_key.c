@@ -182,9 +182,11 @@ static void key_motor_enable(mbkey_status *event)
         break;
         case HOMING_MODE://原点复归模式 
         {
+          int16_t speed = 60;
           bool zero_flag = modbus_register_get(0,17);
+          REG_WRITE_VALUE(0,18,speed,1);
 
-          if(motor_homing_mode(zero_flag,nodeID) >= 0XFD)//第一次配置或者需要回零未设置偏移值重新配置
+          if(motor_homing_mode(zero_flag,speed,nodeID) >= 0XFD)//第一次配置或者需要回零未设置偏移值重新配置
           {
             uint8_t method      = 34;
             float switch_speed  = 100;
