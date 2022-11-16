@@ -445,6 +445,78 @@ UNS8 motor_off(UNS8 nodeId)
   return 0x00;
 }
 /**
+  * @brief  获取当前节点电机控制指令Controlword
+  * @param  nodeId:节点ID
+  * @retval 获取成功返回Controlword，失败返回0。
+  * @note   None.
+*/
+UNS16 motor_get_controlword(UNS8 nodeId)
+{
+  if(nodeId == MASTER_NODEID || nodeId > MAX_NODE_COUNT || nodeId == 0)
+  {
+    return 0;
+  }
+  return *Controlword_Node[nodeId - 2].map_val;
+}
+/**
+  * @brief  获取当前节点电机状态位statusword
+  * @param  nodeId:节点ID
+  * @retval 获取成功返回statusword，失败返回0。
+  * @note   None.
+*/
+UNS16 motor_get_statusword(UNS8 nodeId)
+{
+  if(nodeId == MASTER_NODEID || nodeId > MAX_NODE_COUNT || nodeId == 0)
+  {
+    return 0;
+  }
+  return *Statusword_Node[nodeId - 2].map_val;
+}
+/**
+  * @brief  获取当前节点电机反馈位置
+  * @param  des:目标地址
+  * @param  nodeId:节点ID
+  * @retval 目标地址
+  * @note   若输入节点ID不正确，将返回空指针
+*/
+INTEGER32 *motor_get_position(INTEGER32* des,UNS8 nodeId)
+{ 
+  if(des == NULL)
+    return RT_NULL;
+
+  if(nodeId == MASTER_NODEID || nodeId > MAX_NODE_COUNT || nodeId == 0)
+  {
+    return RT_NULL;
+  }
+  else
+  {
+    *des = *Position_actual_value_Node[nodeId - 2].map_val;
+    return des;
+  }
+}
+/**
+  * @brief  获取当前节点电机反馈速度
+  * @param  des:目标地址
+  * @param  nodeId:节点ID
+  * @retval 目标地址
+  * @note   若输入节点ID不正确，将返回空指针
+*/
+INTEGER32 *motor_get_velocity(INTEGER32* des,UNS8 nodeId)
+{
+  if(des == NULL)
+    return RT_NULL;
+
+  if(nodeId == MASTER_NODEID || nodeId > MAX_NODE_COUNT || nodeId == 0)
+  {
+    return RT_NULL;
+  }
+  else
+  {
+    *des = *Velocity_actual_value_Node[nodeId - 2].map_val;
+    return des;
+  }
+}
+/**
   * @brief  查询电机状态.
   * @param  None.
   * @retval None.
@@ -463,8 +535,8 @@ UNS8 motor_off(UNS8 nodeId)
 static void motor_state(UNS8 nodeId)
 {
   LOG_I("Mode operation:%d",*Modes_of_operation_Node[nodeId - 2].map_val);
-	LOG_I("ControlWord 0x%0X", *Controlword_Node[nodeId - 2].map_val);
-  LOG_I("StatusWord 0x%0X", *Statusword_Node[nodeId - 2].map_val);
+	LOG_I("ControlWord 0x%4.4X", *Controlword_Node[nodeId - 2].map_val);
+  LOG_I("StatusWord 0x%4.4X", *Statusword_Node[nodeId - 2].map_val);
   
   if(CANOPEN_GET_BIT(*Statusword_Node[nodeId - 2].map_val , FAULT))
     LOG_E("motor fault!");

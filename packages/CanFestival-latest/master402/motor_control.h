@@ -159,6 +159,10 @@ extern UNS8 motor_homing_mode (bool zero_flag,int16_t speed,UNS8 nodeId);
 extern UNS8 motor_profile_velocity(int16_t speed,UNS8 nodeId);
 /******************************运动关闭及查询函数******************************************************************/
 extern UNS8 motor_off(UNS8 nodeId);
+extern UNS16 motor_get_controlword(UNS8 nodeId);
+extern UNS16 motor_get_statusword(UNS8 nodeId);
+extern INTEGER32 *motor_get_position(INTEGER32* des,UNS8 nodeId);
+extern INTEGER32 *motor_get_velocity(INTEGER32* des,UNS8 nodeId);
 
 #ifdef __cplusplus
 }
