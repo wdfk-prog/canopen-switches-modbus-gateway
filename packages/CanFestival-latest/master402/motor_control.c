@@ -284,7 +284,7 @@ UNS8 motor_profile_position(int32_t position,int16_t speed,bool abs_rel,bool imm
   UNS16 value = 0;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != PROFILE_POSITION_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
+    LOG_D("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
 
@@ -337,7 +337,7 @@ UNS8 motor_interpolation_position (UNS8 nodeId)
   NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != INTERPOLATED_POSITION_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
+    LOG_D("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0XFF;
   }
   /* State Transition 3: IP-MODE INACTIVE => IP-MODE ACTIVE
@@ -364,7 +364,7 @@ UNS8 motor_homing_mode (bool zero_flag,int16_t speed,UNS8 nodeId)
   NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != HOMING_MODE)
   {
-    LOG_W("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
+    LOG_D("Motion mode selection error, the current motion mode is %d",*Modes_of_operation_Node[nodeId - 2].map_val);
     return 0xFF;
   }
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
