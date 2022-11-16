@@ -15,6 +15,7 @@
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
 #include "motor_control.h"
+#include "main.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -51,6 +52,22 @@ int modbus_slave_input_register_default(void)
   _tab_input_registers[15] = 0X00;                 //当前速度低16位
   _tab_input_registers[16] = 0X00;                 //当前速度高16位
   //17D~20D电机保留区域
+  //编译信息
+  //21D~25D
+  rt_memcpy((char *)(_tab_input_registers+21),VERSION,sizeof(VERSION));                                  //打印版本信息
+  _tab_input_registers[24] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY) & 0xffff);  //日期低16bti
+	_tab_input_registers[25] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY)>>16);		   //日期高16bti
+	_tab_input_registers[26] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)&0xffff);         //时间低16bti
+	_tab_input_registers[27] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)>>16);		         //时间高16bti
+  //ID参数区域
+  _tab_input_registers[28] =  HAL_GetUIDw0();
+  _tab_input_registers[29] =  HAL_GetUIDw0() >> 16;
+  _tab_input_registers[30] =  HAL_GetUIDw1();
+  _tab_input_registers[31] =  HAL_GetUIDw1() >> 16;
+  _tab_input_registers[32] =  HAL_GetUIDw2();
+  _tab_input_registers[33] =  HAL_GetUIDw2() >> 16;
+  _tab_input_registers[34] =  HAL_GetHalVersion();
+  _tab_input_registers[35] =  HAL_GetHalVersion() >> 16;
   return RT_EOK;
 }
 
@@ -75,6 +92,9 @@ void modbus_slave_input_register_write(void)
   _tab_input_registers[12] = motor_get_statusword(nodeID);          //状态位
   motor_get_position((INTEGER32 *)&_tab_input_registers[13],nodeID);//当前位置
   motor_get_velocity((INTEGER32 *)&_tab_input_registers[15],nodeID);//当前速度
+  //芯片运行时间
+  _tab_input_registers[36] =  rt_tick_get_millisecond();
+  _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16;
 }
 /**
   * @brief  获取MODBUS输入寄存器数据

@@ -69,7 +69,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-#define VERSION "0.0.2"
+#define VERSION "0.0.3"
 
 #define YEAR ((((__DATE__ [7] - '0') * 10 + (__DATE__ [8] - '0')) * 10 \
     + (__DATE__ [9] - '0')) * 10 + (__DATE__ [10] - '0'))
