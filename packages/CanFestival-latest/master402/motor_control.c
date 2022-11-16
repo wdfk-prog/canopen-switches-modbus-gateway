@@ -129,7 +129,7 @@ Map_Val_INTEGER32 Position_actual_value_Node[] = {
 {&Position_actual_value,0x6064},
 {&NODE3_Position_actual_value_6064,0x2004},};		/* Mapped at index 0x6064, subindex 0x00*/
 Map_Val_INTEGER32 Velocity_actual_value_Node[] = {
-{&Velocity_actual_value,0x6064},
+{&Velocity_actual_value,0x606C},
 {&NODE3_Velocity_actual_value_0x606C,0x2005},};		/* Mapped at index 0x606C, subindex 0x00 */
 /* Private function prototypes -----------------------------------------------*/
 /**
