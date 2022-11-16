@@ -314,6 +314,7 @@ UNS8 motor_profile_position(int32_t position,int16_t speed,bool abs_rel,bool imm
 
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,value));
 
+  *Statusword_Node[nodeId - 2].map_val = 0;//清除本地数据
   if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
   {
     LOG_W("Motor runing time out");
@@ -351,7 +352,10 @@ UNS8 motor_interpolation_position (UNS8 nodeId)
   * @brief  控制电机进入原点复归模式
   * @param  zero_flag：0，无需返回0点位置。 zero_flag：1，返回0点位置
   * @param  nodeId:节点ID
-  * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE
+  * @retval 成功返回0X00,
+  * 模式错误返回0XFF.
+  * 超时返回0XFE.
+  * 设置回零未设置偏移值返回0XFD
   * @note   None
 */
 UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
@@ -365,6 +369,8 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | NEW_SET_POINT));//由于命令触发是正缘触发，Bit 4切为再切至 on。 
   LOG_I("Motor runing homing");
+
+  *Statusword_Node[nodeId - 2].map_val = 0;//清除本地数据
   if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,HOMING_ATTAINED,MAX_WAIT_TIME,1) != 0x00)
   {
     LOG_W("Motor runing homing time out");
@@ -374,13 +380,14 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   {
     LOG_I("Motor return to home is complete");
   }
-  //回到零点
+
   if(zero_flag == true && Home_offset != 0)
   {
     LOG_I("The motor is returning to zero");
     motor_on_profile_position(nodeId);
     FAILED_EXIT(motor_profile_position(0,60,0,0,nodeId));
 
+    *Statusword_Node[nodeId - 2].map_val = 0;//清除本地数据
     if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
     {
       LOG_W("Motor runing zero time out");
@@ -391,6 +398,12 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
       LOG_I("Motor return to zero is complete");
     }
   }
+  else if (zero_flag == true && Home_offset == 0)
+  {
+      LOG_W("The offset value is not set");
+      return 0XFD;
+  }
+
   return 0;
 }
 /**
@@ -647,7 +660,7 @@ static void cmd_motor(uint8_t argc, char **argv)
                 immediately = atoi(argv[6]);
             }
 
-            rt_kprintf("move to position: %d, speed: %d\n", position, speed);
+            rt_kprintf("nodeId %d,move to position: %d, speed: %d\n",nodeId, position, speed);
             rt_kprintf("abs_rel: %d, immediately: %d\n", abs_rel, immediately);
             motor_profile_position(position,speed,abs_rel,immediately,nodeId);
         }
