@@ -261,7 +261,6 @@ void master_resume_start(CO_Data *d,UNS8 nodeId)
     setState(d, Operational);//转入Operational状态
   }
 }
-
 /**
   * @brief  修复节点NMT异常
   * @param  None.

@@ -232,7 +232,7 @@ static void key_motor_disable(mbkey_status *event)
   switch(*event)
   {
     case MBKEY_ENABLE:  //按下处理事件
-      modbus_bits_set(0,1,0);
+      modbus_bits_set(0,1,0);//强制退出电机使能控制
     break;
     case MBKEY_DISABLE: //松开处理事件
     break;

@@ -65,9 +65,9 @@ extern UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float sw
 /********************节点信息查询与操作****************************************/
 extern char *nodeID_get_name(char* des,uint8_t nodeid);
 extern e_nodeState nodeID_get_nmt(uint8_t nodeid);
-extern void nodeID_set_errcode(uint8_t nodeid,uint16_t errcode);
+extern UNS8 nodeID_set_errcode(uint8_t nodeid,uint16_t errcode);
 extern uint16_t nodeID_get_errcode(uint8_t nodeid);
-extern void nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5]);
+extern UNS8 nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5]);
 extern char* nodeID_get_errSpec(char* des,uint8_t nodeID);
 #ifdef __cplusplus
 }

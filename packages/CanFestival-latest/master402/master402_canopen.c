@@ -125,7 +125,7 @@ static int canopen_init(void)
   }
   can_node[0].nmt_state = &OD_Data->nodeState;
 
-	return 0;
+	return RT_EOK;
 }
 INIT_APP_EXPORT(canopen_init);
 /**
@@ -150,7 +150,8 @@ char *nodeID_get_name(char* des,uint8_t nodeID)
 {
   char* r = des;
 
-  ASSERT(des != NULL);
+  if(des == NULL)
+    return RT_NULL;
 
   if(nodeID == can_node[nodeID - 1].nodeID)
   {
@@ -168,7 +169,8 @@ char *nodeID_get_name(char* des,uint8_t nodeID)
 */
 e_nodeState nodeID_get_nmt(uint8_t nodeID)
 {
-  ASSERT(!(nodeID == MAX_NODE_COUNT));
+  if(nodeID >= MAX_NODE_COUNT)
+    return 0XFF;
   if(nodeID == can_node[nodeID - 1].nodeID)
     return *can_node[nodeID - 1].nmt_state;
   else
@@ -178,13 +180,20 @@ e_nodeState nodeID_get_nmt(uint8_t nodeID)
   * @brief  设置节点错误代码.
   * @param  nodeID:节点ID
   * @param  errcode:错误代码
-  * @retval None.
+  * @retval 成功返回RT_EOK，失败返回-RT_ERROR.
   * @note   None.
 */
-void nodeID_set_errcode(uint8_t nodeID,uint16_t errcode)
+UNS8 nodeID_set_errcode(uint8_t nodeID,uint16_t errcode)
 {
-  ASSERT(!(nodeID >= MAX_NODE_COUNT));
-  slave_conf[nodeID - 2].err_code = errcode;
+  if(nodeID >= MAX_NODE_COUNT)
+  {
+    return -RT_ERROR;
+  }
+  else
+  {
+    slave_conf[nodeID - 2].err_code = errcode;
+    return RT_EOK;
+  }
 }
 /**
   * @brief  查看节点错误代码.
@@ -194,7 +203,8 @@ void nodeID_set_errcode(uint8_t nodeID,uint16_t errcode)
 */
 uint16_t nodeID_get_errcode(uint8_t nodeID)
 {
-  ASSERT(!(nodeID >= MAX_NODE_COUNT));
+  if(nodeID >= MAX_NODE_COUNT)
+    return 0;
   if(nodeID == MASTER_NODEID)
     return 0;
   else
@@ -204,27 +214,34 @@ uint16_t nodeID_get_errcode(uint8_t nodeID)
   * @brief  设置节点具体错误
   * @param  nodeID:节点ID
   * @param  errSpec:具体错误
-  * @retval None.
+  * @retval 成功返回RT_EOK,失败返回-RT_ERROR
   * @note   None.
 */
-void nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5])
+UNS8 nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5])
 {
-  ASSERT(!(nodeID >= MAX_NODE_COUNT));
-  
-  rt_memcpy(slave_conf[nodeID - 2].errSpec,errSpec,5);
+  if(nodeID >= MAX_NODE_COUNT)
+  {
+    return -RT_ERROR;
+  }
+  else
+  {
+    rt_memcpy(slave_conf[nodeID - 2].errSpec,errSpec,5);
+    return RT_EOK;
+  }
 }
 /**
   * @brief  获取节点具体错误
   * @param  des:目标地址
   * @param  nodeID:节点ID
-  * @retval des:目标地址
+  * @retval des:目标地址,失败返回RT_NULL
   * @note   None.
 */
 char* nodeID_get_errSpec(char* des,uint8_t nodeID)
 {
   char* r = des;
 
-  ASSERT(des != NULL);
+  if(des == NULL)
+    return RT_NULL;
 
   if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
   {

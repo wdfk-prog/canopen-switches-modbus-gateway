@@ -82,7 +82,7 @@
 阻塞线程，判断超时。恢复运行
 */
 #define SYNC_DELAY            rt_thread_mdelay(20)//命令延时
-#define MAX_WAIT_TIME         50                                    //ms
+#define MAX_WAIT_TIME         5000                //ms
 
 /*0X6040 控制指令 Controlword 状态宏*/
 //伺服 Servo Off
@@ -259,7 +259,7 @@ UNS8 motor_on_profile_velocity(UNS8 nodeId)
   * @param  abs_rel:    运动模式。 设为0，绝对运动模式；设为1，相对运动模式
   * @param  immediately:命令立即生效指令。 设为 0，关闭命令立即生效指令 1，立刻生效，即未到达目标位置也可执行下次运动
   * @param  nodeId:节点ID
-  * @retval 成功返回0X00,失败返回0XFF
+  * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE
   * @note   可以重复此函数用来控制电机运动不同位置。 置一od 0x2124开启S型加减速
   最大速度限制      607Fh 默认值 3000rpm
   软件正向极限      607Dh 默认值 2147483647
@@ -314,7 +314,16 @@ UNS8 motor_profile_position(int32_t position,int16_t speed,bool abs_rel,bool imm
 
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,value));
 
-  return 0X00;
+  if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
+  {
+    LOG_W("Motor runing time out");
+    return 0XFE;
+  }
+  else
+  {
+    LOG_I("Completion of motor movement");
+    return 0X00;
+  }
 }
 /**
   * @brief  控制电机以插补位置模式运动
@@ -356,7 +365,7 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   //由于命令触发是正缘触发，因此必须先将 Bit 4切为 off
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION | NEW_SET_POINT));//由于命令触发是正缘触发，Bit 4切为再切至 on。 
   LOG_I("Motor runing homing");
-  if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,HOMING_ATTAINED,5000,1) != 0x00)
+  if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,HOMING_ATTAINED,MAX_WAIT_TIME,1) != 0x00)
   {
     LOG_W("Motor runing homing time out");
     return 0XFE;
@@ -372,7 +381,7 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
     motor_on_profile_position(nodeId);
     FAILED_EXIT(motor_profile_position(0,60,0,0,nodeId));
 
-    if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,5000,1) != 0x00)
+    if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
     {
       LOG_W("Motor runing zero time out");
       return 0XFE;
