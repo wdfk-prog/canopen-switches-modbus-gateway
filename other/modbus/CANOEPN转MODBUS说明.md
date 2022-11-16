@@ -397,6 +397,152 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
 
 - 无法使用
 
+### 2.5 电机反馈查看
+
+- 对节点ID进行设置后[1.1.1设置节点ID](#1.1.1设置节点ID)，该节点若是DS402协议，即电机节点，既可进行查看电机相关反馈信息。
+
+| 输入寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注         |
+| -------------- | -------- | -------- | ------ | ------------ |
+| 11D            | uint16_t | 无       | 0      | 查看控制指令 |
+| 12D            | uint16_t | 无       | 0      | 查看状态位   |
+| 13D~14D        | int32_t  | 无       | 0      | 查看当前位置 |
+| 15D~16D        | int32_t  | 无       | 0      | 查看当前速度 |
+| 17D~20D        | uint16   | 无       | 0      | 电机保留区域 |
+
+#### 2.5.1 控制指令
+
+| 输入寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注         |
+| -------------- | -------- | -------- | ------ | ------------ |
+| 11D            | uint16_t | 无       | 0      | 查看控制指令 |
+
+详细内容:0x6040控制指令 Controlword是DS402协议对电机进行操作需要下发的命令。控制指令内包含许多功能，如 Servo On、命令触发、错误重置、紧急停止等。**在MODBUS中仅提供查看功能**，不支持设置。
+
+```c
+/*0x6040控制指令 Controlword 状态位定义*/
+typedef enum
+{
+  WRITE_SWITCH_ON             = 1 << 0,//按下开关
+  EN_VOLTAGE                  = 1 << 1,//使能电源
+  QUICK_STOP                  = 1 << 2,//急停
+  EN_OPERATION                = 1 << 3,//操作使能
+  FAULT_RESET                 = 1 << 7,//错误重置
+  HALT                        = 1 << 8,//暂停
+}CONTROL_WORD;
+/*位置规划模式下Controlword操作模式特定位*/
+typedef enum
+{
+  NEW_SET_POINT               = 1 << 4,//命令触发(正缘触发)
+  CHANGE_SET_IMMEDIATELY      = 1 << 5,//命令立即生效指令  设为 0，关闭命令立即生效指令
+  ABS_REL                     = 1 << 6,//更改为绝对定位或相对定位  0，目标位置是一个绝对值 1，目标位置是一个相对值
+}PROFILE_POSITION_CONTROLWORD;
+/*插补位置模式下Controlword操作模式特定位
+  Name          Value   Description
+Enable ip mode    0     Interpolated position mode inactive 
+                  1     Interpolated position mode active*/
+typedef enum
+{
+   ENABLE_IP_MODE             = 1 << 4,//使能IP模式
+}Interpolated_Position_CONTROLWORD;
+/*原点复归模式下Controlword操作模式特定位
+  Name          Value   Description
+Homing          0       Homing mode inactive
+operation       0 → 1  Start homing mode
+star            1       Homing mode active
+                1 → 0  Interrupt homing mode*/
+typedef enum
+{
+  HOMING_OPERATION_STAR       = 1 << 4,//使能IP模式
+}HOMING_CONTROLWORD;
+```
+
+
+
+#### 2.5.2 状态位
+
+| 输入寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注       |
+| -------------- | -------- | -------- | ------ | ---------- |
+| 12D            | uint16_t | 无       | 0      | 查看状态位 |
+
+详细内容:0x6041状态位 Statusword是DS402协议中电机的状态反馈。可以通过查看该数据，了解电机当前状态，例如是否到达指定位置，是否发生错误，是否使能、上电等。
+
+```c
+/*0x6041状态位 Statusword定义*/
+typedef enum
+{
+  READY_TO_SWITCH_ON          = 0,//准备功能启动
+  READ_SWITCH_ON              = 1,//伺服准备完成
+  OPERATION_ENABLED           = 2,//伺服使能
+  FAULT                       = 3,//异常信号
+  VOLTAGE_ENABLED             = 4,//伺服输入侧已供电
+  READ_QUICK_STOP             = 5,//紧急停止 [0:开启急停 1:关闭急停]
+  SWITCH_ON_DISABLED          = 6,//伺服准备功能关闭
+  WARNING                     = 7,//警告信号
+  REMOTE                      = 9,//远程控制
+  TARGET_REACHED              = 10,//目标到达
+  POSITIVE_LIMIT              = 14,//正向运转禁止极限
+  NEGATIVE_LIMIT              = 15,//负向运转禁止极限
+}STATUS_WORD;
+/*位置规划模式下Statusword定义*/
+typedef enum
+{
+  SET_POINT_ACKNOWLEDGE       = 12,//伺服收到命令信号
+  FOLLOWING_ERROR             = 13,//追随错误
+}PROFILE_POSITION_STATUSWORD;
+/*插补位置模式下Statusword定义
+    Name        Value   Description
+ip mode active    1     Interpolated position mode active
+*/
+typedef enum
+{
+  IP_MODE_ACTIVE              = 12,//插补位置模式是否生效
+}Interpolated_Position_STATUSWORD;
+/*原点复归模式下Statusword定义
+    Name          Value   Description
+Homing attained    0      Homing mode not yet completed.
+                   1      Homing mode carried out successfully
+
+Homing error       0      No homing error
+                   1      Homing error occurred;Homing mode carried out not successfully;The error cause is found by reading the error code
+*/
+typedef enum
+{
+  HOMING_ATTAINED              = 12,//回到原点
+  HOMING_ERROR                 = 13,//回原错误
+}HOMING_STATUSWORD;
+```
+
+
+
+#### 2.5.3 当前位置
+
+| 输入寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注         |
+| -------------- | -------- | -------- | ------ | ------------ |
+| 13D~14D        | int32_t  | 无       | 0      | 查看当前位置 |
+
+#### 2.5.4 当前速度
+
+| 输入寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注         |
+| -------------- | -------- | -------- | ------ | ------------ |
+| 15D~16D        | int32_t  | 无       | 0      | 查看当前速度 |
+
+输入寄存器列表
+
+| 地址    | 数据类型 | 参数范围       | 默认值 | 备注         |
+| ------- | -------- | -------------- | ------ | ------------ |
+| 01D     | uint16   | 1~128          | 1      | 总线节点数量 |
+| 02D     | uint16   | enum_nodeState | 0x0F   | 节点状态     |
+| 03D~06D | string   | 无             | 无     | 节点名称     |
+| 07D     | uint16   | 无             | 0x00   | 节点错误代码 |
+| 08D~10D | uint16   | 无             | 0x00   | 节点具体错误 |
+| 11D     | uint16_t | 无             | 0      | 查看控制指令 |
+| 12D     | uint16_t | 无             | 0      | 查看状态位   |
+| 13D~14D | int32_t  | 无             | 0      | 查看当前位置 |
+| 15D~16D | int32_t  | 无             | 0      | 查看当前速度 |
+| 17D~20D | uint16   | 无             | 0      | 电机保留区域 |
+|         |          |                |        |              |
+
+
+
 ## 附录
 
 ### 保持寄存器列表
