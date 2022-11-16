@@ -180,11 +180,11 @@ static void key_motor_enable(mbkey_status *event)
         break;
         case PROFILE_TORQUE_MODE://扭矩规划模式
         break;
-        case HOMING_MODE://原点复归模式
+        case HOMING_MODE://原点复归模式 
         {
           bool zero_flag = modbus_register_get(0,17);
 
-          if(motor_homing_mode(zero_flag,nodeID) == 0XFF)
+          if(motor_homing_mode(zero_flag,nodeID) >= 0XFD)//第一次配置或者需要回零未设置偏移值重新配置
           {
             uint8_t method      = 34;
             float switch_speed  = 100;
@@ -195,7 +195,7 @@ static void key_motor_enable(mbkey_status *event)
             REG_WRITE_VALUE(0,14,method,1);
             REG_WRITE_VALUE(0,15,switch_speed,10.0f);
             REG_WRITE_VALUE(0,16,zero_speed,10.0f);
-            
+
             motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
           }
           else
