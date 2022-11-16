@@ -351,6 +351,7 @@ UNS8 motor_interpolation_position (UNS8 nodeId)
 /**
   * @brief  控制电机进入原点复归模式
   * @param  zero_flag：0，无需返回0点位置。 zero_flag：1，返回0点位置
+  * @param  speed: 回零速度    单位RPM
   * @param  nodeId:节点ID
   * @retval 成功返回0X00,
   * 模式错误返回0XFF.
@@ -358,7 +359,7 @@ UNS8 motor_interpolation_position (UNS8 nodeId)
   * 设置回零未设置偏移值返回0XFD
   * @note   None
 */
-UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
+UNS8 motor_homing_mode (bool zero_flag,int16_t speed,UNS8 nodeId)
 {
   NODE_DECISION;
   if(*Modes_of_operation_Node[nodeId - 2].map_val != HOMING_MODE)
@@ -385,7 +386,7 @@ UNS8 motor_homing_mode (bool zero_flag,UNS8 nodeId)
   {
     LOG_I("The motor is returning to zero");
     motor_on_profile_position(nodeId);
-    FAILED_EXIT(motor_profile_position(0,60,0,0,nodeId));
+    FAILED_EXIT(motor_profile_position(0,speed,0,0,nodeId));
 
     *Statusword_Node[nodeId - 2].map_val = 0;//清除本地数据
     if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
@@ -677,9 +678,11 @@ static void cmd_motor(uint8_t argc, char **argv)
         {
             bool zero_flag = false;
             UNS16 nodeId = DEFAULT_NODE;
+            int16_t speed = 60;
+
             if(argc <= 2) 
             {
-                rt_kprintf("Usage: motor hm_move [zero] <nodeId> --homing move zero:1,run zero postion\n");
+                rt_kprintf("Usage: motor hm_move [zero] <nodeId> <speed> --homing move zero:1,run zero postion and speed\n");
                 return;
             }
             zero_flag = atoi(argv[2]);
@@ -687,7 +690,11 @@ static void cmd_motor(uint8_t argc, char **argv)
             {
                 nodeId = atoi(argv[3]);
             }
-            motor_homing_mode(zero_flag,nodeId);
+            if(argc > 4) 
+            {
+                speed = atoi(argv[4]);
+            }
+            motor_homing_mode(zero_flag,speed,nodeId);
         }
         else if (!strcmp(operator, "pv_move"))
         {
