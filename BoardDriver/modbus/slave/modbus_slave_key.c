@@ -217,6 +217,13 @@ static void key_motor_enable(mbkey_status *event)
     case MBKEY_PRESS:   //松开到按下事件
     break;
     case MBKEY_RAISE:   //按下到松开事件
+    {
+      if(motor_mode == PROFILE_VELOCITY_MODE)
+      {
+        motor_profile_velocity(0,nodeID);
+      }
+    }
+
     break;    
   }
 }
