@@ -1527,14 +1527,14 @@ DOCSET_PUBLISHER_NAME  = Publisher
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_HTMLHELP      = NO
+GENERATE_HTMLHELP      = YES
 
 # The CHM_FILE tag can be used to specify the file name of the resulting .chm
 # file. You can add a path in front of the file if the result should not be
 # written to the html output directory.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-CHM_FILE               = "CanFestival RTT"
+CHM_FILE               = CanFestival_RTT.chm
 
 # The HHC_LOCATION tag can be used to specify the location (absolute path
 # including file name) of the HTML help compiler (hhc.exe). If non-empty,
@@ -1542,7 +1542,7 @@ CHM_FILE               = "CanFestival RTT"
 # The file has to be specified with full path.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-HHC_LOCATION           =
+HHC_LOCATION           = "D:/Program Files (x86)/HTML Help Workshop/hhc.exe"
 
 # The GENERATE_CHI flag controls if a separate .chi index file is generated
 # (YES) or that it should be included in the main .chm file (NO).
@@ -1555,7 +1555,7 @@ GENERATE_CHI           = NO
 # and project file content.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-CHM_INDEX_ENCODING     =
+CHM_INDEX_ENCODING     = GBK
 
 # The BINARY_TOC flag controls whether a binary table of contents is generated
 # (YES) or a normal table of contents (NO) in the .chm file. Furthermore it
@@ -1570,7 +1570,7 @@ BINARY_TOC             = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTMLHELP is set to YES.
 
-TOC_EXPAND             = NO
+TOC_EXPAND             = YES
 
 # If the GENERATE_QHP tag is set to YES and both QHP_NAMESPACE and
 # QHP_VIRTUAL_FOLDER are set, an additional index file will be generated that
@@ -1682,7 +1682,7 @@ DISABLE_INDEX          = YES
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = YES
+GENERATE_TREEVIEW      = NO
 
 # When both GENERATE_TREEVIEW and DISABLE_INDEX are set to YES, then the
 # FULL_SIDEBAR option determines if the side bar is limited to only the treeview
@@ -2454,7 +2454,7 @@ HIDE_UNDOC_RELATIONS   = YES
 # set to NO
 # The default value is: NO.
 
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 
 # The DOT_NUM_THREADS specifies the number of dot invocations doxygen is allowed
 # to run in parallel. When set to 0 doxygen will base this on the number of
@@ -2500,7 +2500,7 @@ DOT_NODE_ATTR          = "shape=box,height=0.2,width=0.4"
 # DOT_COMMON_ATTR and others dot attributes.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_FONTPATH           =
+DOT_FONTPATH           = .
 
 # If the CLASS_GRAPH tag is set to YES (or GRAPH) then doxygen will generate a
 # graph for each documented class showing the direct and indirect inheritance
@@ -2609,7 +2609,7 @@ INCLUDED_BY_GRAPH      = YES
 # The default value is: NO.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-CALL_GRAPH             = NO
+CALL_GRAPH             = YES
 
 # If the CALLER_GRAPH tag is set to YES then doxygen will generate a caller
 # dependency graph for every global function or class method.
@@ -2621,7 +2621,7 @@ CALL_GRAPH             = NO
 # The default value is: NO.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-CALLER_GRAPH           = NO
+CALLER_GRAPH           = YES
 
 # If the GRAPHICAL_HIERARCHY tag is set to YES then doxygen will graphical
 # hierarchy of all classes instead of a textual one.
@@ -2677,7 +2677,7 @@ INTERACTIVE_SVG        = NO
 # found. If left blank, it is assumed the dot tool can be found in the path.
 # This tag requires that the tag HAVE_DOT is set to YES.
 
-DOT_PATH               =
+DOT_PATH               = "D:\Program Files\Graphviz\bin"
 
 # The DOTFILE_DIRS tag can be used to specify one or more directories that
 # contain dot files that are included in the documentation (see the \dotfile
