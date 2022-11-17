@@ -46,6 +46,7 @@ struct rx_msg
 /* Private variables ---------------------------------------------------------*/
 static rt_device_t serial = RT_NULL;
 static rt_sem_t _rx_sem = RT_NULL;
+static uint8_t cmd_read_buf[AGILE_MODBUS_MAX_ADU_LENGTH];
 static const agile_modbus_slave_util_t _slave_util = 
 {
     bit_maps,
@@ -198,6 +199,7 @@ static void modbus_thread(void* p)
   while(1)
   {
       int read_len = serial_receive(ctx->read_buf, ctx->read_bufsz, 1000, 20);
+      rt_memcpy(cmd_read_buf,ctx->read_buf,ctx->read_bufsz);
       if (read_len == 0)
       {
           LOG_D("Receive timeout.");
@@ -250,3 +252,26 @@ static int Modbus_Slave1_Init(void)
 }
 /* 导出到 msh 命令列表中 */
 INIT_COMPONENT_EXPORT(Modbus_Slave1_Init);
+#ifdef RT_USING_MSH
+/**
+  * @brief  打印MODBUS 串口1接收数据
+  * @param  第一个参数，int型的argc，为整型，用来统计程序运行时发送给main函数的命令行参数的个数
+  * @retval 第二个参数，char*型的argv[]，为字符串数组，用来存放指向的字符串参数的指针数组，每一个元素指向一个参数。
+  * @note   None.
+*/
+static void modbus_printf_1(int argc, char**argv)
+{
+
+    uint8_t *sc;
+
+    for (sc = cmd_read_buf; *sc != 0X23; ++sc);
+
+    for(uint16_t i = 0; i < sc - cmd_read_buf; i++)
+    {
+        rt_kprintf("0X%2.2X  ",cmd_read_buf[i]);
+    }
+    rt_kprintf("\n");
+    rt_memset(cmd_read_buf,0,AGILE_MODBUS_MAX_ADU_LENGTH);
+}
+MSH_CMD_EXPORT_ALIAS(modbus_printf_1,modbus_printf_1,modbus_printf_1 Print the MODBUS serial port 1 Receive data);
+#endif
