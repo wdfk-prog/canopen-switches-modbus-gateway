@@ -1,15 +1,16 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @file bits.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * 
+ * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
+ * 
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
@@ -26,7 +27,7 @@ static uint8_t _tab_bits[MODBUS_BIT_MAX_NUM];
 /**
   * @brief  写入线圈寄存器默认值
   * @param  None
-  * @retval None
+  * @retval RT_EOK
   * @note   None
 */
 int modbus_slave_bits_default(void)
@@ -35,13 +36,13 @@ int modbus_slave_bits_default(void)
   _tab_bits[2] = 1;  //电机控制禁用
   return RT_EOK;
 }
-INIT_DEVICE_EXPORT(modbus_slave_bits_default);
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief Get the map buf object
+ * @param  buf              My Param doc
+ * @param  bufsz            My Param doc
+ * @retval int 
+ * @note   None
+ */
 static int get_map_buf(void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
@@ -52,11 +53,13 @@ static int get_map_buf(void *buf, int bufsz)
     return 0;
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief Set the map buf object
+ * @param  index            索引
+ * @param  len              长度
+ * @param  buf              目标地址
+ * @param  bufsz            设置长度
+ * @retval int 
+ */
 static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint8_t *ptr = (uint8_t *)buf;
@@ -70,7 +73,7 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
   * @brief  获取MODBUS线圈寄存器数据
   * @param  index:数组索引
   * @param  index:数组子索引
-  * @retval None
+  * @retval MODBUS线圈寄存器数据
   * @note   None
 */
 uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index)
@@ -90,10 +93,8 @@ void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data)
   _tab_bits[sub_index] = data;
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
+  * @brief  线圈寄存器数组
+  * @note   数组范围：BIT_MAPS_NUM
 */
 const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM] = 
 {

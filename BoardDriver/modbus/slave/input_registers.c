@@ -1,15 +1,16 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @file input_registers.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * 
+ * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
+ * 
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
@@ -28,7 +29,7 @@ static uint16_t _tab_input_registers[MODBUS_REG_MAX_NUM];
 /**
   * @brief  写入输入寄存器默认值
   * @param  None
-  * @retval None
+  * @retval int
   * @note   None
 */
 int modbus_slave_input_register_default(void)
@@ -54,7 +55,7 @@ int modbus_slave_input_register_default(void)
   //17D~20D电机保留区域
   //编译信息
   //21D~25D
-  rt_memcpy((char *)(_tab_input_registers+21),VERSION,sizeof(VERSION));                                  //打印版本信息
+  rt_memcpy((char *)(_tab_input_registers+21),VERSION,sizeof(VERSION));              //打印版本信息
   _tab_input_registers[24] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY) & 0xffff);  //日期低16bti
 	_tab_input_registers[25] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY)>>16);		   //日期高16bti
 	_tab_input_registers[26] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)&0xffff);         //时间低16bti
@@ -70,7 +71,6 @@ int modbus_slave_input_register_default(void)
   _tab_input_registers[35] =  HAL_GetHalVersion() >> 16;
   return RT_EOK;
 }
-
 /**
   * @brief  写入本机数据至输入寄存器中
   * @param  None
@@ -100,7 +100,7 @@ void modbus_slave_input_register_write(void)
   * @brief  获取MODBUS输入寄存器数据
   * @param  index:数组索引
   * @param  index:数组子索引
-  * @retval None
+  * @retval uint16_t
   * @note   None
 */
 uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index)
@@ -108,11 +108,11 @@ uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index)
   return _tab_input_registers[sub_index];
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief Get the map buf object
+ * @param  buf              地址
+ * @param  bufsz            长度
+ * @retval int 
+ */
 static int get_map_buf(void *buf, int bufsz)
 {
   uint16_t *ptr = (uint16_t *)buf;

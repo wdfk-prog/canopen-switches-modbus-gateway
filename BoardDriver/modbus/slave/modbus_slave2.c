@@ -1,15 +1,16 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @file modbus_slave2.c
+ * @brief MODBUS从机-2
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * 
+ * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
+ * 
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "rtthread.h"
 #include <drv_usart_v2.h>
@@ -97,7 +98,7 @@ static int serial_send(uint8_t *buf, int len)
   * @brief  串口初始化.
   * @param  None.
   * @retval None.
-  * @note   None.
+  * @note   成功返回RT_EOK.失败返回-RT_ERROR
 */
 static int serial_init(void)
 {
@@ -146,7 +147,7 @@ static int serial_init(void)
   * @param  bufsz:缓冲区大小
   * @param  timeout.未连接超时时间
   * @param  bytes_timeout 连接后超时时间.
-  * @retval None.
+  * @retval 成功返回接收长度.失败返回-1
   * @note   None.
 */
 static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeout)
@@ -178,7 +179,7 @@ static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeou
 }
 /**
   * @brief  MODBUS线程
-  * @param  None.
+  * @param  p:传入参数，暂时无传入.
   * @retval None.
   * @note   None.
 */
@@ -221,7 +222,7 @@ static void modbus_thread(void* p)
 /**
   * @brief  modbus 从机1 初始化
   * @param  None.
-  * @retval None.
+  * @retval ret.
   * @note   None.
 */
 static int Modbus_Slave2_Init(void)

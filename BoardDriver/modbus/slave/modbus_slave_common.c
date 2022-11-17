@@ -30,6 +30,7 @@ rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
 extern int modbus_slave_register_default(void);
 extern int modbus_slave_input_register_default(void);
+extern int modbus_slave_bits_default(void);
 
 extern void modbus_slave_input_register_write(void);
 extern void modbus_slave_register_write(void);
@@ -43,6 +44,7 @@ static int modbus_default(void)
 {
   modbus_slave_register_default();
   modbus_slave_input_register_default();
+  modbus_slave_bits_default();
 
   modbus_mutex = rt_mutex_create("modbus",RT_IPC_FLAG_PRIO);
 
