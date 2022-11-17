@@ -1,67 +1,27 @@
 /**
-  ******************************************************************************
-  * @file   
-  * @brief   
-  * @date    2022.09.13
-  ******************************************************************************
-  * @attention  
-  1.开启onchip-flash 开启SPI-FLSAH  
-  2.开启SFUD 开启FAL框架
-  3.配置 <fal_cfg.h> 分配表
-  4.添加虚拟文件系统DFS组件。打开MFD
-  5.添加elm fatfs文件系统。
-  6.romfs.c在tool目录下新建romfs文件夹并自定义下属一级目录与尼尔使用mkromfs.py生成
-  python mkromfs.py romfs romfs.c
-
-  7.生成LOGS目录
-  
-  传输ULOG日志至上位机中：
-      1.cd至ulog文件所在目录 cd/flash/logs
-      2.sy ulog.log
-      提示：No permission to write on the specified folder.因为有"/"符号无法保存
-  从上位机中下载数据至mcu：
-      1.xshell发送ry既可。默认接收至/flash目录下
-      
-  片上onchip使用littlefs系统，创建两个目录后及报错空间不足。
-  由文件系统结构决定，扇区不足。虽然大，但扇区不够。
-  littlefs写入速度相比于fatfs慢。保存参数过慢，改用fatfs.fatfs没有掉电保存与读写平衡。
-  容易造成BAD file sys 文件。改回littlefs
-  
-  fatfs文件系统需注意，意外掉电可能造成文件损坏，需要重新格式化 命令 mkfs -t elm filesystem
-  
-  关于CMB的日志文件保存。第一：只能对分区进行操作。没有办法保存到其他目录下。
-  第二，使用rom构建根目录后，创建一个分区无法使用littlefs文件系统格式化。只能是rom系统，只读属性，不可写入。
-  * @author 
-  ******************************************************************************
-  */
-/*
-msh /flash/logs>fal bench 4096
-DANGER: It will erase full chip or partition! Please run 'fal bench 4096 yes'.
-msh /flash/logs>fal bench 4096 yes
-Erasing 1048576 bytes data, waiting...
-Erase benchmark success, total time: 3.548S.
-Writing 1048576 bytes data, waiting...
-Write benchmark success, total time: 4.097S.
-Reading 1048576 bytes data, waiting...
-Read benchmark success, total time: 1.546S.
-
-Erase benchmark success, total time: 33.946S.
-Writing the sf_cmd 16777216 bytes data, waiting...
-Write benchmark success, total time: 65.537S.
-Reading the sf_cmd 16777216 bytes data, waiting...
-Read benchmark success, total time: 26.302S.
-
-操作内容
-ls	显示文件和目录的信息
-cd	进入指定目录
-cp	复制文件
-rm	删除文件或目录 //文件夹内有内容删除不掉，得使用 rm-rf
-mv	将文件移动位置或改名
-echo	将指定内容写入指定文件，当文件存在时，就写入该文件，当文件不存在时就新创建一个文件并写入
-cat	展示文件的内容
-pwd	打印出当前目录地址
-mkdir	创建文件夹
-mkfs	格式化文件系统
+ * @file filesystem.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @copyright Copyright (c) 2022
+ * @attention 
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
+/**
+  操作内容
+  ls	显示文件和目录的信息
+  cd	进入指定目录
+  cp	复制文件
+  rm	删除文件或目录 //文件夹内有内容删除不掉，得使用 rm-rf
+  mv	将文件移动位置或改名
+  echo	将指定内容写入指定文件，当文件存在时，就写入该文件，当文件不存在时就新创建一个文件并写入
+  cat	展示文件的内容
+  pwd	打印出当前目录地址
+  mkdir	创建文件夹
+  mkfs	格式化文件系统
 */
 /* Includes ------------------------------------------------------------------*/
 #include <fal.h>
@@ -154,6 +114,10 @@ void MB_Param_Read(void)
     fdb_kv_get_blob(&mb_param,default_kv_table[i].key, fdb_blob_make(&blob,temp,default_kv_table[i].value_len));
   }
 }
+/**
+ * @brief kvdb_basic_sample
+ * @param  kvdb             
+ */
 static void kvdb_basic_sample(fdb_kvdb_t kvdb)
 {
     struct fdb_blob blob;
@@ -179,11 +143,9 @@ static void kvdb_basic_sample(fdb_kvdb_t kvdb)
     }
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   
-*/
+ * @brief Flash_KVDB_Init 
+ * @retval int 
+ */
 int Flash_KVDB_Init(void)
 {
   fdb_err_t result;
@@ -277,3 +239,51 @@ static int FileSystem_Init(void)
   return RT_EOK;
 }
 INIT_ENV_EXPORT(FileSystem_Init);
+/**
+  * @attention  
+  1.开启onchip-flash 开启SPI-FLSAH  
+  2.开启SFUD 开启FAL框架
+  3.配置 <fal_cfg.h> 分配表
+  4.添加虚拟文件系统DFS组件。打开MFD
+  5.添加elm fatfs文件系统。
+  6.romfs.c在tool目录下新建romfs文件夹并自定义下属一级目录与尼尔使用mkromfs.py生成
+  python mkromfs.py romfs romfs.c
+
+  7.生成LOGS目录
+  
+  传输ULOG日志至上位机中：
+      1.cd至ulog文件所在目录 cd/flash/logs
+      2.sy ulog.log
+      提示：No permission to write on the specified folder.因为有"/"符号无法保存
+  从上位机中下载数据至mcu：
+      1.xshell发送ry既可。默认接收至/flash目录下
+*/
+/**  
+ * @attention  
+  片上onchip使用littlefs系统，创建两个目录后及报错空间不足。
+  由文件系统结构决定，扇区不足。虽然大，但扇区不够。
+  littlefs写入速度相比于fatfs慢。保存参数过慢，改用fatfs.fatfs没有掉电保存与读写平衡。
+  容易造成BAD file sys 文件。改回littlefs
+  
+  fatfs文件系统需注意，意外掉电可能造成文件损坏，需要重新格式化 命令 mkfs -t elm filesystem
+  
+  关于CMB的日志文件保存。第一：只能对分区进行操作。没有办法保存到其他目录下。
+  第二，使用rom构建根目录后，创建一个分区无法使用littlefs文件系统格式化。只能是rom系统，只读属性，不可写入。
+*/
+/*
+msh /flash/logs>fal bench 4096
+DANGER: It will erase full chip or partition! Please run 'fal bench 4096 yes'.
+msh /flash/logs>fal bench 4096 yes
+Erasing 1048576 bytes data, waiting...
+Erase benchmark success, total time: 3.548S.
+Writing 1048576 bytes data, waiting...
+Write benchmark success, total time: 4.097S.
+Reading 1048576 bytes data, waiting...
+Read benchmark success, total time: 1.546S.
+
+Erase benchmark success, total time: 33.946S.
+Writing the sf_cmd 16777216 bytes data, waiting...
+Write benchmark success, total time: 65.537S.
+Reading the sf_cmd 16777216 bytes data, waiting...
+Read benchmark success, total time: 26.302S.
+*/

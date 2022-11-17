@@ -4,9 +4,8 @@
  * @author HLY (1425075683@qq.com)
  * @version 1.0
  * @date 2022-11-17
- * 
- * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
- * 
+ * @attention 
+ * @copyright Copyright (c) 2022  
  * @par 修改日志:
  * Date       Version Author  Description
  * 2022-11-17 1.0     HLY     first version
@@ -16,7 +15,7 @@
 #include <drv_usart_v2.h>
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-#define UART_NAME       "uart2"      /* 串口设备名称 */
+#define UART_NAME       "uart2"      // 串口设备名称
 /*ulog include*/
 #define LOG_TAG         UART_NAME
 #define LOG_LVL         DBG_INFO
@@ -97,8 +96,8 @@ static int serial_send(uint8_t *buf, int len)
 /**
   * @brief  串口初始化.
   * @param  None.
-  * @retval None.
-  * @note   成功返回RT_EOK.失败返回-RT_ERROR
+  * @retval 成功返回RT_EOK.失败返回-RT_ERROR.
+  * @note   None.
 */
 static int serial_init(void)
 {
@@ -222,7 +221,7 @@ static void modbus_thread(void* p)
 /**
   * @brief  modbus 从机1 初始化
   * @param  None.
-  * @retval ret.
+  * @retval 成功返回RT_EOK.失败返回-RT_ERROR.
   * @note   None.
 */
 static int Modbus_Slave2_Init(void)

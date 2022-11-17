@@ -5,7 +5,7 @@
  * @version 1.0
  * @date 2022-11-17
  * 
- * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
+ * @copyright Copyright (c) 2022  
  * 
  * @par 修改日志:
  * Date       Version Author  Description

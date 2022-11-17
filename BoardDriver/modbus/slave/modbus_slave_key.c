@@ -1,16 +1,15 @@
 /**
-  ******************************************************************************
-  * @file    mb_key.c
-  * @brief   mb按键驱动v1.0
-  * @date    2021.01.10
-  ******************************************************************************
-  * @attention  把mb线圈抽象为按键
-  mbkey处理方式：1.单独创建一个线程，查询方式循环运行。 【简单，易编写】
-                 2.为每个按键创建一个线程，mbkey发送信号量，线程在恢复处理
-                 【维护困难，创建无用线程过多】
-  * @author hly
-  ******************************************************************************
-  */
+ * @file modbus_slave_key.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @attention 
+ * @copyright Copyright (c) 2022
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     mb线圈抽象为按键
+ */
 /* includes ------------------------------------------------------------------*/
 
 /* private includes ----------------------------------------------------------*/
@@ -391,7 +390,7 @@ static void read_status(void)
 }
 /**
   * @brief  处理函数
-  * @param  none.
+  * @param  p.
   * @retval none.
   * @note   放在定时器1ms一次
             当初始化值进入mb模式才运行
@@ -428,7 +427,7 @@ void mbkey_shield_operate(uint8_t num,mbkey_enable_status option)
 /**
   * @brief  io初始化初始化
   * @param  none.
-  * @retval none.
+  * @retval int.
   * @note   状态机初始化
 gpio_pullup：初始给高，端口，位口
 */

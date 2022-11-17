@@ -1,21 +1,21 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @file modbus_slave1.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @attention 
+ * @copyright Copyright (c) 2022
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "rtthread.h"
 #include <drv_usart_v2.h>
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-#define UART_NAME       "uart1"      /* 串口设备名称 */
+#define UART_NAME       "uart1"      // 串口设备名称
 /*ulog include*/
 #define LOG_TAG         UART_NAME
 #define LOG_LVL         DBG_INFO
@@ -97,7 +97,7 @@ static int serial_send(uint8_t *buf, int len)
 /**
   * @brief  串口初始化.
   * @param  None.
-  * @retval None.
+  * @retval int.
   * @note   None.
 */
 static int serial_init(void)
@@ -147,7 +147,7 @@ static int serial_init(void)
   * @param  bufsz:缓冲区大小
   * @param  timeout.未连接超时时间
   * @param  bytes_timeout 连接后超时时间.
-  * @retval None.
+  * @retval int.
   * @note   None.
 */
 static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeout)
@@ -179,7 +179,7 @@ static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeou
 }
 /**
   * @brief  MODBUS线程
-  * @param  None.
+  * @param  p.
   * @retval None.
   * @note   None.
 */
@@ -224,7 +224,7 @@ static void modbus_thread(void* p)
 /**
   * @brief  modbus 从机1 初始化
   * @param  None.
-  * @retval None.
+  * @retval int.
   * @note   None.
 */
 static int Modbus_Slave1_Init(void)

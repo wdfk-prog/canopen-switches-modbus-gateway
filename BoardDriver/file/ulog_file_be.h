@@ -1,14 +1,15 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
+ * @file ulog_file_be.h
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @copyright Copyright (c) 2022
+ * @attention 
+ * @par –ﬁ∏ƒ»’÷æ:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __ULOG_FILE_BE_H
 #define __ULOG_FILE_BE_H

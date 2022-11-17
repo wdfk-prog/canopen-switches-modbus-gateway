@@ -4,9 +4,8 @@
  * @author HLY (1425075683@qq.com)
  * @version 1.0
  * @date 2022-11-17
- * 
- * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
- * 
+ * @attention 
+ * @copyright Copyright (c) 2022
  * @par 修改日志:
  * Date       Version Author  Description
  * 2022-11-17 1.0     HLY     first version
@@ -38,8 +37,8 @@ int modbus_slave_bits_default(void)
 }
 /**
  * @brief Get the map buf object
- * @param  buf              My Param doc
- * @param  bufsz            My Param doc
+ * @param  buf   接口地址      
+ * @param  bufsz 长度
  * @retval int 
  * @note   None
  */

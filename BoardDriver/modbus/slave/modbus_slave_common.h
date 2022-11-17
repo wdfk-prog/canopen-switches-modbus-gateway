@@ -1,27 +1,17 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  起始地址和结束地址决定的寄存器个数有限制。更改函数内部 map_buf 数组大小可使其变大。
-  bit 寄存器 < 250
-  register 寄存器 < 125
-
-  接口函数为 NULL，寄存器对应的功能码能响应且为成功。
-
-  get 接口
-  将地址域内的数据全部拷贝到 buf 中。
-
-  set 接口
-  index: 地址域内的偏移
-  len: 长度
-  根据 index 和 len 修改数据。
-  * @author
-  ******************************************************************************
-  */
+ * @file modbus_slave_common.h
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @copyright Copyright (c) 2022
+ * @attention   起始地址和结束地址决定的寄存器个数有限制。更改函数内部 map_buf 数组大小可使其变大。
+                bit 寄存器 < 250  register 寄存器 < 125
+                接口函数为 NULL，寄存器对应的功能码能响应且为成功。
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MODBUS_SLAVE_COMMON_H
 #define __MODBUS_SLAVE_COMMON_H

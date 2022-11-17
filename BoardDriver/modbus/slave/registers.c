@@ -1,15 +1,15 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @file registers.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @attention 
+ * @copyright Copyright (c) 2022
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
@@ -27,7 +27,7 @@ static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
 /**
   * @brief  写入输入寄存器默认值
   * @param  None
-  * @retval None
+  * @retval int
   * @note   None
 */
 int modbus_slave_register_default(void)
@@ -54,7 +54,7 @@ int modbus_slave_register_default(void)
   * @brief  写入本机数据至保持寄存器中
   * @param  None
   * @retval None
-  * @note   None
+  * @note   暂无使用
 */
 void modbus_slave_register_write(void)
 {
@@ -64,7 +64,7 @@ void modbus_slave_register_write(void)
   * @brief  获取MODBUS保持寄存器数据
   * @param  index:数组索引
   * @param  index:数组子索引
-  * @retval None
+  * @retval uint16_t
   * @note   None
 */
 uint16_t modbus_register_get(uint16_t index,uint16_t sub_index)
@@ -105,11 +105,11 @@ uint8_t modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint
   }
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief Get the map buf object
+ * @param  buf              
+ * @param  bufsz            
+ * @retval int 
+ */
 static int get_map_buf(void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
@@ -120,11 +120,13 @@ static int get_map_buf(void *buf, int bufsz)
     return 0;
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief Set the map buf object
+ * @param  index            
+ * @param  len              
+ * @param  buf              
+ * @param  bufsz            
+ * @retval int 
+ */
 static int set_map_buf(int index, int len, void *buf, int bufsz)
 {
     uint16_t *ptr = (uint16_t *)buf;
@@ -135,11 +137,8 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
     return 0;
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief 保持寄存器
+ */
 const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM] = 
 {
    //起始地址                     结束地址                          获取接口   设置接口 

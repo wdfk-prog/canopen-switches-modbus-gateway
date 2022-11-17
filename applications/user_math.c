@@ -1,14 +1,16 @@
 /**
-  ******************************************************************************
-  * @file    user_math.c
-  * @brief   用户自定义函数
-  ******************************************************************************
-  * @attention  
-  * https://blog.csdn.net/qq_39016531/article/details/107411030#comments_19409528
-  * https://blog.csdn.net/qlexcel/article/details/103651072
-  * @author 进击的蜗牛_QJ、丘木木
-  ******************************************************************************
-  */
+ * @file user_math.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @attention 
+ * @copyright Copyright (c) 2022
+ * 
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "user_math.h"
 /* Private includes ----------------------------------------------------------*/

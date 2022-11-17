@@ -4,9 +4,8 @@
  * @author HLY (1425075683@qq.com)
  * @version 1.0
  * @date 2022-11-17
- * 
- * @copyright Copyright (c) 2022  厦门宏泰智能制造公司
- * 
+ * @attention 
+ * @copyright Copyright (c) 2022  
  * @par 修改日志:
  * Date       Version Author  Description
  * 2022-11-17 1.0     HLY     first version
@@ -124,11 +123,8 @@ static int get_map_buf(void *buf, int bufsz)
   return 0;
 }
 /**
-  * @brief  
-  * @param  None
-  * @retval None
-  * @note   None
-*/
+ * @brief 输入寄存器
+ */
 const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MAPS_NUM] = 
 {
   //起始地址                          结束地址                                  获取接口      设置接口 

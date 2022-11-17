@@ -1,15 +1,15 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
-/* USER CODE END Header */
+ * @file modbus_slave_common.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @attention   
+ * @copyright Copyright (c) 2022
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
@@ -37,7 +37,7 @@ extern void modbus_slave_register_write(void);
 /**
   * @brief  写入MODBUS默认值
   * @param  None
-  * @retval None
+  * @retval int
   * @note   None
 */
 static int modbus_default(void)
@@ -52,7 +52,7 @@ static int modbus_default(void)
 }
 INIT_COMPONENT_EXPORT(modbus_default);
 /**
-  * @brief  锁定
+  * @brief  锁定当前MODBUS寄存器
   * @param  None
   * @retval None
   * @note   None
@@ -65,7 +65,7 @@ void modbus_mutex_lock(void)
 	}
 }
 /**
-  * @brief  解锁
+  * @brief  解锁当前MODBUS寄存器
   * @param  None
   * @retval None
   * @note   None

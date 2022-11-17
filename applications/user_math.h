@@ -1,15 +1,15 @@
 /**
-  ******************************************************************************
-  * @file    user_math.h
-  * @brief   用户自定义函数
-  ******************************************************************************
-  * @attention  
-  * https://blog.csdn.net/qq_39016531/article/details/107411030#comments_19409528
-  * https://blog.csdn.net/qlexcel/article/details/103651072
-  添加四舍五入宏定义                           2022.07.20
-  * @author 进击的蜗牛_QJ、丘木木
-  ******************************************************************************
-  */
+ * @file user_math.h
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-17
+ * @copyright Copyright (c) 2022
+ * @attention 
+ * @par 修改日志:
+ * Date       Version Author  Description
+ * 2022-11-17 1.0     HLY     first version
+ */
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __USER__MATH_H
 #define __USER__MATH_H
