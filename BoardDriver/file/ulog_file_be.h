@@ -23,7 +23,7 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 #define MOTION_TAG  "MOVE"
 /* Exported macro ------------------------------------------------------------*/
-#define OUT_FILE_ENABLE 1 //浣胯兘鏂囦欢鍚庣杈撳嚭
+#define OUT_FILE_ENABLE 1 //使能文件后端输出
 
 #define LOG_MV(...)  ulog_i(MOTION_TAG, __VA_ARGS__)
 /* Exported variables ---------------------------------------------------------*/

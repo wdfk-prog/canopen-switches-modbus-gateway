@@ -30,7 +30,7 @@
 
 /* Private define ------------------------------------------------------------*/
 #define RTC_NAME       "rtc"
-/*ä¸²å£ä¸­æ–­ä¼˜å…ˆçº§è®¾ç½®*/
+/*´®¿ÚÖĞ¶ÏÓÅÏÈ¼¶ÉèÖÃ*/
 //#define FINSH_IRQ_PRIORITY  
 /* Private macro -------------------------------------------------------------*/
 
@@ -39,16 +39,16 @@
 /* Private function prototypes -----------------------------------------------*/
 #ifdef FINSH_IRQ_PRIORITY
 /**
-  * @brief  è®¾ç½®FINSHä¸²å£ä¸­æ–­ä¼˜å…ˆçº§
+  * @brief  ÉèÖÃFINSH´®¿ÚÖĞ¶ÏÓÅÏÈ¼¶
   * @param  None
   * @retval None
   */
 static int Set_FINSH_IRQ(void)
 {
   rt_err_t ret = RT_EOK;
-  /* ä¸²å£è®¾å¤‡å¥æŸ„ */
+  /* ´®¿ÚÉè±¸¾ä±ú */
   rt_device_t serial;
-  /* æŸ¥æ‰¾ä¸²å£è®¾å¤‡ */
+  /* ²éÕÒ´®¿ÚÉè±¸ */
   serial = rt_device_find(RT_CONSOLE_DEVICE_NAME);
   if (!serial)
   {
@@ -66,9 +66,9 @@ static int Set_FINSH_IRQ(void)
 INIT_COMPONENT_EXPORT(Set_FINSH_IRQ);
 #endif
 /**
-  * @brief  è®¾ç½®RTCæ—¶é—´
+  * @brief  ÉèÖÃRTCÊ±¼ä
   * @param  None
-  * @retval ulogæ—¶é—´æˆ³å‡†ç¡®
+  * @retval ulogÊ±¼ä´Á×¼È·
   */
 static int Set_RTC_Time(void)
 {
@@ -77,27 +77,27 @@ static int Set_RTC_Time(void)
   time_t now;
 
   rt_device_t device = RT_NULL;
-  /*å¯»æ‰¾è®¾å¤‡*/
+  /*Ñ°ÕÒÉè±¸*/
   device = rt_device_find(RTC_NAME);
   if (!device)
   {
       LOG_E("find %s failed!", RTC_NAME);
       return RT_ERROR;
   }
-  /*åˆå§‹åŒ–RTCè®¾å¤‡*/
+  /*³õÊ¼»¯RTCÉè±¸*/
   if(rt_device_open(device, 0) != RT_EOK)
   {
       LOG_E("open %s failed!", RTC_NAME);
       return RT_ERROR;
   }
 
-  /* è®¾ç½®æ—¥æœŸ */
+  /* ÉèÖÃÈÕÆÚ */
   ret = set_date(YEAR, MONTH + 1, DAY);
   if (ret != RT_EOK)
   {
     LOG_E("set RTC date failed");
   }
-  /* è®¾ç½®æ—¶é—´ */
+  /* ÉèÖÃÊ±¼ä */
   ret = set_time(HOUR, MINUTE, SEC + BURN_TIME);
   if (ret != RT_EOK)
   {
@@ -106,9 +106,9 @@ static int Set_RTC_Time(void)
   return ret;
 }
 INIT_COMPONENT_EXPORT(Set_RTC_Time);
-/*********************************æ‰ç”µæ£€æµ‹******************************************/
+/*********************************µôµç¼ì²â******************************************/
 #ifdef PVD_ENABLE
-/* å®Œæˆé‡æ§åˆ¶å— */
+/* Íê³ÉÁ¿¿ØÖÆ¿é */
 static struct rt_completion pvd_completion;
 /**
   * @brief  None.
@@ -121,7 +121,7 @@ static void pvd_thread_entry(void* parameter)
   while(1)
   {
       rt_completion_wait(&pvd_completion, RT_WAITING_FOREVER);
-      /* æ‰ç”µå‰çš„ç´§æ€¥å¤„ç† */
+      /* µôµçÇ°µÄ½ô¼±´¦Àí */
       ulog_flush();
       rt_kprintf("Flush ULOG buffer complete\n");
   }
@@ -129,24 +129,24 @@ static void pvd_thread_entry(void* parameter)
 static int PVD_Init(void)
 {
     /*##-1- Enable Power Clock #################################################*/
-    __HAL_RCC_PWR_CLK_ENABLE();           /* ä½¿èƒ½PVD */
+    __HAL_RCC_PWR_CLK_ENABLE();           /* Ê¹ÄÜPVD */
  
     /*##-2- Configure the NVIC for PVD #########################################*/
-    HAL_NVIC_SetPriority(PVD_IRQn, 0, 0); /* é…ç½®PVDä¸­æ–­ä¼˜å…ˆçº§ */
-    HAL_NVIC_EnableIRQ(PVD_IRQn);         /* ä½¿èƒ½PVDä¸­æ–­ */
+    HAL_NVIC_SetPriority(PVD_IRQn, 0, 0); /* ÅäÖÃPVDÖĞ¶ÏÓÅÏÈ¼¶ */
+    HAL_NVIC_EnableIRQ(PVD_IRQn);         /* Ê¹ÄÜPVDÖĞ¶Ï */
  
     /* Configure the PVD Level to 3 and generate an interrupt on rising and falling
        edges(PVD detection level set to 2.5V, refer to the electrical characteristics
        of you device datasheet for more details) */
     PWR_PVDTypeDef sConfigPVD;
-    sConfigPVD.PVDLevel = PWR_PVDLEVEL_6;     /* PVDé˜ˆå€¼3.1V */
-    sConfigPVD.Mode = PWR_PVD_MODE_IT_RISING; /* æ£€æµ‹æ‰ç”µ */
+    sConfigPVD.PVDLevel = PWR_PVDLEVEL_6;     /* PVDãĞÖµ3.1V */
+    sConfigPVD.Mode = PWR_PVD_MODE_IT_RISING; /* ¼ì²âµôµç */
     HAL_PWR_ConfigPVD(&sConfigPVD);
  
     /* Enable the PVD Output */
     HAL_PWR_EnablePVD();
 
-    /* åˆå§‹åŒ–å®Œæˆé‡å¯¹è±¡ */
+    /* ³õÊ¼»¯Íê³ÉÁ¿¶ÔÏó */
     rt_completion_init(&pvd_completion);
     rt_thread_t tid;
     tid = rt_thread_create("PVD", pvd_thread_entry, RT_NULL,
@@ -171,7 +171,7 @@ void HAL_PWR_PVDCallback(void)
   /* NOTE : This function Should not be modified, when the callback is needed,
             the HAL_PWR_PVDCallback could be implemented in the user file
    */
-   if(__HAL_PWR_GET_FLAG( PWR_FLAG_PVDO ))    /* 1ä¸ºVDDå°äºPVDé˜ˆå€¼,æ‰ç”µæƒ…å†µ */
+   if(__HAL_PWR_GET_FLAG( PWR_FLAG_PVDO ))    /* 1ÎªVDDĞ¡ÓÚPVDãĞÖµ,µôµçÇé¿ö */
   {
       rt_completion_done(&pvd_completion);
       ulog_i("PVD","Voltage below 3.1V was detected");
