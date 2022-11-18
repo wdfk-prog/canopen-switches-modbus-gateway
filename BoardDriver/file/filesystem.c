@@ -41,8 +41,11 @@
 
 /* Private define ------------------------------------------------------------*/
 #define FS_PARTITION_NAME "filesystem"//"W25Q128" //在fal_cfg.h中FAL_PART_TABLE定义
-#define DB_PARTITION_NAME "flashdb"
+
+
 #define ENV_VERSION       002          //默认参数版本
+#define SEC_SIZE          4096         // 设置扇区大小
+#define DB_SIZE           SEC_SIZE * 2 //设置最大数据容量
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -150,9 +153,16 @@ int Flash_KVDB_Init(void)
 {
   fdb_err_t result;
   struct fdb_default_kv default_kv;
+  bool file_mode = RT_TRUE;
+  uint32_t sec_size = SEC_SIZE;
+  uint32_t db_size  = DB_SIZE;
   default_kv.kvs = default_kv_table;
   default_kv.num = sizeof(default_kv_table) / sizeof(default_kv_table[0]);
   mb_param.ver_num = ENV_VERSION;//每次初始化检测版本号，自动更新版本
+  
+  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_FILE_MODE, &file_mode);
+  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_SEC_SIZE, &sec_size);
+  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_MAX_SIZE, &db_size);
   
   /*初始化 KVDB
     参数	      描述
@@ -163,7 +173,7 @@ int Flash_KVDB_Init(void)
     user_data	  用户自定义数据，没有时传入 NULL
     返回	      错误码
   */
-  result = fdb_kvdb_init(&mb_param, "env",DB_PARTITION_NAME, &default_kv, NULL);
+  result = fdb_kvdb_init(&mb_param, "env", "/flash", &default_kv, NULL);
   if (result != FDB_NO_ERR)   
   {
    return RT_ERROR;
@@ -171,7 +181,7 @@ int Flash_KVDB_Init(void)
   kvdb_basic_sample(&mb_param);
   
   MB_Param_Read();
-//  //FLASH中没有数据
+  //FLASH中没有数据
 //  if(flash_save != 0XBD)
 //  {
 //    DEFAULT_DATA_SET;
