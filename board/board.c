@@ -69,27 +69,48 @@ static int Set_FINSH_IRQ(void)
 INIT_COMPONENT_EXPORT(Set_FINSH_IRQ);
 #endif
 /**
+ * @brief  获取编译时间戳
+ * @param  None.              
+ * @retval time_t 返回时间戳
+ * @note   None.
+ */
+static time_t rtc_get_build(void)
+{
+  struct tm tm_new = {0};
+  /* update date. */
+  tm_new.tm_year  = YEAR - 1900;// years since 1900
+  tm_new.tm_mon   = MONTH;//tm_mon: 0~11
+  tm_new.tm_mday  = DAY;
+  /* update time. */
+  tm_new.tm_hour = HOUR;
+  tm_new.tm_min  = MINUTE;
+  tm_new.tm_sec  = SEC;
+
+  return mktime(&tm_new);   
+}
+/**
  * @brief  更新rtc时钟
  * @param  t                
  * @retval time_t 返回时间戳
  * @note   若未获取到时间，返回 0;
  */
-static time_t rtc_update(struct tm* tm_new)
+static time_t rtc_update(void)
 {
+  struct tm tm_new = {0};
   /* update date. */
-  tm_new->tm_year  = modbus_get_register(0,31) - 1900;// years since 1900
-  tm_new->tm_mon   = modbus_get_register(0,32) - 1;//tm_mon: 0~11
-  tm_new->tm_mday  = modbus_get_register(0,33);
+  tm_new.tm_year  = modbus_get_register(0,31) - 1900;// years since 1900
+  tm_new.tm_mon   = modbus_get_register(0,32) - 1;//tm_mon: 0~11
+  tm_new.tm_mday  = modbus_get_register(0,33);
   /* update time. */
-  tm_new->tm_hour = modbus_get_register(0,34);
-  tm_new->tm_min  = modbus_get_register(0,35);
-  tm_new->tm_sec  = modbus_get_register(0,36);
+  tm_new.tm_hour = modbus_get_register(0,34);
+  tm_new.tm_min  = modbus_get_register(0,35);
+  tm_new.tm_sec  = modbus_get_register(0,36);
   /* converts the local time into the calendar time. */
-  if(tm_new->tm_mon < 0 || !(tm_new->tm_year + tm_new->tm_mday + tm_new->tm_hour + tm_new->tm_min + tm_new->tm_sec))
+  if(tm_new.tm_mon < 0 || !(tm_new.tm_year + tm_new.tm_mday + tm_new.tm_hour + tm_new.tm_min + tm_new.tm_sec))
     return 0;
   else
   {
-    return mktime(tm_new);
+    return mktime(&tm_new);
   }     
 }
 /**
@@ -100,13 +121,12 @@ static time_t rtc_update(struct tm* tm_new)
 */
 static void rtc_update_thread_entry(void* parameter)
 {
-  struct tm tm_new = {0};
   time_t old_time = 0,new_time = 0,err_time = 0;
   static uint16_t cnt = 0;
   while(1)
   {
     rt_thread_mdelay(1000);
-    new_time = rtc_update(&tm_new);
+    new_time = rtc_update();
 
     err_time = new_time - old_time;
     if(err_time == 0)//时间值没有更新
@@ -116,8 +136,9 @@ static void rtc_update_thread_entry(void* parameter)
     else
     {
       set_timestamp(new_time);//更新时间，进行同步
-      rtc_time_write();
+      
     }
+    rtc_time_write();
     old_time = new_time;
   }
 }
@@ -128,9 +149,10 @@ static void rtc_update_thread_entry(void* parameter)
  */
 static int rtc_update_init(void)
 {
-    rt_err_t ret = RT_EOK;
-    time_t now;
     rt_thread_t tid;
+    rt_err_t ret = RT_EOK;
+    time_t now,build;
+
 
     rt_device_t device = RT_NULL;
     /*寻找设备*/
@@ -147,10 +169,18 @@ static int rtc_update_init(void)
         return RT_ERROR;
     }
     
-    now = rtc_time_read();
-    if(now != 0)
+    build = rtc_get_build();//读取编译时间
+    now = rtc_time_read();  //读取flash掉电时间
+
+    if(build < now)
     {
       set_timestamp(now);
+      LOG_I("Set the timestamp to the time in the flash");
+    }
+    else
+    {
+      set_timestamp(build);
+      LOG_I("Set the timestamp to compile time");
     }
 
     tid = rt_thread_create("rtc", rtc_update_thread_entry, RT_NULL,

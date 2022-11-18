@@ -88,7 +88,7 @@ extern "C" {
 #define HOUR   ((__TIME__ [0] - '0') * 10 + (__TIME__ [1] - '0'))
 #define MINUTE ((__TIME__ [3] - '0') * 10 + (__TIME__ [4] - '0'))
 #define SEC    ((__TIME__ [6] - '0') * 10 + (__TIME__ [7] - '0'))
-#define BURN_TIME 15
+#define BURN_TIME 30
 #ifdef CUBE_ERROR
 /* USER CODE END EM */
 
