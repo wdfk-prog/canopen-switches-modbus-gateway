@@ -9,6 +9,7 @@
  * @par 修改日志:
  * Date       Version Author  Description
  * 2022-11-17 1.0     HLY     first version
+ * 2022-11-18 1.1     HLY     修改flashdb至文件系统
  */
 /**
   操作内容
@@ -24,12 +25,12 @@
   mkfs	格式化文件系统
 */
 /* Includes ------------------------------------------------------------------*/
+#include "filesystem.h"
+/* Private includes ----------------------------------------------------------*/
 #include <fal.h>
 #include <dfs_fs.h>
 #include <dfs_romfs.h>
 #include <fal_cfg.h>
-#include <flashdb.h>
-/* Private includes ----------------------------------------------------------*/
 #include "ulog_file_be.h"
 #include "main.h"
 //#include "mb_handler.h"
@@ -42,7 +43,6 @@
 /* Private define ------------------------------------------------------------*/
 #define FS_PARTITION_NAME "filesystem"//"W25Q128" //在fal_cfg.h中FAL_PART_TABLE定义
 
-
 #define ENV_VERSION       002          //默认参数版本
 #define SEC_SIZE          4096         // 设置扇区大小
 #define DB_SIZE           SEC_SIZE * 2 //设置最大数据容量
@@ -53,37 +53,16 @@
 static struct fdb_kvdb mb_param = { 0 };
 /*运行次数*/
 static uint16_t boot_count = 0;
-/*保存标志*/
-uint16_t flash_save = 0XFF;//0XFF:未保存 0XBD:已保存
+static time_t  rtc_time = 0;
 /* default KV nodes 第一次初始化时保存信息*/
 static struct fdb_default_kv_node default_kv_table[] = 
 {
-  {"boot_count", &boot_count,           sizeof(boot_count)}, /* int type KV */
-  {"save flag",  &flash_save ,          sizeof(flash_save)},
-//  {"MBH501"   ,  &usRegHoldingBuf[501] ,sizeof(usRegHoldingBuf[501])},//设置转向电机周期脉冲数
-//  {"MBH502"   ,  &usRegHoldingBuf[502] ,sizeof(usRegHoldingBuf[502])},//设置转向电机减速比
-//  {"MBH503"   ,  &usRegHoldingBuf[503] ,sizeof(usRegHoldingBuf[503])},//顺时针方向对应的值
-//  {"MBH504"   ,  &usRegHoldingBuf[504] ,sizeof(usRegHoldingBuf[504])},//设置最大角度
-//  {"MBH505"   ,  &usRegHoldingBuf[505] ,sizeof(usRegHoldingBuf[505])},//设置最小角度
-//  {"MBH506"   ,  &usRegHoldingBuf[506] ,sizeof(usRegHoldingBuf[506])},//设置最大速度
-//  {"MBH507"   ,  &usRegHoldingBuf[507] ,sizeof(usRegHoldingBuf[507])},//设置最小速度
-//  {"MBH508"   ,  &usRegHoldingBuf[508] ,sizeof(usRegHoldingBuf[508])},//设置点动速度
-//  {"MBH509"   ,  &usRegHoldingBuf[509] ,sizeof(usRegHoldingBuf[509])},//设置转向电机复位角度
-//  {"MBH510"   ,  &usRegHoldingBuf[510] ,sizeof(usRegHoldingBuf[510])},//回原高速
-//  {"MBH511"   ,  &usRegHoldingBuf[511] ,sizeof(usRegHoldingBuf[511])},//回原低速
-//  {"MBH521"   ,  &usRegHoldingBuf[521] ,sizeof(usRegHoldingBuf[521])},//设置电机周期脉冲数
-//  {"MBH522"   ,  &usRegHoldingBuf[522] ,sizeof(usRegHoldingBuf[522])},//设置电机减速比
-//  {"MBH523"   ,  &usRegHoldingBuf[523] ,sizeof(usRegHoldingBuf[523])},//顺时针方向对应的值
-//  {"MBH524"   ,  &usRegHoldingBuf[524] ,sizeof(usRegHoldingBuf[524])},//最大限速
-//  {"MBH525"   ,  &usRegHoldingBuf[525] ,sizeof(usRegHoldingBuf[525])},//最小限速
-//  {"MBH526"   ,  &usRegHoldingBuf[526] ,sizeof(usRegHoldingBuf[526])},//加减速步长
-//  {"MBH527"   ,  &usRegHoldingBuf[527] ,sizeof(usRegHoldingBuf[527])},//加减速周期
-//  {"MBH699"   ,  &usRegHoldingBuf[699] ,sizeof(usRegHoldingBuf[699])},//ADC采样补偿
-//  {"MBH700"   ,  &usRegHoldingBuf[700] ,sizeof(usRegHoldingBuf[700])},//adc阈值
+  {"boot_count", &boot_count,           sizeof(boot_count)},
+  {"rtc_time",   &rtc_time,             sizeof(boot_count)}, 
 };
 /* Private function prototypes -----------------------------------------------*/
 /**
-  * @brief  VarData_To_Save
+  * @brief  MB_Param_Save
   * @param  None.
   * @retval None.
   * @note   读取数据遇到问题，请先尝试重新保存数据在读出尝试
@@ -92,7 +71,6 @@ void MB_Param_Save(void)
 {
   struct fdb_blob blob;
   const uint16_t *temp;
-  flash_save = 0XBD;
   for(uint8_t i = 0; i < sizeof(default_kv_table) / sizeof(struct fdb_default_kv_node);i++)
   {
     temp = (const uint16_t *)default_kv_table[i].value;
@@ -101,7 +79,7 @@ void MB_Param_Save(void)
   }
 }
 /**
-  * @brief  VarData_To_Read
+  * @brief  MB_Param_Read
   * @param  None.
   * @retval None.
   * @note   读取数据遇到问题，请先尝试重新保存数据在读出尝试
@@ -118,21 +96,48 @@ void MB_Param_Read(void)
   }
 }
 /**
- * @brief kvdb_basic_sample
- * @param  kvdb             
+ * @brief  rtc_time_write_file
+ * @param  none.   
+ * @note   写入时间戳
  */
-static void kvdb_basic_sample(fdb_kvdb_t kvdb)
+void rtc_time_write(void)
 {
     struct fdb_blob blob;
-    int boot_count = 0;
+
+  /* get the "boot_count" KV value */
+  fdb_kv_get_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
+  /* the blob.saved.len is more than 0 when get the value successful */
+  if (blob.saved.len > 0) 
+  {
+      LOG_D("get the 'rtc_time' value is %d", rtc_time);
+  } 
+  else 
+  {
+      LOG_W("get the 'rtc_time' failed\n");
+  }
+ 
+  get_timestamp(&rtc_time);
+  fdb_kv_set_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
+}
+/**************************本地操作***************************************************/
+/**
+ * @brief  boot_count_wr
+ * @param  kvdb   
+ * @note   读取并写入芯片复位/上电次数
+ */
+static void boot_count_wr(fdb_kvdb_t kvdb)
+{
+    struct fdb_blob blob;
 
     { /* GET the KV value */
         /* get the "boot_count" KV value */
         fdb_kv_get_blob(kvdb, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
         /* the blob.saved.len is more than 0 when get the value successful */
-        if (blob.saved.len > 0) {
+        if (blob.saved.len > 0) 
+        {
             LOG_D("get the 'boot_count' value is %d", boot_count);
-        } else {
+        } else 
+        {
             LOG_W("get the 'boot_count' failed");
         }
     }
@@ -178,15 +183,7 @@ int Flash_KVDB_Init(void)
   {
    return RT_ERROR;
   }
-  kvdb_basic_sample(&mb_param);
-  
-  MB_Param_Read();
-  //FLASH中没有数据
-//  if(flash_save != 0XBD)
-//  {
-//    DEFAULT_DATA_SET;
-//    SAVE_SET;
-//  }
+  boot_count_wr(&mb_param);
   return RT_EOK;
 }
 /**

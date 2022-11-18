@@ -16,6 +16,7 @@
 #include <time.h>
 #include "main.h"
 #include "modbus_slave_common.h"
+#include "filesystem.h"
 #ifdef RT_USING_SERIAL
 #ifdef RT_USING_SERIAL_V2
 #include "drv_usart_v2.h"
@@ -113,6 +114,7 @@ static void rtc_update_thread_entry(void* parameter)
     else
     {
       set_timestamp(new_time);//更新时间，进行同步
+      rtc_time_write();
     }
     old_time = new_time;
   }
@@ -144,7 +146,7 @@ static int rtc_update_init(void)
     }
 
     tid = rt_thread_create("rtc", rtc_update_thread_entry, RT_NULL,
-                          512, 0, 0);
+                          2048, 0, 0);
     if(tid == RT_NULL)
     {
       LOG_E("rtc thread start failed!");
