@@ -13,8 +13,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "board.h"
 /* Private includes ----------------------------------------------------------*/
+#include <time.h>
 #include "main.h"
-
+#include "modbus_slave_common.h"
 #ifdef RT_USING_SERIAL
 #ifdef RT_USING_SERIAL_V2
 #include "drv_usart_v2.h"
@@ -66,46 +67,95 @@ static int Set_FINSH_IRQ(void)
 INIT_COMPONENT_EXPORT(Set_FINSH_IRQ);
 #endif
 /**
-  * @brief  设置RTC时间
-  * @param  None
-  * @retval ulog时间戳准确
-  */
-static int Set_RTC_Time(void)
+ * @brief  更新rtc时钟
+ * @param  t                
+ * @retval time_t 返回时间戳
+ * @note   若未获取到时间，返回 0;
+ */
+static time_t rtc_update(struct tm* tm_new)
 {
-#include <time.h>
-  rt_err_t ret = RT_EOK;
-  time_t now;
-
-  rt_device_t device = RT_NULL;
-  /*寻找设备*/
-  device = rt_device_find(RTC_NAME);
-  if (!device)
+  /* update date. */
+  tm_new->tm_year  = modbus_get_register(0,31) - 1900;// years since 1900
+  tm_new->tm_mon   = modbus_get_register(0,32) - 1;//tm_mon: 0~11
+  tm_new->tm_mday  = modbus_get_register(0,33);
+  /* update time. */
+  tm_new->tm_hour = modbus_get_register(0,34);
+  tm_new->tm_min  = modbus_get_register(0,35);
+  tm_new->tm_sec  = modbus_get_register(0,36);
+  /* converts the local time into the calendar time. */
+  if(tm_new->tm_mon < 0 || !(tm_new->tm_year + tm_new->tm_mday + tm_new->tm_hour + tm_new->tm_min + tm_new->tm_sec))
+    return 0;
+  else
   {
-      LOG_E("find %s failed!", RTC_NAME);
-      return RT_ERROR;
-  }
-  /*初始化RTC设备*/
-  if(rt_device_open(device, 0) != RT_EOK)
-  {
-      LOG_E("open %s failed!", RTC_NAME);
-      return RT_ERROR;
-  }
-
-  /* 设置日期 */
-  ret = set_date(YEAR, MONTH + 1, DAY);
-  if (ret != RT_EOK)
-  {
-    LOG_E("set RTC date failed");
-  }
-  /* 设置时间 */
-  ret = set_time(HOUR, MINUTE, SEC + BURN_TIME);
-  if (ret != RT_EOK)
-  {
-    LOG_E("set RTC time failed");
-  }
-  return ret;
+    return mktime(tm_new);
+  }     
 }
-INIT_COMPONENT_EXPORT(Set_RTC_Time);
+/**
+  * @brief  rtc_update线程.
+  * @param  None.
+  * @retval None.
+  * @note   1秒获取一次同步时间。
+*/
+static void rtc_update_thread_entry(void* parameter)
+{
+  struct tm tm_new = {0};
+  time_t old_time = 0,new_time = 0,err_time = 0;
+  while(1)
+  {
+    rt_thread_mdelay(1000);
+    new_time = rtc_update(&tm_new);
+
+    err_time = new_time - old_time;
+    if(err_time == 0)//时间值没有更新
+    {
+      ulog_d("RTC","Out of time synchronization");
+    }
+    else
+    {
+      set_timestamp(new_time);//更新时间，进行同步
+    }
+    old_time = new_time;
+  }
+}
+/**
+ * @brief   rtc_update_init
+ * @retval  int 
+ * @note    初始化更新rtc时间
+ */
+static int rtc_update_init(void)
+{
+    rt_err_t ret = RT_EOK;
+    time_t now;
+    rt_thread_t tid;
+
+    rt_device_t device = RT_NULL;
+    /*寻找设备*/
+    device = rt_device_find(RTC_NAME);
+    if (!device)
+    {
+        LOG_E("find %s failed!", RTC_NAME);
+        return RT_ERROR;
+    }
+    /*初始化RTC设备*/
+    if(rt_device_open(device, 0) != RT_EOK)
+    {
+        LOG_E("open %s failed!", RTC_NAME);
+        return RT_ERROR;
+    }
+
+    tid = rt_thread_create("rtc", rtc_update_thread_entry, RT_NULL,
+                          512, 0, 0);
+    if(tid == RT_NULL)
+    {
+      LOG_E("rtc thread start failed!");
+    }
+    else
+    {
+      rt_thread_startup(tid);
+    }
+    return RT_EOK;
+}
+INIT_APP_EXPORT(rtc_update_init);
 /*********************************掉电检测******************************************/
 #ifdef PVD_ENABLE
 /* 完成量控制块 */
@@ -126,7 +176,11 @@ static void pvd_thread_entry(void* parameter)
       rt_kprintf("Flush ULOG buffer complete\n");
   }
 }
-static int PVD_Init(void)
+/**
+ * @brief pvd初始化
+ * @retval int 
+ */
+static int pvd_init(void)
 {
     /*##-1- Enable Power Clock #################################################*/
     __HAL_RCC_PWR_CLK_ENABLE();           /* 使能PVD */
@@ -161,7 +215,7 @@ static int PVD_Init(void)
     }
     return RT_EOK;
 }
-INIT_APP_EXPORT(PVD_Init);
+INIT_APP_EXPORT(pvd_init);
 /**
   * @brief  PWR PVD interrupt callback
   * @retval None
