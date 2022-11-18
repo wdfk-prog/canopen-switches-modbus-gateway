@@ -33,7 +33,6 @@ extern int modbus_slave_input_register_default(void);
 extern int modbus_slave_bits_default(void);
 
 extern void modbus_slave_input_register_write(void);
-extern void modbus_slave_register_write(void);
 /**
   * @brief  写入MODBUS默认值
   * @param  None
@@ -78,15 +77,15 @@ void modbus_mutex_unlock(void)
 	}
 }
 /**
-  * @brief  对共享地址写入本机数据
+  * @brief  读写MODBUS寄存器共享地址
   * @param  None
   * @retval None
   * @note   None
 */
 void modbus_slave_write(void)
 {
+    //写入本机数据至寄存器
     modbus_slave_input_register_write();
-    modbus_slave_register_write();
     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }
 /**
@@ -193,7 +192,7 @@ static void modbus_get(int argc, char**argv)
     {
       if(flag == 1)
       {
-        if(modbus_register_get(0,i) != 0)
+        if(modbus_get_register(0,i) != 0)
         {
           if(cnt % 5 == 0)
           {
@@ -202,9 +201,9 @@ static void modbus_get(int argc, char**argv)
           }
           cnt++;
           if(hex == 0)
-            rt_kprintf("num:%3d|hold:%5d#",i,modbus_register_get(0,i));
+            rt_kprintf("num:%3d|hold:%5d#",i,modbus_get_register(0,i));
           else
-            rt_kprintf("num:%3d|hold:0X%04X#",i,modbus_register_get(0,i));
+            rt_kprintf("num:%3d|hold:0X%04X#",i,modbus_get_register(0,i));
         }
       }
       else
@@ -216,9 +215,9 @@ static void modbus_get(int argc, char**argv)
         }
         cnt++;
         if(hex == 0)
-          rt_kprintf("num:%3d|hold:%5d#",i,modbus_register_get(0,i));
+          rt_kprintf("num:%3d|hold:%5d#",i,modbus_get_register(0,i));
         else
-          rt_kprintf("num:%3d|hold:0X%04X#",i,modbus_register_get(0,i));
+          rt_kprintf("num:%3d|hold:0X%04X#",i,modbus_get_register(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -234,7 +233,7 @@ static void modbus_get(int argc, char**argv)
     {
       if(flag == 1)
       {
-        if(modbus_input_register_get(0,i) != 0)
+        if(modbus_get_input_register(0,i) != 0)
         {
           if(cnt % 5 == 0)
           {
@@ -243,9 +242,9 @@ static void modbus_get(int argc, char**argv)
           }
           cnt++;
           if(hex == 0)
-            rt_kprintf("num:%3d|input:%5d#", i, modbus_input_register_get(0,i));
+            rt_kprintf("num:%3d|input:%5d#", i, modbus_get_input_register(0,i));
           else
-            rt_kprintf("num:%3d|input:0X%04X#", i, modbus_input_register_get(0,i));
+            rt_kprintf("num:%3d|input:0X%04X#", i, modbus_get_input_register(0,i));
         }
       }
       else
@@ -257,9 +256,9 @@ static void modbus_get(int argc, char**argv)
         }
         cnt++;
         if(hex == 0)
-          rt_kprintf("num:%3d|input:%5d#", i, modbus_input_register_get(0,i));
+          rt_kprintf("num:%3d|input:%5d#", i, modbus_get_input_register(0,i));
         else
-          rt_kprintf("num:%3d|input:0X%04X#", i, modbus_input_register_get(0,i));
+          rt_kprintf("num:%3d|input:0X%04X#", i, modbus_get_input_register(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -275,7 +274,7 @@ static void modbus_get(int argc, char**argv)
     {
       if(flag == 1)
       {
-        if( modbus_bits_get(0,i)!=0)
+        if( modbus_get_bits(0,i)!=0)
         {
           if(cnt % 7 == 0)
           {
@@ -283,7 +282,7 @@ static void modbus_get(int argc, char**argv)
             cnt = 0;
           }
           cnt++;
-          rt_kprintf("num:%3d|coil:%d#", i, modbus_bits_get(0,i));
+          rt_kprintf("num:%3d|coil:%d#", i, modbus_get_bits(0,i));
         }
       }
       else
@@ -294,7 +293,7 @@ static void modbus_get(int argc, char**argv)
           cnt = 0;
         }
         cnt++;
-        rt_kprintf("num:%3d|coil:%d#", i, modbus_bits_get(0,i));
+        rt_kprintf("num:%3d|coil:%d#", i, modbus_get_bits(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -310,7 +309,7 @@ static void modbus_get(int argc, char**argv)
     {
       if(flag == 1)
       {
-        if( modbus_input_bits_get(0,i)!=0)
+        if( modbus_get_input_bits(0,i)!=0)
         {
           if(cnt % 7 == 0)
           {
@@ -318,7 +317,7 @@ static void modbus_get(int argc, char**argv)
             cnt = 0;
           }
           cnt++;
-          rt_kprintf("num:%3d|bits:%d#", i, modbus_input_bits_get(0,i));
+          rt_kprintf("num:%3d|bits:%d#", i, modbus_get_input_bits(0,i));
         }
       }
       else
@@ -329,7 +328,7 @@ static void modbus_get(int argc, char**argv)
           cnt = 0;
         }
         cnt++;
-        rt_kprintf("num:%3d|bits:%d#", i, modbus_input_bits_get(0,i));
+        rt_kprintf("num:%3d|bits:%d#", i, modbus_get_input_bits(0,i));
       }
     }
     rt_kprintf("\r\n");
@@ -393,7 +392,7 @@ static void modbus_set(int argc, char**argv)
       rt_kprintf("Input out of index range\r\n");
       return;
     }
-    modbus_register_set(0,addr,num);
+    modbus_set_register(0,addr,num);
     rt_kprintf("usRegHoldingBuf[%d] set value:%d\r\n",addr,num);
   }
   else if (!rt_strcmp(argv[1], "coil"))
@@ -407,7 +406,7 @@ static void modbus_set(int argc, char**argv)
     {
       rt_kprintf("Please enter 0 or 1\n");
     }
-    modbus_bits_set(0,addr,num);
+    modbus_set_bits(0,addr,num);
     rt_kprintf("ucRegCoilsBuf[%d] set value:%d\r\n",addr,num);
   }
   else

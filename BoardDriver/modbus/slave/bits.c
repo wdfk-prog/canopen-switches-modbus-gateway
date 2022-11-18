@@ -75,7 +75,7 @@ static int set_map_buf(int index, int len, void *buf, int bufsz)
   * @retval MODBUSÏßÈ¦¼Ä´æÆ÷Êı¾İ
   * @note   None
 */
-uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index)
+uint8_t modbus_get_bits(uint16_t index,uint16_t sub_index)
 {
   return _tab_bits[sub_index];
 }
@@ -87,7 +87,7 @@ uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index)
   * @retval None
   * @note   None
 */
-void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data)
+void modbus_set_bits(uint16_t index,uint16_t sub_index,uint16_t data)
 {
   _tab_bits[sub_index] = data;
 }

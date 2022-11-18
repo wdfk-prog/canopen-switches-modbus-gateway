@@ -61,16 +61,16 @@ extern void modbus_mutex_unlock(void);
 //Ğ´Èë×ÊÔ´
 extern void modbus_slave_write(void);
 //±£³Ö¼Ä´æÆ÷
-extern uint16_t modbus_register_get(uint16_t index,uint16_t sub_index);
-extern void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data);
-extern uint8_t modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t end_index,uint16_t end_sub_index);
+extern uint16_t modbus_get_register(uint16_t index,uint16_t sub_index);
+extern void modbus_set_register(uint16_t index,uint16_t sub_index,uint16_t data);
+extern uint8_t modbus_reset_register(uint16_t start_index,uint16_t start_sub_index,uint16_t end_index,uint16_t end_sub_index);
 //ÊäÈë¼Ä´æÆ÷
-extern uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index);
+extern uint16_t modbus_get_input_register(uint16_t index,uint16_t sub_index);
 //ÏßÈ¦¼Ä´æÆ÷
-extern uint8_t modbus_bits_get(uint16_t index,uint16_t sub_index);
-extern void modbus_bits_set(uint16_t index,uint16_t sub_index,uint16_t data);
+extern uint8_t modbus_get_bits(uint16_t index,uint16_t sub_index);
+extern void modbus_set_bits(uint16_t index,uint16_t sub_index,uint16_t data);
 //ÀëÉ¢ÊäÈëÏßÈ¦¼Ä´æÆ÷
-extern uint8_t modbus_input_bits_get(uint16_t index,uint16_t sub_index);
+extern uint8_t modbus_get_input_bits(uint16_t index,uint16_t sub_index);
 
 #ifdef __cplusplus
 }

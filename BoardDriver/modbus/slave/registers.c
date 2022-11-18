@@ -35,30 +35,10 @@ int modbus_slave_register_default(void)
   //节点参数区域
   _tab_registers[1] = 1;  //设置需操作的节点ID
   //02D~10D CAN保留区域
-  //电机参数区域
-  _tab_registers[11] = 0; //设置电机模式
-  _tab_registers[12] = 0; //原点偏移值高位
-  _tab_registers[13] = 0; //原点偏移值低位
-  _tab_registers[14] = 0; //回原方式
-  _tab_registers[15] = 0; //寻找原点开关速度
-  _tab_registers[16] = 0; //寻找 Z脉冲速度
-  _tab_registers[17] = 0; //电机运动参数1
-  _tab_registers[18] = 0; //电机运动参数2
-  _tab_registers[19] = 0; //电机运动参数3
-  _tab_registers[20] = 0; //电机运动参数4
-  _tab_registers[21] = 0; //电机运动参数5
-  //22D~30D 电机保留区域
-  return RT_EOK;
-}
-/**
-  * @brief  写入本机数据至保持寄存器中
-  * @param  None
-  * @retval None
-  * @note   暂无使用
-*/
-void modbus_slave_register_write(void)
-{
+  //11D~30D 电机参数区域
+  //31D~36D 时间同步区域
 
+  return RT_EOK;
 }
 /**
   * @brief  获取MODBUS保持寄存器数据
@@ -67,7 +47,7 @@ void modbus_slave_register_write(void)
   * @retval uint16_t
   * @note   None
 */
-uint16_t modbus_register_get(uint16_t index,uint16_t sub_index)
+uint16_t modbus_get_register(uint16_t index,uint16_t sub_index)
 {
   return _tab_registers[sub_index];
 }
@@ -79,7 +59,7 @@ uint16_t modbus_register_get(uint16_t index,uint16_t sub_index)
   * @retval None
   * @note   None
 */
-void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data)
+void modbus_set_register(uint16_t index,uint16_t sub_index,uint16_t data)
 {
   _tab_registers[sub_index] = data;
 }
@@ -92,7 +72,7 @@ void modbus_register_set(uint16_t index,uint16_t sub_index,uint16_t data)
   * @retval 成功返回0，失败返回0XFF
   * @note   None
 */
-uint8_t modbus_register_reset(uint16_t start_index,uint16_t start_sub_index,uint16_t end_index,uint16_t end_sub_index)
+uint8_t modbus_reset_register(uint16_t start_index,uint16_t start_sub_index,uint16_t end_index,uint16_t end_sub_index)
 {
   uint16_t *ptr = (uint16_t *)_tab_registers + start_sub_index;
   int16_t len = end_sub_index - start_sub_index;

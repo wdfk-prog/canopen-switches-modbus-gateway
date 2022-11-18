@@ -119,9 +119,9 @@ typedef struct
   * @note   当前保持寄存器为0，写入value。否则将保持寄存器值写入value中
 */
 #define REG_WRITE_VALUE(index,sub_index,value,factor)                 \
-if(modbus_register_get((index),(sub_index)) == 0){                    \
-modbus_register_set((index),(sub_index),(value) * (factor));}         \
-else{(value) = modbus_register_get((index),(sub_index)) / (factor);}  \
+if(modbus_get_register((index),(sub_index)) == 0){                    \
+modbus_set_register((index),(sub_index),(value) * (factor));}         \
+else{(value) = modbus_get_register((index),(sub_index)) / (factor);}  \
 /* private variables ---------------------------------------------------------*/
 static mbkey mbkey_buf[MBKEY_NUM];	// 创建按键数组
 static uint8_t nodeID;//节点ID
@@ -138,7 +138,7 @@ static void key_motor_enable(mbkey_status *event)
 {
   if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
   {
-    modbus_bits_set(0,1,0);
+    modbus_set_bits(0,1,0);
     return;
   }
   switch(*event)
@@ -150,12 +150,12 @@ static void key_motor_enable(mbkey_status *event)
         case PROFILE_POSITION_MODE://位置规划模式
         {
           int16_t speed     = 60;
-          int32_t position  = MAKEINT_32(modbus_register_get(0,18),
-                                         modbus_register_get(0,17));
+          int32_t position  = MAKEINT_32(modbus_get_register(0,18),
+                                         modbus_get_register(0,17));
           
           REG_WRITE_VALUE(0,19,speed,1);
-          bool abs_rel      = modbus_register_get(0,20);
-          bool immediately  = modbus_register_get(0,21);
+          bool abs_rel      = modbus_get_register(0,20);
+          bool immediately  = modbus_get_register(0,21);
 
           if(motor_profile_position(position,speed,abs_rel,immediately,nodeID) == 0XFF)
           {
@@ -163,13 +163,13 @@ static void key_motor_enable(mbkey_status *event)
           }
           else
           {
-            modbus_bits_set(0,1,0);
+            modbus_set_bits(0,1,0);
           }
         }
         break;
         case PROFILE_VELOCITY_MODE://速度规划模式
         {
-          int16_t speed = modbus_register_get(0,17);
+          int16_t speed = modbus_get_register(0,17);
           
           if(motor_profile_velocity(speed,nodeID) == 0xFF)
           {
@@ -182,7 +182,7 @@ static void key_motor_enable(mbkey_status *event)
         case HOMING_MODE://原点复归模式 
         {
           int16_t speed = 60;
-          bool zero_flag = modbus_register_get(0,17);
+          bool zero_flag = modbus_get_register(0,17);
           REG_WRITE_VALUE(0,18,speed,1);
 
           if(motor_homing_mode(zero_flag,speed,nodeID) >= 0XFD)//第一次配置或者需要回零未设置偏移值重新配置
@@ -190,8 +190,8 @@ static void key_motor_enable(mbkey_status *event)
             uint8_t method      = 34;
             float switch_speed  = 100;
             float zero_speed    = 20;
-            int32_t offset      = MAKEINT_32(modbus_register_get(0,13),
-                                  modbus_register_get(0,12));
+            int32_t offset      = MAKEINT_32(modbus_get_register(0,13),
+                                  modbus_get_register(0,12));
 
             REG_WRITE_VALUE(0,14,method,1);
             REG_WRITE_VALUE(0,15,switch_speed,10.0f);
@@ -201,7 +201,7 @@ static void key_motor_enable(mbkey_status *event)
           }
           else
           {
-            modbus_bits_set(0,1,0);
+            modbus_set_bits(0,1,0);
           }
         }
         break;
@@ -234,19 +234,19 @@ static void key_motor_disable(mbkey_status *event)
 {
   if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
   {
-    modbus_bits_set(0,2,1);
+    modbus_set_bits(0,2,1);
     return;
   }
   switch(*event)
   {
     case MBKEY_ENABLE:  //按下处理事件
-      modbus_bits_set(0,1,0);//强制退出电机使能控制
+      modbus_set_bits(0,1,0);//强制退出电机使能控制
     break;
     case MBKEY_DISABLE: //松开处理事件
     break;
     case MBKEY_PRESS:   //松开到按下事件
       motor_off(nodeID);
-      modbus_register_reset(0,11,0,30);//清除数据
+      modbus_reset_register(0,11,0,30);//清除数据
     break;
     case MBKEY_RAISE:   //按下到松开事件
     break;    
@@ -272,7 +272,7 @@ static void (*operation[MBKEY_NUM])(mbkey_status *event) =
   */  
 static bits_status readpin(config bits)
 {
-  return (bits_status)modbus_bits_get(bits.index,bits.sub_index);
+  return (bits_status)modbus_get_bits(bits.index,bits.sub_index);
 }
 /**
   * @brief  读取按键值
@@ -403,8 +403,8 @@ void mbkey_handler(void *p)
   {
     rt_thread_mdelay(1);
     read_status();
-    nodeID = modbus_register_get(0,1);
-    motor_mode = modbus_register_get(0,11);
+    nodeID = modbus_get_register(0,1);
+    motor_mode = modbus_get_register(0,11);
     for(i = 0;i < MBKEY_NUM;i++)
     {
         operation[i](&mbkey_buf[i].status.key_event);

@@ -38,7 +38,7 @@ int modbus_slave_input_register_default(void)
   _tab_input_registers[2]  = 0X0F;                //节点NMT状态
   //从03D~06D
   nodeID_get_name((char *)&_tab_input_registers[3],
-                   modbus_register_get(0,1));     //节点名称
+                   modbus_get_register(0,1));     //节点名称
   _tab_input_registers[7]  = 0X00;                //节点错误代码
   //08D~10D节点具体错误
   _tab_input_registers[8]  = 0X00;                 //节点具体错误
@@ -78,7 +78,7 @@ int modbus_slave_input_register_default(void)
 */
 void modbus_slave_input_register_write(void)
 {
-  uint8_t nodeID = modbus_register_get(0,1);        
+  uint8_t nodeID = modbus_get_register(0,1);        
   //节点参数区域
   _tab_input_registers[2] = nodeID_get_nmt(nodeID);         //节点NMT状态
    //从03D~06D
@@ -102,7 +102,7 @@ void modbus_slave_input_register_write(void)
   * @retval uint16_t
   * @note   None
 */
-uint16_t modbus_input_register_get(uint16_t index,uint16_t sub_index)
+uint16_t modbus_get_input_register(uint16_t index,uint16_t sub_index)
 {
   return _tab_input_registers[sub_index];
 }

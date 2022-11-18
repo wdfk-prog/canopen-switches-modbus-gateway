@@ -47,7 +47,7 @@ static int get_map_buf(void *buf, int bufsz)
   * @retval ÀëÉ¢ÊäÈëÏßÈ¦¼Ä´æÆ÷Êı¾İ
   * @note   None
 */
-uint8_t modbus_input_bits_get(uint16_t index,uint16_t sub_index)
+uint8_t modbus_get_input_bits(uint16_t index,uint16_t sub_index)
 {
   return _tab_input_bits[sub_index];
 }
