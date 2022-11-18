@@ -29,6 +29,7 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 extern void rtc_time_write(void);
+extern time_t rtc_time_read(void);
 
 #ifdef __cplusplus
 }

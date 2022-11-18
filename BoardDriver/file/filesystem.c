@@ -45,7 +45,7 @@
 
 #define ENV_VERSION       002          //默认参数版本
 #define SEC_SIZE          4096         // 设置扇区大小
-#define DB_SIZE           SEC_SIZE * 2 //设置最大数据容量
+#define DB_SIZE           SEC_SIZE * 5 //设置最大数据容量
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -96,28 +96,37 @@ void MB_Param_Read(void)
   }
 }
 /**
- * @brief  rtc_time_write_file
+ * @brief  rtc_time_write
  * @param  none.   
  * @note   写入时间戳
  */
 void rtc_time_write(void)
 {
-    struct fdb_blob blob;
-
+  struct fdb_blob blob; 
+  get_timestamp(&rtc_time);
+  fdb_kv_set_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
+}
+/**
+ * @brief  rtc_time_read
+ * @param  none.   
+ * @note   写入时间戳
+ */
+time_t rtc_time_read(void)
+{
+  struct fdb_blob blob;
   /* get the "boot_count" KV value */
   fdb_kv_get_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
   /* the blob.saved.len is more than 0 when get the value successful */
   if (blob.saved.len > 0) 
   {
-      LOG_D("get the 'rtc_time' value is %d", rtc_time);
+    LOG_D("get the 'rtc_time' value is %d", rtc_time);
+    return rtc_time;
   } 
   else 
   {
-      LOG_W("get the 'rtc_time' failed\n");
+    LOG_W("get the 'rtc_time' failed\n");
+    return 0;
   }
- 
-  get_timestamp(&rtc_time);
-  fdb_kv_set_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
 }
 /**************************本地操作***************************************************/
 /**
@@ -129,26 +138,18 @@ static void boot_count_wr(fdb_kvdb_t kvdb)
 {
     struct fdb_blob blob;
 
-    { /* GET the KV value */
-        /* get the "boot_count" KV value */
-        fdb_kv_get_blob(kvdb, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
-        /* the blob.saved.len is more than 0 when get the value successful */
-        if (blob.saved.len > 0) 
-        {
-            LOG_D("get the 'boot_count' value is %d", boot_count);
-        } else 
-        {
-            LOG_W("get the 'boot_count' failed");
-        }
-    }
+    /* GET the KV value */
+    /* get the "boot_count" KV value */
+    fdb_kv_get_blob(kvdb, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
 
-    { /* CHANGE the KV value */
-        /* increase the boot count */
-        boot_count ++;
-        /* change the "boot_count" KV's value */
-        fdb_kv_set_blob(kvdb, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
-        LOG_I("Burn the number :%d", boot_count);
-    }
+    /* CHANGE the KV value */
+    /* increase the boot count */
+    boot_count ++;
+    /* change the "boot_count" KV's value */
+    fdb_kv_set_blob(kvdb, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
+    
+    LOG_I("Burn the number :%d", boot_count);
+
 }
 /**
  * @brief Flash_KVDB_Init 
@@ -234,6 +235,7 @@ static int FileSystem_Init(void)
   {
       LOG_E("ROM file system initializate failed!");
   }
+
   #if(OUT_FILE_ENABLE == 1)
   extern void sys_log_file_backend_init(void);
   sys_log_file_backend_init();

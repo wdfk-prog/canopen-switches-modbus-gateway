@@ -1,14 +1,15 @@
-/* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file           : 
-  * @brief          : 
-  * @date           :
-  ******************************************************************************
-  * @attention
-  * @author
-  ******************************************************************************
-  */
+ * @file board.c
+ * @brief 
+ * @author HLY (1425075683@qq.com)
+ * @version 1.0
+ * @date 2022-11-18
+ * @copyright Copyright (c) 2022
+ * @attention 
+ * @par –ﬁ∏ƒ»’÷æ:
+ * Date       Version Author  Description
+ * 2022-11-18 1.0     HLY     first version
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "board.h"
@@ -101,6 +102,7 @@ static void rtc_update_thread_entry(void* parameter)
 {
   struct tm tm_new = {0};
   time_t old_time = 0,new_time = 0,err_time = 0;
+  static uint16_t cnt = 0;
   while(1)
   {
     rt_thread_mdelay(1000);
@@ -143,6 +145,12 @@ static int rtc_update_init(void)
     {
         LOG_E("open %s failed!", RTC_NAME);
         return RT_ERROR;
+    }
+    
+    now = rtc_time_read();
+    if(now != 0)
+    {
+      set_timestamp(now);
     }
 
     tid = rt_thread_create("rtc", rtc_update_thread_entry, RT_NULL,
