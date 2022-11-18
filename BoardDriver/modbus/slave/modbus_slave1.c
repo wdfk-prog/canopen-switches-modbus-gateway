@@ -21,12 +21,7 @@
 #define LOG_LVL         DBG_INFO
 #include <ulog.h>
 /* Private typedef -----------------------------------------------------------*/
-/* 串口接收消息结构 */
-struct rx_msg
-{
-    rt_device_t dev;
-    rt_size_t size;
-};
+
 /* Private define ------------------------------------------------------------*/
 /*波特率设置*/
 #define BAUD_RATE BAUD_RATE_115200
@@ -46,7 +41,7 @@ struct rx_msg
 /* Private variables ---------------------------------------------------------*/
 static rt_device_t serial = RT_NULL;
 static rt_sem_t _rx_sem = RT_NULL;
-static uint8_t cmd_read_buf[AGILE_MODBUS_MAX_ADU_LENGTH];
+static uart_debug cmd;
 static const agile_modbus_slave_util_t _slave_util = 
 {
     bit_maps,
@@ -76,7 +71,10 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 {
     if (size > 0) 
     {
-        rt_sem_release(_rx_sem);
+        rt_sem_release(_rx_sem);  
+#if (UART_DEBUG == 1)     
+        cmd.size = size;
+#endif
     }
     return RT_EOK;
 }
@@ -199,12 +197,23 @@ static void modbus_thread(void* p)
   while(1)
   {
       int read_len = serial_receive(ctx->read_buf, ctx->read_bufsz, 1000, 20);
-      rt_memcpy(cmd_read_buf,ctx->read_buf,ctx->read_bufsz);
       if (read_len == 0)
       {
           LOG_D("Receive timeout.");
           continue;
       }
+#if (UART_DEBUG == 1)  
+      else if(cmd.flag == true)
+      {
+          rt_memcpy(cmd.read_buf,ctx->read_buf,cmd.size);
+          for(uint16_t i = 0; i < cmd.size; i++)
+          {
+              rt_kprintf("0X%2.2X  ",cmd.read_buf[i]);
+          }
+          rt_kprintf("\n");
+          rt_memset(cmd.read_buf,0,AGILE_MODBUS_MAX_ADU_LENGTH);
+      }
+#endif
 
       int rc = agile_modbus_slave_handle(ctx, read_len, 0, agile_modbus_slave_util_callback, &_slave_util, NULL);
 
@@ -253,6 +262,7 @@ static int Modbus_Slave1_Init(void)
 /* 导出到 msh 命令列表中 */
 INIT_COMPONENT_EXPORT(Modbus_Slave1_Init);
 #ifdef RT_USING_MSH
+#if (UART_DEBUG == 1)  
 /**
   * @brief  打印MODBUS 串口1接收数据
   * @param  第一个参数，int型的argc，为整型，用来统计程序运行时发送给main函数的命令行参数的个数
@@ -261,17 +271,28 @@ INIT_COMPONENT_EXPORT(Modbus_Slave1_Init);
 */
 static void modbus_printf_1(int argc, char**argv)
 {
-
-    uint8_t *sc;
-
-    for (sc = cmd_read_buf; *sc != 0X23; ++sc);
-
-    for(uint16_t i = 0; i < sc - cmd_read_buf; i++)
+    if(argc < 2)
     {
-        rt_kprintf("0X%2.2X  ",cmd_read_buf[i]);
+      rt_kprintf("Usage:\n");
+      rt_kprintf("Please enter enable or disable\n");
+      return;
     }
-    rt_kprintf("\n");
-    rt_memset(cmd_read_buf,0,AGILE_MODBUS_MAX_ADU_LENGTH);
+
+    if(!rt_strcmp(argv[1], "enable"))
+    {
+        cmd.flag = true;
+    }
+    else if(!rt_strcmp(argv[1], "disable"))
+    {
+        cmd.flag = false;
+    }
+    else
+    {
+        rt_kprintf("Usage:\n");
+        rt_kprintf("Please enter enable or disable\n");
+        return;
+    }
 }
-MSH_CMD_EXPORT_ALIAS(modbus_printf_1,modbus_printf_1,modbus_printf_1 Print the MODBUS serial port 1 Receive data);
+MSH_CMD_EXPORT_ALIAS(modbus_printf_1,modbus_printf_1,modbus_printf_1 [option]  --enter Enable or disable);
+#endif
 #endif

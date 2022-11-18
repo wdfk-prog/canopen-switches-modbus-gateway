@@ -89,6 +89,20 @@ void modbus_slave_write(void)
     modbus_slave_register_write();
     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }
+/**
+ * @brief 地址检查
+ * @param  ctx              
+ * @param  slave_info       
+ * @retval int 
+ */
+int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info)
+{
+    int slave = slave_info->sft->slave;
+    if ((slave != ctx->slave) && (slave != AGILE_MODBUS_BROADCAST_ADDRESS) && (slave != 0xFF))
+        return -AGILE_MODBUS_EXCEPTION_UNKNOW;
+
+    return 0;
+}
 #ifdef RT_USING_MSH
 /**
   * @brief  打印MODBUS列表

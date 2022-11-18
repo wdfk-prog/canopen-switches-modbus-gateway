@@ -22,11 +22,21 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include <agile_modbus.h>
 #include "agile_modbus_slave_util.h"
+
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 #include "rtthread.h"
 /* Exported types ------------------------------------------------------------*/
-
+/**
+ * @brief 串口调试结构体
+ */
+typedef struct
+{
+  uint8_t   read_buf[AGILE_MODBUS_MAX_ADU_LENGTH];
+  rt_size_t size;
+  bool      flag; //置一开启拷贝
+}uart_debug;
 /* Exported constants --------------------------------------------------------*/
 #define MODBUS_START_ADDR       1     
 #define MODBUS_REG_MAX_NUM      125
@@ -37,21 +47,14 @@ extern "C" {
 #define REGISTER_MAPS_NUM       2
 #define INPUT_REGISTER_MAPS_NUM 2
 /* Exported macro ------------------------------------------------------------*/
-
+#define UART_DEBUG 0//输出至调试串口
 /* Exported variables ---------------------------------------------------------*/
 extern const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM];
 extern const agile_modbus_slave_util_map_t input_bit_maps[INPUT_BIT_MAPS_NUM];
 extern const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM];
 extern const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MAPS_NUM];
 /* Exported functions prototypes ---------------------------------------------*/
-static int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info)
-{
-    int slave = slave_info->sft->slave;
-    if ((slave != ctx->slave) && (slave != AGILE_MODBUS_BROADCAST_ADDRESS) && (slave != 0xFF))
-        return -AGILE_MODBUS_EXCEPTION_UNKNOW;
-
-    return 0;
-}
+extern int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info);
 //保护资源
 extern void modbus_mutex_lock(void);
 extern void modbus_mutex_unlock(void);

@@ -46,6 +46,7 @@ struct rx_msg
 /* Private variables ---------------------------------------------------------*/
 static rt_device_t serial = RT_NULL;
 static rt_sem_t _rx_sem = RT_NULL;
+static uart_debug cmd;
 static const agile_modbus_slave_util_t _slave_util = 
 {
     bit_maps,
@@ -75,7 +76,10 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
 {
     if (size > 0) 
     {
-        rt_sem_release(_rx_sem);
+        rt_sem_release(_rx_sem);  
+#if (UART_DEBUG == 1)     
+        cmd.size = size;
+#endif
     }
     return RT_EOK;
 }
@@ -96,15 +100,15 @@ static int serial_send(uint8_t *buf, int len)
 /**
   * @brief  串口初始化.
   * @param  None.
-  * @retval 成功返回RT_EOK.失败返回-RT_ERROR.
+  * @retval int.
   * @note   None.
 */
 static int serial_init(void)
 {
-    _rx_sem = rt_sem_create("mb_s2", 0, RT_IPC_FLAG_FIFO);
+    _rx_sem = rt_sem_create("mb_s1", 0, RT_IPC_FLAG_FIFO);
     if(_rx_sem == RT_NULL)
     {
-        LOG_E("create mb_s2 sem failed.");
+        LOG_E("create mb_s1 sem failed.");
         return -RT_ERROR;
     }
     /*step1：查找串口设备 */
@@ -146,7 +150,7 @@ static int serial_init(void)
   * @param  bufsz:缓冲区大小
   * @param  timeout.未连接超时时间
   * @param  bytes_timeout 连接后超时时间.
-  * @retval 成功返回接收长度.失败返回-1
+  * @retval int.
   * @note   None.
 */
 static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeout)
@@ -178,7 +182,7 @@ static int serial_receive(uint8_t *buf, int bufsz, int timeout, int bytes_timeou
 }
 /**
   * @brief  MODBUS线程
-  * @param  p:传入参数，暂时无传入.
+  * @param  p.
   * @retval None.
   * @note   None.
 */
@@ -203,6 +207,18 @@ static void modbus_thread(void* p)
           LOG_D("Receive timeout.");
           continue;
       }
+#if (UART_DEBUG == 1)  
+      else if(cmd.flag == true)
+      {
+          rt_memcpy(cmd.read_buf,ctx->read_buf,cmd.size);
+          for(uint16_t i = 0; i < cmd.size; i++)
+          {
+              rt_kprintf("0X%2.2X  ",cmd.read_buf[i]);
+          }
+          rt_kprintf("\n");
+          rt_memset(cmd.read_buf,0,AGILE_MODBUS_MAX_ADU_LENGTH);
+      }
+#endif
 
       int rc = agile_modbus_slave_handle(ctx, read_len, 0, agile_modbus_slave_util_callback, &_slave_util, NULL);
 
@@ -215,6 +231,7 @@ static void modbus_thread(void* p)
           }
           continue;
       }
+      modbus_slave_write();
       serial_send(ctx->send_buf, rc);
   }
 }
@@ -249,3 +266,38 @@ static int Modbus_Slave2_Init(void)
 }
 /* 导出到 msh 命令列表中 */
 INIT_COMPONENT_EXPORT(Modbus_Slave2_Init);
+#ifdef RT_USING_MSH
+#if (UART_DEBUG == 1)  
+/**
+  * @brief  打印MODBUS 串口1接收数据
+  * @param  第一个参数，int型的argc，为整型，用来统计程序运行时发送给main函数的命令行参数的个数
+  * @retval 第二个参数，char*型的argv[]，为字符串数组，用来存放指向的字符串参数的指针数组，每一个元素指向一个参数。
+  * @note   None.
+*/
+static void modbus_printf_2(int argc, char**argv)
+{
+    if(argc < 2)
+    {
+      rt_kprintf("Usage:\n");
+      rt_kprintf("Please enter enable or disable\n");
+      return;
+    }
+
+    if(!rt_strcmp(argv[1], "enable"))
+    {
+        cmd.flag = true;
+    }
+    else if(!rt_strcmp(argv[1], "disable"))
+    {
+        cmd.flag = false;
+    }
+    else
+    {
+        rt_kprintf("Usage:\n");
+        rt_kprintf("Please enter enable or disable\n");
+        return;
+    }
+}
+MSH_CMD_EXPORT_ALIAS(modbus_printf_2,modbus_printf_2,modbus_printf_2 [option]  --enter Enable or disable);
+#endif
+#endif
