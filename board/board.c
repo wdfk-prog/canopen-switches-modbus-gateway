@@ -46,7 +46,7 @@
   * @param  None
   * @retval None
   */
-static int Set_FINSH_IRQ(void)
+static int set_finsh_irq(void)
 {
   rt_err_t ret = RT_EOK;
   /* 串口设备句柄 */
@@ -67,7 +67,7 @@ static int Set_FINSH_IRQ(void)
 //  HAL_NVIC_SetPriority(uart->config->irq_type,FINSH_IRQ_PRIORITY, 0);
   return ret;
 }
-INIT_COMPONENT_EXPORT(Set_FINSH_IRQ);
+INIT_COMPONENT_EXPORT(set_finsh_irq);
 #endif
 /**
  * @brief  获取编译时间戳
