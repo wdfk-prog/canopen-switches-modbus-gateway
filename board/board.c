@@ -122,7 +122,7 @@ static time_t rtc_update(void)
 static void rtc_update_thread_entry(void* parameter)
 {
   time_t old_time = 0,new_time = 0,err_time = 0;
-  static uint16_t cnt = 0;
+
   while(1)
   {
     rt_thread_mdelay(1000);
@@ -184,7 +184,7 @@ static int rtc_update_init(void)
     }
 
     tid = rt_thread_create("rtc", rtc_update_thread_entry, RT_NULL,
-                          2048, 0, 0);
+                          4096, 0, 0);
     if(tid == RT_NULL)
     {
       LOG_E("rtc thread start failed!");
