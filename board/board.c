@@ -60,10 +60,11 @@ static int Set_FINSH_IRQ(void)
   }
   struct stm32_uart *uart;
 
-  uart = rt_container_of(serial, struct stm32_uart, serial);
-  /* parameter check */
-  RT_ASSERT(uart != RT_NULL);
-  HAL_NVIC_SetPriority(uart->config->irq_type,FINSH_IRQ_PRIORITY, 0);
+  rt_device_control(serial,RT_DEVICE_CTRL_SET_INT_PRIORITY,(void *)3);
+//  uart = rt_container_of(serial, struct stm32_uart, serial);
+//  /* parameter check */
+//  RT_ASSERT(uart != RT_NULL);
+//  HAL_NVIC_SetPriority(uart->config->irq_type,FINSH_IRQ_PRIORITY, 0);
   return ret;
 }
 INIT_COMPONENT_EXPORT(Set_FINSH_IRQ);
