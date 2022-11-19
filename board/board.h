@@ -32,7 +32,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
-#define PVD_ENABLE 0
+#define PVD_ENABLE 1
 /* Exported macro ------------------------------------------------------------*/
 #define STM32_SRAM_SIZE           (192)
 #define STM32_SRAM_END            (0x20000000 + STM32_SRAM_SIZE * 1024)

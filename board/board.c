@@ -197,7 +197,7 @@ static int rtc_update_init(void)
 }
 INIT_APP_EXPORT(rtc_update_init);
 /*********************************掉电检测******************************************/
-#ifdef PVD_ENABLE
+#if (PVD_ENABLE == 1)
 /* 完成量控制块 */
 static struct rt_completion pvd_completion;
 /**
