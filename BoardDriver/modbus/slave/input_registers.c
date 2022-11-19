@@ -15,7 +15,6 @@
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
 #include "motor_control.h"
-#include "main.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -33,33 +32,33 @@ static uint16_t _tab_input_registers[MODBUS_REG_MAX_NUM];
 */
 int modbus_slave_input_register_default(void)
 {
-  //节点参数区域
+  //01D~10D节点参数区域
   _tab_input_registers[1]  = MAX_NODE_COUNT - 1;  //节点数量
   _tab_input_registers[2]  = 0X0F;                //节点NMT状态
-  //从03D~06D
+          //03D~06D 节点名称
   nodeID_get_name((char *)&_tab_input_registers[3],
                    modbus_get_register(0,1));     //节点名称
   _tab_input_registers[7]  = 0X00;                //节点错误代码
-  //08D~10D节点具体错误
+          //08D~10D节点具体错误
   _tab_input_registers[8]  = 0X00;                 //节点具体错误
   _tab_input_registers[9]  = 0X00;                 //节点具体错误
   _tab_input_registers[10] = 0X00;                 //节点具体错误
-  //电机参数区域
+  //11D~20D电机参数区域
   _tab_input_registers[11] = 0X00;                 //控制指令
   _tab_input_registers[12] = 0X00;                 //状态位
   _tab_input_registers[13] = 0X00;                 //当前位置低16位
   _tab_input_registers[14] = 0X00;                 //当前位置高16位
   _tab_input_registers[15] = 0X00;                 //当前速度低16位
   _tab_input_registers[16] = 0X00;                 //当前速度高16位
-  //17D~20D电机保留区域
-  //编译信息
-  //21D~25D
+          //17D~20D电机保留区域
+  //21D~40D芯片参数区域
+          //21D~27D编译日期
   rt_memcpy((char *)(_tab_input_registers+21),VERSION,sizeof(VERSION));              //打印版本信息
   _tab_input_registers[24] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY) & 0xffff);  //日期低16bti
 	_tab_input_registers[25] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY)>>16);		   //日期高16bti
 	_tab_input_registers[26] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)&0xffff);         //时间低16bti
 	_tab_input_registers[27] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)>>16);		         //时间高16bti
-  //ID参数区域
+          //28D~35D ID参数区域
   _tab_input_registers[28] =  HAL_GetUIDw0();
   _tab_input_registers[29] =  HAL_GetUIDw0() >> 16;
   _tab_input_registers[30] =  HAL_GetUIDw1();
@@ -68,6 +67,11 @@ int modbus_slave_input_register_default(void)
   _tab_input_registers[33] =  HAL_GetUIDw2() >> 16;
   _tab_input_registers[34] =  HAL_GetHalVersion();
   _tab_input_registers[35] =  HAL_GetHalVersion() >> 16;
+          //38D复位次数
+  _tab_input_registers[38] =  boot_count_read();
+  //41D~50D 时间区域
+        //41D~46D 时间同步区域
+        //47D~50D 心跳同步区域
   return RT_EOK;
 }
 /**

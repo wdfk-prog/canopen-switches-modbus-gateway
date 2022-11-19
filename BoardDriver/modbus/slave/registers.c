@@ -14,7 +14,6 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
-#include "stm32f4xx_hal.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/

@@ -54,8 +54,8 @@ typedef enum
   */  
 typedef enum 
 {
-  DISABLE = 0u, 
-  ENABLE = !DISABLE
+  MB_DISABLE = 0u, 
+  MB_ENABLE = !MB_DISABLE
 } mbkey_enable_status;
 /** @defgroup gpio_pull_define gpio pull define
  * @brief gpio pull-up or pull-down activation
@@ -306,7 +306,7 @@ static void creat_key(config* init)
 
 		mbkey_buf[i].board.key_nox = i;
 		// 初始化按钮对象的状态机属性
-		mbkey_buf[i].status.shield = ENABLE;
+		mbkey_buf[i].status.shield = MB_ENABLE;
 		mbkey_buf[i].status.timecount = 0;	
 		mbkey_buf[i].status.flag = LOW_LEVEL;
     
