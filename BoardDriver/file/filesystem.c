@@ -43,16 +43,19 @@
 /* Private define ------------------------------------------------------------*/
 #define FS_PARTITION_NAME "filesystem"//"W25Q128" //在fal_cfg.h中FAL_PART_TABLE定义
 
-#define ENV_VERSION       002          //默认参数版本
+#define ENV_VERSION       000          //默认参数版本
 #define SEC_SIZE          4096         // 设置扇区大小
-#define DB_SIZE           SEC_SIZE * 5 //设置最大数据容量
+#define DB_SIZE           SEC_SIZE * 4 //设置最大数据容量
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
+/*互斥量*/
+static rt_mutex_t kvdb_mutex = RT_NULL;
 /* KVDB object */
 static struct fdb_kvdb mb_param = { 0 };
 /*运行次数*/
 static uint16_t boot_count = 0;
+/*时间戳*/
 static time_t  rtc_time = 0;
 /* default KV nodes 第一次初始化时保存信息*/
 static struct fdb_default_kv_node default_kv_table[] = 
@@ -102,9 +105,11 @@ void MB_Param_Read(void)
  */
 void rtc_time_write(void)
 {
+#if (FLASHDB_FILE_ENABLE == 1)
   struct fdb_blob blob; 
   get_timestamp(&rtc_time);
   fdb_kv_set_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
+#endif
 }
 /**
  * @brief  rtc_time_read
@@ -113,6 +118,7 @@ void rtc_time_write(void)
  */
 time_t rtc_time_read(void)
 {
+#if (FLASHDB_FILE_ENABLE == 1)
   struct fdb_blob blob;
   /* get the "boot_count" KV value */
   fdb_kv_get_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
@@ -127,6 +133,9 @@ time_t rtc_time_read(void)
     LOG_W("get the 'rtc_time' failed\n");
     return 0;
   }
+#else
+  return 0;
+#endif
 }
 /**************************本地操作***************************************************/
 /**
@@ -151,25 +160,39 @@ static void boot_count_wr(fdb_kvdb_t kvdb)
     LOG_I("Burn the number :%d", boot_count);
 
 }
+static void lock(fdb_db_t db)
+{
+    rt_mutex_take(kvdb_mutex, RT_WAITING_FOREVER);
+}
+static void unlock(fdb_db_t db)
+{
+    rt_mutex_release(kvdb_mutex);
+}
+
 /**
  * @brief Flash_KVDB_Init 
  * @retval int 
  */
-int Flash_KVDB_Init(void)
+int flash_kvdb_init(void)
 {
   fdb_err_t result;
   struct fdb_default_kv default_kv;
-  bool file_mode = RT_TRUE;
-  uint32_t sec_size = SEC_SIZE;
-  uint32_t db_size  = DB_SIZE;
   default_kv.kvs = default_kv_table;
   default_kv.num = sizeof(default_kv_table) / sizeof(default_kv_table[0]);
   mb_param.ver_num = ENV_VERSION;//每次初始化检测版本号，自动更新版本
-  
-  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_FILE_MODE, &file_mode);
+  /* set the lock and unlock function if you want */
+  kvdb_mutex = rt_mutex_create("kvdb",RT_IPC_FLAG_PRIO);
+
+  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_LOCK, (void *)lock);
+  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_UNLOCK, (void *)unlock);
+  /* set the sector and database max size */
+  uint32_t sec_size = SEC_SIZE;
+  uint32_t db_size  = DB_SIZE;
   fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_SEC_SIZE, &sec_size);
   fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_MAX_SIZE, &db_size);
-  
+  /* enable file mode */
+  bool file_mode = RT_TRUE;
+  fdb_kvdb_control(&mb_param, FDB_KVDB_CTRL_SET_FILE_MODE, &file_mode);
   /*初始化 KVDB
     参数	      描述
     db	        数据库对象
@@ -193,7 +216,7 @@ int Flash_KVDB_Init(void)
   * @retval None.
   * @note   None.
 */
-static int FileSystem_Init(void)
+static int filesystem_init(void)
 {
   ulog_e("","\n--------------------------------FILESYSTEM----------------------------------");
   /* 初始化 fal */
@@ -236,18 +259,20 @@ static int FileSystem_Init(void)
       LOG_E("ROM file system initializate failed!");
   }
 
-  #if(OUT_FILE_ENABLE == 1)
+#if(OUT_FILE_ENABLE == 1)
   extern void sys_log_file_backend_init(void);
   sys_log_file_backend_init();
   extern void motion_log_file_backend_init(void);
   motion_log_file_backend_init();
-  #endif
+#endif
+#if (FLASHDB_FILE_ENABLE == 1)
   /*数据库初始化*/
-  Flash_KVDB_Init();
+  flash_kvdb_init();
+#endif
   ulog_e("","\n--------------------------------FILESYSTEM----------------------------------");
   return RT_EOK;
 }
-INIT_ENV_EXPORT(FileSystem_Init);
+INIT_ENV_EXPORT(filesystem_init);
 /**
   * @attention  
   1.开启onchip-flash 开启SPI-FLSAH  
