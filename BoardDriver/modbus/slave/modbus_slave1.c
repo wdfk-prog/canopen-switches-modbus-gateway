@@ -129,13 +129,7 @@ static int serial_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
     /* step5：  open serial device */
     rt_device_open(serial, RT_DEVICE_FLAG_RX_NON_BLOCKING | RT_DEVICE_FLAG_TX_NON_BLOCKING);
-#ifdef IRQ_PRIORITY
-    struct stm32_uart *uart;
-    uart = rt_container_of(serial, struct stm32_uart, serial);
-    /* parameter check */
-    RT_ASSERT(uart != RT_NULL);
-    HAL_NVIC_SetPriority(uart->config->irq_type,IRQ_PRIORITY, 0);
-#endif    
+    rt_device_control(serial,RT_DEVICE_CTRL_SET_INT_PRIORITY,(void *)IRQ_PRIORITY);
 //    RS485_SLAVE_RX_EN();
     return RT_EOK;
 }
@@ -236,7 +230,7 @@ static void modbus_thread(void* p)
   * @retval int.
   * @note   None.
 */
-static int Modbus_Slave1_Init(void)
+static int modbus_slave1_init(void)
 {
     rt_err_t ret = RT_EOK;
     /* 创建 MODBUS从机线程*/
@@ -260,7 +254,7 @@ static int Modbus_Slave1_Init(void)
     return ret;
 }
 /* 导出到 msh 命令列表中 */
-INIT_COMPONENT_EXPORT(Modbus_Slave1_Init);
+INIT_COMPONENT_EXPORT(modbus_slave1_init);
 #ifdef RT_USING_MSH
 #if (UART_DEBUG == 1)  
 /**

@@ -36,7 +36,7 @@ struct stm32_hwtimer
 #define THREAD_TIMESLICE     20//线程时间片
 #define THREAD_STACK_SIZE    2048//栈大小
 
-//#define IRQ_PRIORITY  0
+#define IRQ_PRIORITY  1
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -155,13 +155,9 @@ void initTimer(void)
 
   mode = HWTIMER_MODE_ONESHOT;
   err = rt_device_control(canfstvl_timer_dev, HWTIMER_CTRL_MODE_SET, &mode);
+  err = rt_device_control(canfstvl_timer_dev, RT_DEVICE_CTRL_SET_INT_PRIORITY, (void *)IRQ_PRIORITY);
 	rt_device_read(canfstvl_timer_dev, 0, &last_timer_val, sizeof(last_timer_val));
-#ifdef IRQ_PRIORITY
-    struct stm32_hwtimer *tim_device = RT_NULL;
-    tim_device = rt_container_of(canfstvl_timer_dev, struct stm32_hwtimer, time_device);
-    
-    HAL_NVIC_SetPriority(tim_device->tim_irqn,IRQ_PRIORITY, 0);
-#endif
+
 	tid = rt_thread_create("cf_timer",
                            canopen_timer_thread_entry, RT_NULL,
                            THREAD_STACK_SIZE, THREAD_PRIORITY, THREAD_TIMESLICE);
