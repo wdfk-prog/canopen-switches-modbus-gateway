@@ -551,7 +551,7 @@ typedef enum
 ### 4.1 时间同步
 
 - 对保持寄存器地址31D~32D写入当前系统的时间戳，已保持时间同步与保证系统日志的有效性。
-- 时间5秒发送一次，以保证时间准确性
+- 时间1秒发送一次，以保证时间准确性。
 - 写入时间将会更改系统的RTC时间设置，已调整系统日志的时间，保证日志准确性。
 
 | 保持寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注 |
@@ -562,6 +562,43 @@ typedef enum
 | 34D            | uint16   | 无       | 0      | 时   |
 | 35D            | uint16   | 无       | 0      | 分   |
 | 36D            | uint16   | 无       | 0      | 秒   |
+
+### 4. 2 心跳设置
+
+- 上位机对1秒对保持寄存器地址37D写入心跳状态
+- 心跳状态写入如下，已通知单片机是否可以进行操作
+- 单片机本地2秒清零一次心跳值，若下次清零前，没有进行赋值，则心跳同步失败。
+
+```c
+/* The nodes states 
+ * -----------------
+ * values are choosen so, that they can be sent directly
+ * for heartbeat messages...
+ * Must be coded on 7 bits only
+ * */
+/* Should not be modified */
+enum enum_nodeState {
+  Initialisation  = 0x00, //节点上电
+  Disconnected    = 0x01, //节点丢失
+  Connecting      = 0x02, //节点连接
+  Preparing       = 0x02, //节点准备阶段
+  Stopped         = 0x04, //节点停止
+  Operational     = 0x05, //节点可操作状态
+  Pre_operational = 0x7F, //节点预操作状态
+  Unknown_state   = 0x0F  //节点未知状态
+};
+```
+
+
+
+| 保持寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注           |
+| -------------- | -------- | -------- | ------ | -------------- |
+| 37D            | uint16   | 无       | 0      | 上位机心跳写入 |
+| 38D            | uint16   | 无       | 0      | 调试口心跳写入 |
+| 39D            | uint16   | 无       | 0      | 保留           |
+| 40D            | uint16   | 无       | 0      | 保留           |
+|                |          |          |        |                |
+|                |          |          |        |                |
 
 ##  附录
 
