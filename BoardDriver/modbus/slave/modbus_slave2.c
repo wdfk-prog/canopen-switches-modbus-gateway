@@ -235,7 +235,7 @@ static void modbus_thread(void* p)
   * @retval 成功返回RT_EOK.失败返回-RT_ERROR.
   * @note   None.
 */
-static int modbus_slave2_init(void)
+int modbus_slave2_init(void)
 {
     rt_err_t ret = RT_EOK;
     /* 创建 MODBUS从机线程*/
@@ -258,8 +258,6 @@ static int modbus_slave2_init(void)
 
     return ret;
 }
-/* 导出到 msh 命令列表中 */
-INIT_COMPONENT_EXPORT(modbus_slave2_init);
 #ifdef RT_USING_MSH
 #if (UART_DEBUG == 1)  
 /**

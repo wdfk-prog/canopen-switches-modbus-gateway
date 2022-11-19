@@ -28,28 +28,33 @@
 /* Private variables ---------------------------------------------------------*/
 rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
+extern int modbus_slave1_init(void);
+extern int modbus_slave2_init(void);
+
 extern int modbus_slave_register_default(void);
 extern int modbus_slave_input_register_default(void);
 extern int modbus_slave_bits_default(void);
 
 extern void modbus_slave_input_register_write(void);
 /**
-  * @brief  写入MODBUS默认值
+  * @brief  modbus初始化
   * @param  None
   * @retval int
   * @note   None
 */
-static int modbus_default(void)
+static int modbus_init(void)
 {
   modbus_slave_register_default();
   modbus_slave_input_register_default();
   modbus_slave_bits_default();
 
   modbus_mutex = rt_mutex_create("modbus",RT_IPC_FLAG_PRIO);
+  modbus_slave1_init();
+  modbus_slave2_init();
 
   return RT_EOK;
 }
-INIT_COMPONENT_EXPORT(modbus_default);
+INIT_APP_EXPORT(modbus_init);
 /**
   * @brief  锁定当前MODBUS寄存器
   * @param  None
