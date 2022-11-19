@@ -30,6 +30,7 @@ extern "C" {
 /* Exported functions prototypes ---------------------------------------------*/
 extern void rtc_time_write(void);
 extern time_t rtc_time_read(void);
+extern uint16_t boot_count_read(void);
 
 #ifdef __cplusplus
 }

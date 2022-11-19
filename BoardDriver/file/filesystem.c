@@ -137,6 +137,14 @@ time_t rtc_time_read(void)
   return 0;
 #endif
 }
+/**
+ * @brief 复位次数读取
+ * @retval uint16_t 
+ */
+uint16_t boot_count_read(void)
+{
+  return boot_count;
+}
 /**************************本地操作***************************************************/
 /**
  * @brief  boot_count_wr
