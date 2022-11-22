@@ -232,7 +232,7 @@ UNS8 motor_on_profile_velocity(UNS8 nodeId)
   当位置误差 (60F4h) 超过此设定范围时，伺服即跳异警 AL009位置误差过大。 
   位置误差警告条件  6065h:默认值50331648PUU //50331648 / 16777216 = 3
   */
-UNS8 motor_profile_position(int32_t position,int16_t speed,bool abs_rel,bool immediately,UNS8 nodeId)
+UNS8 motor_profile_position(int32_t position,float speed,bool abs_rel,bool immediately,UNS8 nodeId)
 {
   NODE_DECISION;
   UNS16 value = 0;

@@ -71,13 +71,13 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
 /**
  * @brief  转向电机开始运动控制
  * @param  position         
- * @param  speed  
+ * @param  speed 单位：RPM
  * @param  p
  * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
            触发急停返回0X01
  * @note   以绝对位置模式，立刻触发指令运动      
  */
-static uint8_t turn_motor_start(int32_t position,int16_t speed,turn_motor_typeDef* p)
+static uint8_t turn_motor_start(int32_t position,float speed,turn_motor_typeDef* p)
 {
   if (motor_stop_priority(p))
     return 0X01;
@@ -134,13 +134,13 @@ static float angle_range_judgment(turn_motor_typeDef *p,float angle)
 /**
  * @brief  转向电机角度控制
  * @param  angle       
- * @param  speed
+ * @param  speed  单位 RPM
  * @param  p                
  * @note   成功返回0X00,模式错误返回0XFF.超时返回0XFE
            触发急停返回0X01,角度无变化返回0X02
  * @note   已绝对角度输出
  */
-uint8_t turn_motor_angle_control(float angle,int16_t speed,turn_motor_typeDef* p)
+uint8_t turn_motor_angle_control(float angle,float speed,turn_motor_typeDef* p)
 {
   int32_t dest_position = 0;//目标位置
   //角度换算
@@ -174,7 +174,7 @@ float turn_motor_get_angle(turn_motor_typeDef* p)
   //获取反馈位置
   motor_get_position(&position,p->nodeID);
   //换算为角度
-  degree = position / p->cfg.numerator * 360;
+  degree = (float)position / p->cfg.numerator * 360;
   //角度换算
   degree = angle_conversion(degree);
   return degree;

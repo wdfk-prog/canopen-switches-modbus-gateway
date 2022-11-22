@@ -966,7 +966,7 @@ UNS8 Write_SLAVE_control_word(UNS8 nodeId,UNS16 value)
   * @retval 成功返回0X00,失败返回0XFF
   * @note   Profile_velocity 单位PUU/s 设定范围 UNSIGNED32 默认值 10000
 */
-UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,UNS32 speed)
+UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,float speed)
 {
   UNS8 errcode = 0;
   //参数写入本地字典

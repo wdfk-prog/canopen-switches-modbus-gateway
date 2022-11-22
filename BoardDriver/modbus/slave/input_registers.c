@@ -15,6 +15,7 @@
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
 #include "motor_control.h"
+#include "motor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -82,22 +83,28 @@ int modbus_slave_input_register_default(void)
 */
 void modbus_slave_input_register_write(void)
 {
-  uint8_t nodeID = modbus_get_register(0,1);        
-  //节点参数区域
+  uint8_t nodeID = modbus_get_register(0,1);
+  //01D~10D节点参数区域
   _tab_input_registers[2] = nodeID_get_nmt(nodeID);         //节点NMT状态
-   //从03D~06D
+                //03D~06D节点名称
   nodeID_get_name((char *)&_tab_input_registers[3],nodeID); //节点名称
   _tab_input_registers[7] = nodeID_get_errcode(nodeID);     //节点错误代码
-  //08D~10D节点具体错误
+                //08D~10D节点具体错误
   nodeID_get_errSpec((char *)&_tab_input_registers[8],nodeID);
-  //电机参数区域
+  //11D~20D电机参数区域
   _tab_input_registers[11] = motor_get_controlword(nodeID);         //控制指令
   _tab_input_registers[12] = motor_get_statusword(nodeID);          //状态位
   motor_get_position((INTEGER32 *)&_tab_input_registers[13],nodeID);//当前位置
-  motor_get_velocity((INTEGER32 *)&_tab_input_registers[15],nodeID);//当前速度
-  //芯片运行时间
+  motor_get_velocity((INTEGER32 *)&_tab_input_registers[15],nodeID);//当前速度 单位 0.1RPM
+  //21D~40D芯片参数区域
+                //芯片运行时间
   _tab_input_registers[36] =  rt_tick_get_millisecond();
   _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16;
+  //41D~50D 时间区域
+  //51D~62D 转向电机区域
+  _tab_input_registers[51] =  turn_motor_get_angle(&turn_motor[0]) * 1000;//转向电机角度反馈
+  _tab_input_registers[52] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
+  motor_get_velocity((INTEGER32 *)&_tab_input_registers[59],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
 }
 /**
   * @brief  获取MODBUS输入寄存器数据

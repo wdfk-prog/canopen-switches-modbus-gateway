@@ -55,14 +55,14 @@ typedef struct
 /* Exported constants --------------------------------------------------------*/
 #define TURN_MOTOR_NUM 1//转向电机电机数量
 /* Exported macro ------------------------------------------------------------*/
-#define TURN_MOTOR_SPEED_DEFAULT 60 //RPM
+#define TURN_MOTOR_SPEED_DEFAULT 60*10 //0.1RPM
 /* Exported variables ---------------------------------------------------------*/
 extern turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
 /* Exported functions prototypes ---------------------------------------------*/
 extern uint8_t turn_motor_enable(turn_motor_typeDef* p);
 extern uint8_t turn_motor_disable(turn_motor_typeDef* p);
 extern uint8_t turn_motor_stop(turn_motor_typeDef* p);
-extern uint8_t turn_motor_angle_control(float angle,int16_t speed,turn_motor_typeDef* p);
+extern uint8_t turn_motor_angle_control(float angle,float speed,turn_motor_typeDef* p);
 extern float turn_motor_get_angle(turn_motor_typeDef* p);
 
 #ifdef __cplusplus

@@ -277,23 +277,13 @@ static void key_turn_control(mbkey_status *event)
   {
   case MBKEY_ENABLE:  //按下处理事件
   {
-    int16_t speed = TURN_MOTOR_SPEED_DEFAULT;
-    int32_t angle = turn_motor_get_angle(p);
-    int32_t value = MAKEINT_32(modbus_get_register(0,32), modbus_get_register(0,31));
+    int16_t speed = TURN_MOTOR_SPEED_DEFAULT;//单位 0.1RPM
+
+    float angle = MAKEINT_32(modbus_get_register(0,32), modbus_get_register(0,31)) / 1000.0f;
 
     REG_WRITE_VALUE(0,39,speed,1);
-
-    if(value == 0)
-    {
-      modbus_set_register((0),(31),angle);
-      modbus_set_register((0),(32),angle >> 16);
-    } 
-    else
-    {
-      (angle) = value;
-    }
-
-    turn_motor_angle_control(angle,speed,p);
+    
+    turn_motor_angle_control(angle,speed / 10,p);
   }
     break;
   case MBKEY_DISABLE: //松开处理事件

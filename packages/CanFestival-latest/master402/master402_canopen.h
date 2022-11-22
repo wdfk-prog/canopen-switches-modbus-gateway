@@ -66,7 +66,7 @@ extern void config_node(uint8_t nodeId);
 extern void canopen_start_thread_entry(void *parameter);
 extern UNS8 Write_SLAVE_control_word(UNS8 nodeId,UNS16 value);
 extern UNS8 Write_SLAVE_Modes_of_operation(UNS8 nodeId,INTEGER8 mode);
-extern UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,UNS32 speed);
+extern UNS8 Write_SLAVE_profile_position_speed_set(UNS8 nodeId,float speed);
 extern UNS8 Write_SLAVE_Interpolation_time_period(UNS8 nodeId);
 extern UNS8 Write_SLAVE_Homing_set(UNS8 nodeId,UNS32 offset,UNS8 method,float switch_speed,float zero_speed);
 /********************节点信息查询与操作****************************************/
