@@ -11,8 +11,8 @@
  * 2022-11-17 1.0     HLY     first version
  */
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __AGV_CANOPEN_H__
-#define __AGV_CANOPEN_H__
+#ifndef __MASTER402_CANOPEN_H
+#define __MASTER402_CANOPEN_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,6 +20,16 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "master402_od.h"
 /* Exported types ------------------------------------------------------------*/
+/**
+ * @brief 电机配置结构体
+ * @note  numerator:  运动一圈所需脉冲数
+ *        denominator:电机编码器分辨率
+ */
+typedef struct
+{
+  uint32_t numerator;   //电子齿轮比分子 
+  uint32_t denominator; //电子齿轮比分母
+}motor_config;  
 /** 
   * @brief  节点ID
   */  
@@ -39,6 +49,7 @@ typedef enum
   NODEID_CONFIG_NO_RESPOND,   //配置回复未响应，节点字典出错
   NODEID_CONFIG_NO_SEND,      //配置未发送,本地字典出错
 }NODEID_ERRCODE;
+
 /* Exported constants --------------------------------------------------------*/
 #define MASTER_NODEID 	  1//控制器ID
 #define PDO_TRANSMISSION_TYPE 1//PDO传输类型
@@ -46,11 +57,6 @@ typedef enum
 #define SDO_REPLY_TIMEOUT     50//50ms等待超时
 #define PRODUCER_HEARTBEAT_TIME 500 //生产者心跳间隔
 #define CONSUMER_HEARTBEAT_TIME 1000//消费者心跳间隔
-
-#define ELECTRONIC_GEAR_RATIO_NUMERATOR 100000                      //电子齿轮比分子
-#define ENCODER_RES           (16777216)                            //电子齿轮比分母 编码器分辨率 16,777,216
-//电子齿轮比 6093h sub1/6093h sub2
-#define ELECTRONIC_GEAR_RATIO (ENCODER_RES / ELECTRONIC_GEAR_RATIO_numerator)//电子齿轮比
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported variables ---------------------------------------------------------*/
@@ -70,8 +76,10 @@ extern UNS8 nodeID_set_errcode(uint8_t nodeid,uint16_t errcode);
 extern uint16_t nodeID_get_errcode(uint8_t nodeid);
 extern UNS8 nodeID_set_errSpec(uint8_t nodeID,const uint8_t errSpec[5]);
 extern char* nodeID_get_errSpec(char* des,uint8_t nodeID);
+extern motor_config* nodeID_get_config(motor_config* des,uint8_t nodeID);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __AGV_CANOPEN_H__ */
+#endif /* __MASTER402_CANOPEN_H */
