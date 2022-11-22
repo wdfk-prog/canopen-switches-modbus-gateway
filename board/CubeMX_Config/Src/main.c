@@ -65,6 +65,10 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+extern int rtc_update_init(void);
+extern int canopen_init(void);
+extern void motor_init(void);
+extern int modbus_init(void);
 static int Version(void);
 /* USER CODE END PFP */
 
@@ -77,7 +81,10 @@ static int Version(void);
   */
 int main(void)
 {
-  rt_thread_mdelay(1000);//延时后不会在初始化日志中间产生
+  rtc_update_init();
+  canopen_init();
+  motor_init();
+  modbus_init();
   Version();
 }
 /* USER CODE END 0 */

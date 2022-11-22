@@ -144,7 +144,7 @@ static void rtc_update_thread_entry(void* parameter)
  * @retval  int 
  * @note    初始化更新rtc时间
  */
-static int rtc_update_init(void)
+int rtc_update_init(void)
 {
     rt_thread_t tid;
     rt_err_t ret = RT_EOK;
@@ -192,7 +192,6 @@ static int rtc_update_init(void)
     }
     return RT_EOK;
 }
-INIT_APP_EXPORT(rtc_update_init);
 /*********************************掉电检测******************************************/
 #if (PVD_ENABLE == 1)
 /* 完成量控制块 */
