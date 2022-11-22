@@ -142,8 +142,6 @@ extern unsigned char Reverse_byte(unsigned char wdata);
 extern void LeftShift(int* arr,int N, int K);
 extern void RightShift(int* arr,int N, int K);
 
-extern float Angle_Conversion(float absolute_angle);
-
 extern uint16_t Binary_Search(uint32_t input,uint32_t *Array,uint16_t size);
 //https://blog.csdn.net/qq_40757240/article/details/85727578
 extern int Bit_Int_2(long n);

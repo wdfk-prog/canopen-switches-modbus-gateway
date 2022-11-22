@@ -153,23 +153,7 @@ long long qpow(int16_t a, int16_t n)
     }
     return ans;
 }
-/**
-  * @brief  角度换算
-  * @param  None.
-  * @retval None.
-  * @note   角度换算 范围 -180~180
-*/
-float Angle_Conversion(float absolute_angle)
-{
-  absolute_angle = fmod(absolute_angle,360);
-  if(absolute_angle == 180)
-    absolute_angle = -180;
-  else if(absolute_angle > 180)
-    absolute_angle =  absolute_angle- 360;
-  else if(absolute_angle < -180)
-    absolute_angle = absolute_angle + 360;
-  return absolute_angle;
-}
+
 /**
   * @brief  二分法查表
   * @param  input:需要查找数值
