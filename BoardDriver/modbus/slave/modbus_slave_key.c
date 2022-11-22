@@ -14,9 +14,9 @@
 
 /* private includes ----------------------------------------------------------*/
 #include "modbus_slave_common.h"
-
 #include "master402_canopen.h"
 #include "motor_control.h"
+#include "motor.h"
 /*ulog include*/
 #define log_tag              "mb key"
 #define log_lvl              dbg_info
@@ -29,6 +29,7 @@ typedef enum
 {
 	KEY_MOTOR_ENABLE,                //电机使能
   KEY_MOTOR_DISABLE,               //电机使能
+  KEY_TURN_CONTROL,                //转向电机控制
   MBKEY_NUM,// 必须要有的记录按钮数量，必须在最后
 }mbkey_list;
 /** 
@@ -129,11 +130,12 @@ static MODE_OPERATION motor_mode;//电机模式
 /* private function prototypes -----------------------------------------------*/
 /** 
   * @brief  电机使能控制
+  * @param  event      
   * @note   写入True使能电机控制,优先级小于禁用电机。
   * @attention 
 注意置一后,对电机模式设置前，请注意电机运动参数是否修改为合适值。
 电机运动参数被多个控制模式所共用，并且有进行数据拼接操作。
-  */ 
+*/ 
 static void key_motor_enable(mbkey_status *event)
 {
   if(nodeID == MASTER_NODEID || nodeID > MAX_NODE_COUNT || nodeID == 0)
@@ -143,91 +145,91 @@ static void key_motor_enable(mbkey_status *event)
   }
   switch(*event)
   {
-    case MBKEY_ENABLE:  //按下处理事件
+  case MBKEY_ENABLE:  //按下处理事件
+  {
+    switch(motor_mode)
     {
-      switch(motor_mode)
+    case PROFILE_POSITION_MODE://位置规划模式
+    {
+      int16_t speed     = 60;
+      int32_t position  = MAKEINT_32(modbus_get_register(0,18),
+                                      modbus_get_register(0,17));
+      
+      REG_WRITE_VALUE(0,19,speed,1);
+      bool abs_rel      = modbus_get_register(0,20);
+      bool immediately  = modbus_get_register(0,21);
+
+      if(motor_profile_position(position,speed,abs_rel,immediately,nodeID) == 0XFF)
       {
-        case PROFILE_POSITION_MODE://位置规划模式
-        {
-          int16_t speed     = 60;
-          int32_t position  = MAKEINT_32(modbus_get_register(0,18),
-                                         modbus_get_register(0,17));
-          
-          REG_WRITE_VALUE(0,19,speed,1);
-          bool abs_rel      = modbus_get_register(0,20);
-          bool immediately  = modbus_get_register(0,21);
+        motor_on_profile_position(nodeID);
+      }
+      else
+      {
+        modbus_set_bits(0,1,0);
+      }
+    }
+    break;
+    case PROFILE_VELOCITY_MODE://速度规划模式
+    {
+      int16_t speed = modbus_get_register(0,17);
+      
+      if(motor_profile_velocity(speed,nodeID) == 0xFF)
+      {
+        motor_on_profile_velocity(nodeID);
+      }
+    }
+    break;
+    case PROFILE_TORQUE_MODE://扭矩规划模式
+    break;
+    case HOMING_MODE://原点复归模式 
+    {
+      int16_t speed = 60;
+      bool zero_flag = modbus_get_register(0,17);
+      REG_WRITE_VALUE(0,18,speed,1);
 
-          if(motor_profile_position(position,speed,abs_rel,immediately,nodeID) == 0XFF)
-          {
-            motor_on_profile_position(nodeID);
-          }
-          else
-          {
-            modbus_set_bits(0,1,0);
-          }
-        }
-        break;
-        case PROFILE_VELOCITY_MODE://速度规划模式
-        {
-          int16_t speed = modbus_get_register(0,17);
-          
-          if(motor_profile_velocity(speed,nodeID) == 0xFF)
-          {
-            motor_on_profile_velocity(nodeID);
-          }
-        }
-        break;
-        case PROFILE_TORQUE_MODE://扭矩规划模式
-        break;
-        case HOMING_MODE://原点复归模式 
-        {
-          int16_t speed = 60;
-          bool zero_flag = modbus_get_register(0,17);
-          REG_WRITE_VALUE(0,18,speed,1);
+      if(motor_homing_mode(zero_flag,speed,nodeID) >= 0XFD)//第一次配置或者需要回零未设置偏移值重新配置
+      {
+        uint8_t method      = 34;
+        float switch_speed  = 100;
+        float zero_speed    = 20;
+        int32_t offset      = MAKEINT_32(modbus_get_register(0,13),
+                              modbus_get_register(0,12));
 
-          if(motor_homing_mode(zero_flag,speed,nodeID) >= 0XFD)//第一次配置或者需要回零未设置偏移值重新配置
-          {
-            uint8_t method      = 34;
-            float switch_speed  = 100;
-            float zero_speed    = 20;
-            int32_t offset      = MAKEINT_32(modbus_get_register(0,13),
-                                  modbus_get_register(0,12));
+        REG_WRITE_VALUE(0,14,method,1);
+        REG_WRITE_VALUE(0,15,switch_speed,10.0f);
+        REG_WRITE_VALUE(0,16,zero_speed,10.0f);
 
-            REG_WRITE_VALUE(0,14,method,1);
-            REG_WRITE_VALUE(0,15,switch_speed,10.0f);
-            REG_WRITE_VALUE(0,16,zero_speed,10.0f);
-
-            motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
-          }
-          else
-          {
-            modbus_set_bits(0,1,0);
-          }
-        }
-        break;
-        case INTERPOLATED_POSITION_MODE://插补位置模式
+        motor_on_homing_mode(offset,method,switch_speed,zero_speed,nodeID);
+      }
+      else
+      {
+        modbus_set_bits(0,1,0);
+      }
+    }
+    break;
+    case INTERPOLATED_POSITION_MODE://插补位置模式
 //        motor_interpolation_position();
-        break;
-      }
+    break;
     }
-    break;
-    case MBKEY_DISABLE: //松开处理事件
-    break;
-    case MBKEY_PRESS:   //松开到按下事件
-    break;
-    case MBKEY_RAISE:   //按下到松开事件
+  }
+  break;
+  case MBKEY_DISABLE: //松开处理事件
+  break;
+  case MBKEY_PRESS:   //松开到按下事件
+  break;
+  case MBKEY_RAISE:   //按下到松开事件
+  {
+    if(motor_mode == PROFILE_VELOCITY_MODE)
     {
-      if(motor_mode == PROFILE_VELOCITY_MODE)
-      {
-        motor_profile_velocity(0,nodeID);
-      }
+      motor_profile_velocity(0,nodeID);
     }
-
-    break;    
+  }
+  break;    
   }
 }
 /** 
   * @brief  电机禁用控制
+  * @param  event 
   * @note   写入True禁用电机控制,优先级高于使用电机。禁用电机将关闭电机使能状态。
   */ 
 static void key_motor_disable(mbkey_status *event)
@@ -239,16 +241,69 @@ static void key_motor_disable(mbkey_status *event)
   }
   switch(*event)
   {
-    case MBKEY_ENABLE:  //按下处理事件
-      modbus_set_bits(0,1,0);//强制退出电机使能控制
+  case MBKEY_ENABLE:  //按下处理事件
+    modbus_set_bits(0,1,0);//强制退出电机使能控制
+  break;
+  case MBKEY_DISABLE: //松开处理事件
+  break;
+  case MBKEY_PRESS:   //松开到按下事件
+    motor_off(nodeID);
+    modbus_reset_register(0,11,0,30);//清除数据
+  break;
+  case MBKEY_RAISE:   //按下到松开事件
+  break;    
+  }
+}
+/** 
+  * @brief  转向电机控制
+  * @param  event 
+  * @note   写入1使能电机后，可进行电机控制。
+  *         写入0禁用电机，禁用电机将关闭电机使能状态。
+  */ 
+static void key_turn_control(mbkey_status *event)
+{
+  turn_motor_typeDef *p = &turn_motor[0];
+
+  if(p->nodeID  == MASTER_NODEID || p->nodeID  > MAX_NODE_COUNT || p->nodeID  == 0)
+  {
+    return;
+  }
+  if(getState(OD_Data) != Operational)
+  {
+    return;
+  }
+
+  switch(*event)
+  {
+  case MBKEY_ENABLE:  //按下处理事件
+  {
+    int16_t speed = TURN_MOTOR_SPEED_DEFAULT;
+    int32_t angle = turn_motor_get_angle(p);
+    int32_t value = MAKEINT_32(modbus_get_register(0,32), modbus_get_register(0,31));
+
+    REG_WRITE_VALUE(0,39,speed,1);
+
+    if(value == 0)
+    {
+      modbus_set_register((0),(31),angle);
+      modbus_set_register((0),(32),angle >> 16);
+    } 
+    else
+    {
+      (angle) = value;
+    }
+
+//    turn_motor_angle_control(angle,speed,p);
+  }
     break;
-    case MBKEY_DISABLE: //松开处理事件
+  case MBKEY_DISABLE: //松开处理事件
+    turn_motor_stop(p);
     break;
-    case MBKEY_PRESS:   //松开到按下事件
-      motor_off(nodeID);
-      modbus_reset_register(0,11,0,30);//清除数据
+  case MBKEY_PRESS:   //松开到按下事件
+    turn_motor_enable(p);
     break;
-    case MBKEY_RAISE:   //按下到松开事件
+  case MBKEY_RAISE:   //按下到松开事件
+    turn_motor_disable(p);
     break;    
   }
 }
@@ -265,6 +320,7 @@ static void (*operation[MBKEY_NUM])(mbkey_status *event) =
 {
   key_motor_enable,
   key_motor_disable,
+  key_turn_control,
 };
 /** 
   * @brief  获取io电平的函数
@@ -333,58 +389,58 @@ static void read_status(void)
   {
     switch(mbkey_buf[i].status.key_status)
     {
-      //状态0：按键送开
-      case MBKEY_DISABLE:
-        if(mbkey_buf[i].status.flag == LOW_LEVEL)
-        {
-            mbkey_buf[i].status.key_status = MBKEY_DISABLE;  //转入状态3
-            mbkey_buf[i].status.key_event  = MBKEY_DISABLE;  //空事件
-        }
-        else
-        {
-          mbkey_buf[i].status.key_status = MBKEY_PRESS;        //转入状态1
-          mbkey_buf[i].status.key_event 	= MBKEY_PRESS;        //过渡事件
-        }
-        break;
-			//状态1：按键按下
-      case MBKEY_ENABLE:
-        if(mbkey_buf[i].status.flag == HIGH_LEVEL)
-        {
-            mbkey_buf[i].status.key_status = MBKEY_ENABLE;     //转入状态3
-            mbkey_buf[i].status.key_event  = MBKEY_ENABLE;     //空事件
-        }
-        else
-        {
-          mbkey_buf[i].status.key_status = MBKEY_RAISE;        //转入状态0
-          mbkey_buf[i].status.key_event  = MBKEY_RAISE;        //过渡事件
-        }
-        break;
-      //状态2：按键过渡[送开到按下]
-      case MBKEY_PRESS:
-        if(mbkey_buf[i].status.flag == HIGH_LEVEL)
-        {
-            mbkey_buf[i].status.key_status = MBKEY_ENABLE;     //转入状态3
-            mbkey_buf[i].status.key_event  = MBKEY_ENABLE;     //空事件
-        }
-        else
-        {
-            mbkey_buf[i].status.key_status = MBKEY_DISABLE;  //转入状态3
-            mbkey_buf[i].status.key_event  = MBKEY_DISABLE;  //空事件
-        }
-        break;
-			//状态1：按键过渡[按下到送开]
-			case MBKEY_RAISE:
-				if(mbkey_buf[i].status.flag == LOW_LEVEL)          //按键释放，端口高电平
-        {
-            mbkey_buf[i].status.key_status = MBKEY_DISABLE;  //转入状态3
-            mbkey_buf[i].status.key_event  = MBKEY_DISABLE;  //空事件
-        }
-				else
-        {
-            mbkey_buf[i].status.key_status = MBKEY_ENABLE;     //转入状态3
-            mbkey_buf[i].status.key_event = MBKEY_ENABLE;      //空事件
-        }
-        break;
+    //状态0：按键送开
+    case MBKEY_DISABLE:
+      if(mbkey_buf[i].status.flag == LOW_LEVEL)
+      {
+          mbkey_buf[i].status.key_status = MBKEY_DISABLE;  //转入状态3
+          mbkey_buf[i].status.key_event  = MBKEY_DISABLE;  //空事件
+      }
+      else
+      {
+        mbkey_buf[i].status.key_status = MBKEY_PRESS;        //转入状态1
+        mbkey_buf[i].status.key_event 	= MBKEY_PRESS;        //过渡事件
+      }
+    break;
+    //状态1：按键按下
+    case MBKEY_ENABLE:
+      if(mbkey_buf[i].status.flag == HIGH_LEVEL)
+      {
+          mbkey_buf[i].status.key_status = MBKEY_ENABLE;     //转入状态3
+          mbkey_buf[i].status.key_event  = MBKEY_ENABLE;     //空事件
+      }
+      else
+      {
+        mbkey_buf[i].status.key_status = MBKEY_RAISE;        //转入状态0
+        mbkey_buf[i].status.key_event  = MBKEY_RAISE;        //过渡事件
+      }
+    break;
+    //状态2：按键过渡[送开到按下]
+    case MBKEY_PRESS:
+      if(mbkey_buf[i].status.flag == HIGH_LEVEL)
+      {
+          mbkey_buf[i].status.key_status = MBKEY_ENABLE;     //转入状态3
+          mbkey_buf[i].status.key_event  = MBKEY_ENABLE;     //空事件
+      }
+      else
+      {
+          mbkey_buf[i].status.key_status = MBKEY_DISABLE;  //转入状态3
+          mbkey_buf[i].status.key_event  = MBKEY_DISABLE;  //空事件
+      }
+    break;
+    //状态1：按键过渡[按下到送开]
+    case MBKEY_RAISE:
+      if(mbkey_buf[i].status.flag == LOW_LEVEL)          //按键释放，端口高电平
+      {
+          mbkey_buf[i].status.key_status = MBKEY_DISABLE;  //转入状态3
+          mbkey_buf[i].status.key_event  = MBKEY_DISABLE;  //空事件
+      }
+      else
+      {
+          mbkey_buf[i].status.key_status = MBKEY_ENABLE;     //转入状态3
+          mbkey_buf[i].status.key_event = MBKEY_ENABLE;      //空事件
+      }
+    break;
     }
   }
 }
@@ -401,13 +457,14 @@ void mbkey_handler(void *p)
 	uint8_t i;
   while(1)
   {
-    rt_thread_mdelay(1);
+    rt_thread_mdelay(10);
     read_status();
     nodeID = modbus_get_register(0,1);
     motor_mode = modbus_get_register(0,11);
     for(i = 0;i < MBKEY_NUM;i++)
     {
-        operation[i](&mbkey_buf[i].status.key_event);
+        if(operation[i] != RT_NULL)
+          operation[i](&mbkey_buf[i].status.key_event);
     }
   }
 }
@@ -431,14 +488,15 @@ void mbkey_shield_operate(uint8_t num,mbkey_enable_status option)
   * @note   状态机初始化
 gpio_pullup：初始给高，端口，位口
 */
-static int mbkey_init(void)
+int mbkey_init(void)
 { 
   rt_err_t ret = RT_EOK; 
   config init[MBKEY_NUM]=
   { 
     //激活电平 索引 子索引
-    {PULLUP,    0,    1}, //电机使能
-    {PULLUP,    0,    2}, //电机禁用
+    {PULLUP,    0,    1},  //电机使能
+    {PULLUP,    0,    2},  //电机禁用
+    {PULLUP,    0,    11}, //转向电机控制
   };
   creat_key(init);// 调用按键初始化函数
   /* 创建 MODBUS线程*/
@@ -460,4 +518,3 @@ static int mbkey_init(void)
   }
   return ret;
 }
-INIT_APP_EXPORT(mbkey_init);

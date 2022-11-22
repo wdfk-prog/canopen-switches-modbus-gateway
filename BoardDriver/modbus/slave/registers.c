@@ -14,6 +14,7 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
+#include "motor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -35,8 +36,10 @@ int modbus_slave_register_default(void)
   _tab_registers[1] = 1;  //设置需操作的节点ID
   //02D~10D CAN保留区域
   //11D~30D 电机参数区域
-  //31D~36D 时间同步区域
-
+  //31D~42D 转向电机区域
+  _tab_registers[31] = 0;       //转向电机角度低位
+  _tab_registers[32] = 0 >> 16; //转向电机角度高位
+  _tab_registers[39] = TURN_MOTOR_SPEED_DEFAULT;//转向电机速度输入
   return RT_EOK;
 }
 /**
