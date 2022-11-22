@@ -268,7 +268,7 @@ static void key_turn_control(mbkey_status *event)
   {
     return;
   }
-  if(getState(OD_Data) != Operational)
+  if(getNodeState(OD_Data,turn_motor[0].nodeID) != Operational)
   {
     return;
   }
@@ -293,7 +293,7 @@ static void key_turn_control(mbkey_status *event)
       (angle) = value;
     }
 
-//    turn_motor_angle_control(angle,speed,p);
+    turn_motor_angle_control(angle,speed,p);
   }
     break;
   case MBKEY_DISABLE: //松开处理事件

@@ -276,7 +276,7 @@ UNS8 motor_profile_position(int32_t position,int16_t speed,bool abs_rel,bool imm
   }
   else
   {
-    LOG_I("Completion of motor movement");
+    LOG_D("Completion of motor movement");
     return 0X00;
   }
 }

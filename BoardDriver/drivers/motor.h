@@ -43,12 +43,14 @@ typedef enum
  */
 typedef struct
 {
-  uint8_t nodeID;       //电机节点ID
-  bool over_range;      //角度超出标志
-  stop_type stop_state; //急停标志
-  int16_t max_angle;    //最大角度
-  int16_t min_angle;    //最小角度   
-  motor_config cfg;     //电机配置
+  uint8_t       nodeID;         //电机节点ID
+  bool          over_range;     //角度超出标志
+  stop_type     stop_state;     //急停标志
+  int16_t       max_angle;      //最大角度
+  int16_t       min_angle;      //最小角度
+  float         last;           //上一次角度
+  float         err;            //角度更新误差
+  motor_config  cfg;            //电机配置
 }turn_motor_typeDef;
 /* Exported constants --------------------------------------------------------*/
 #define TURN_MOTOR_NUM 1//转向电机电机数量
@@ -57,10 +59,10 @@ typedef struct
 /* Exported variables ---------------------------------------------------------*/
 extern turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
 /* Exported functions prototypes ---------------------------------------------*/
-extern void turn_motor_enable(turn_motor_typeDef* p);
-extern void turn_motor_disable(turn_motor_typeDef* p);
-extern void turn_motor_stop(turn_motor_typeDef* p);
-extern void turn_motor_angle_control(float angle,int16_t speed,turn_motor_typeDef* p);
+extern uint8_t turn_motor_enable(turn_motor_typeDef* p);
+extern uint8_t turn_motor_disable(turn_motor_typeDef* p);
+extern uint8_t turn_motor_stop(turn_motor_typeDef* p);
+extern uint8_t turn_motor_angle_control(float angle,int16_t speed,turn_motor_typeDef* p);
 extern float turn_motor_get_angle(turn_motor_typeDef* p);
 
 #ifdef __cplusplus

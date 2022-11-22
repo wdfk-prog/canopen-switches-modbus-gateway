@@ -30,27 +30,27 @@ turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
  * @param  p
  * @note  初始化为位置规划模式
  */
-void turn_motor_enable(turn_motor_typeDef* p)
+uint8_t turn_motor_enable(turn_motor_typeDef* p)
 {
-  motor_on_profile_position(p->nodeID);
+  return motor_on_profile_position(p->nodeID);
 }
 /**
  * @brief 转向电机禁用
  * @param  p
  * @note  关闭电机使能
  */
-void turn_motor_disable(turn_motor_typeDef* p)
+uint8_t turn_motor_disable(turn_motor_typeDef* p)
 {
-  motor_off(p->nodeID);
+  return motor_off(p->nodeID);
 }
 /**
  * @brief  转向电机停止运动控制
  * @param  p        
  * @note   none
  */
-void turn_motor_stop(turn_motor_typeDef* p)
+uint8_t turn_motor_stop(turn_motor_typeDef* p)
 {
-
+  return 0;
 }
 /**
   * @brief  转向电机急停优先级.
@@ -73,14 +73,16 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
  * @param  position         
  * @param  speed  
  * @param  p
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01
  * @note   以绝对位置模式，立刻触发指令运动      
  */
-static void turn_motor_start(int32_t position,int16_t speed,turn_motor_typeDef* p)
+static uint8_t turn_motor_start(int32_t position,int16_t speed,turn_motor_typeDef* p)
 {
   if (motor_stop_priority(p))
-    return;
+    return 0X01;
   
-  motor_profile_position(position,speed,0,1,p->nodeID);
+  return motor_profile_position(position,speed,0,1,p->nodeID);
 }
 /**
  * @brief   角度换算
@@ -134,19 +136,30 @@ static float angle_range_judgment(turn_motor_typeDef *p,float angle)
  * @param  angle       
  * @param  speed
  * @param  p                
+ * @note   成功返回0X00,模式错误返回0XFF.超时返回0XFE
+           触发急停返回0X01,角度无变化返回0X02
  * @note   已绝对角度输出
  */
-void turn_motor_angle_control(float angle,int16_t speed,turn_motor_typeDef* p)
+uint8_t turn_motor_angle_control(float angle,int16_t speed,turn_motor_typeDef* p)
 {
   int32_t dest_position = 0;//目标位置
   //角度换算
   angle = angle_conversion(angle);
-  //角度限幅
-  angle_range_judgment(p,angle);
-  //角度换算为位置
-  dest_position = angle / 360 * p->cfg.numerator;
-  //开始运动
-  turn_motor_start(dest_position,speed,p);
+
+  /*角度更新判断*/
+  p->err  = angle - p->last;
+  p->last = angle;
+  
+  if(p->err != 0)
+  {
+    //角度限幅
+    angle_range_judgment(p,angle);
+    //角度换算为位置
+    dest_position = angle / 360 * p->cfg.numerator;
+    //开始运动
+    return turn_motor_start(dest_position,speed,p);
+  }
+  return 0X02;
 }
 /**
   * @brief  返回电机角度
