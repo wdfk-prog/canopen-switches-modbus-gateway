@@ -181,7 +181,7 @@ int rtc_update_init(void)
     }
 
     tid = rt_thread_create("rtc", rtc_update_thread_entry, RT_NULL,
-                          4096, 0, 0);
+                          4096, 29, 0);
     if(tid == RT_NULL)
     {
       LOG_E("rtc thread start failed!");
