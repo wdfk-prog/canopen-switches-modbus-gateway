@@ -38,7 +38,8 @@ Beat_TypeDef debug_beat;
 static void debug_beat_monitor(void)
 {
   uint16_t beat = *debug_beat.value;
-  if(USER_GET_BIT(beat,15) == true)
+ 
+  if(USER_GET_BIT(beat,7) == true)
   {
     beat = beat & 0X7F;//清除最高位
     if(beat != 0)
@@ -54,7 +55,7 @@ static void debug_beat_monitor(void)
       *debug_beat.flag = false;
       debug_beat.button = 0;
     }
-    *debug_beat.value = 0;
+    *debug_beat.value = 0x80;
   }
   else
   {

@@ -71,21 +71,22 @@ int modbus_slave_register_init(void)
   mb_can.zero_speed   = &_tab_registers[16];  //寻找 Z脉冲速度   单位rpm
   //17D~21D 电机参数区域
   //31D~40心跳时间参数区域
-  debug_beat.value    = &_tab_registers[38];  //调试串口心跳
   /* update date. */
-  mb_tm.year      = &_tab_registers[31];
-  mb_tm.mon       = &_tab_registers[32];
-  mb_tm.mday      = &_tab_registers[33];     
+  mb_tm.year        = &_tab_registers[31];
+  mb_tm.mon         = &_tab_registers[32];
+  mb_tm.mday        = &_tab_registers[33];     
   /* update time. */
-  mb_tm.hour      = &_tab_registers[34];
-  mb_tm.min       = &_tab_registers[35];
-  mb_tm.sec       = &_tab_registers[36];
+  mb_tm.hour        = &_tab_registers[34];
+  mb_tm.min         = &_tab_registers[35];
+  mb_tm.sec         = &_tab_registers[36];
+
+  debug_beat.value  = &_tab_registers[38];  //调试串口心跳
   //41D~60D 转向电机区域
-  mb_turn.angle_l        = &_tab_registers[41];
-  mb_turn.angle_h        = &_tab_registers[42];//转向电机[1]角度输入 单位:0.001°
-  mb_turn.speed          = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
-  mb_turn.max_angle      = &_tab_registers[53];//转向电机[1]最大角度
-  mb_turn.min_angle      = &_tab_registers[54];//转向电机[1]最小角度
+  mb_turn.angle_l   = &_tab_registers[41];
+  mb_turn.angle_h   = &_tab_registers[42];//转向电机[1]角度输入 单位:0.001°
+  mb_turn.speed     = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
+  mb_turn.max_angle = &_tab_registers[53];//转向电机[1]最大角度
+  mb_turn.min_angle = &_tab_registers[54];//转向电机[1]最小角度
   return RT_EOK;
 }
 /**

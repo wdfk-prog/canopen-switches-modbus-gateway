@@ -6,7 +6,7 @@
  * @date 2022-11-23
  * @copyright Copyright (c) 2022
  * @attention 
- * @par 修改日志:
+ * @par 锟睫革拷锟斤拷志:
  * Date       Version Author  Description
  * 2022-11-23 1.0     HLY     first version
  */
@@ -23,8 +23,8 @@
 /* Exported types ------------------------------------------------------------*/
 typedef struct  
 {
-  uint8_t*    flag;
   uint8_t     button;
+  uint8_t*    flag;
   uint16_t*   value;
 }Beat_TypeDef;
 /* Exported macro ------------------------------------------------------------*/

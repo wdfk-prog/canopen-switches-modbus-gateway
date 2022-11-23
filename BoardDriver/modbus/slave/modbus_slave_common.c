@@ -22,7 +22,7 @@
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
-#define MAX_MUTEX_WAIT_TIME 10      //互斥量等待时间
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -40,6 +40,7 @@ extern int mbkey_init(void);
 extern int modbus_slave_register_default(void);
 extern int modbus_slave_input_register_default(void);
 extern int modbus_slave_bits_default(void);
+extern int modbus_slave_input_bits_default(void);
 //从机挂钩
 extern int modbus_slave_register_init(void);
 extern int modbus_slave_input_bits_init(void);
@@ -59,6 +60,7 @@ int modbus_init(void)
   modbus_slave_register_default();
   modbus_slave_input_register_default();
   modbus_slave_bits_default();
+  modbus_slave_input_bits_default();
 
   modbus_slave_register_init();
   modbus_slave_input_bits_init();

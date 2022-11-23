@@ -84,9 +84,9 @@ int main(void)
 {
   rtc_update_init();
   canopen_init();
-  motor_init();
-  modbus_init();
   monitor_init();
+  modbus_init();
+  motor_init();
   Version();
 }
 /* USER CODE END 0 */
