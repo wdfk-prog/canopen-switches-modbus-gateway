@@ -154,7 +154,7 @@ uint8_t turn_motor_angle_control(float angle,float speed,turn_motor_typeDef* p)
   if(p->err != 0)
   {
     //角度限幅
-    angle_range_judgment(p,angle);
+    angle = angle_range_judgment(p,angle);
     //角度换算为位置
     dest_position = angle / 360 * p->cfg.numerator;
     //开始运动
@@ -211,6 +211,9 @@ void turn_motor_set_angle_range(int16_t max,int16_t min,turn_motor_typeDef* p)
  */
 static void motor_init_thread(void * p)
 {
+  turn_motor[0].nodeID = SERVO_NODEID_1;
+  nodeID_get_config(&turn_motor[0].cfg,turn_motor[0].nodeID);
+
   while(1)
   {
     if(getNodeState(OD_Data,turn_motor[0].nodeID) == Operational)
@@ -227,9 +230,6 @@ static void motor_init_thread(void * p)
  */
 void motor_init(void)
 {
-  turn_motor[0].nodeID = SERVO_NODEID_1;
-  nodeID_get_config(&turn_motor[0].cfg,turn_motor[0].nodeID);
-
   rt_err_t ret = RT_EOK;
   /* 创建 MODBUS从机线程*/
   rt_thread_t thread = rt_thread_create( "motor_init",      /* 线程名字 */
