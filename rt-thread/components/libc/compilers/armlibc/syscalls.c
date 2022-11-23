@@ -282,10 +282,9 @@ int _sys_seek(FILEHANDLE fh, long pos)
 /**
  * used by tmpnam() or tmpfile()
  */
-int _sys_tmpnam(char *name, int fileno, unsigned maxlength)
+void _sys_tmpnam(char *name, int fileno, unsigned maxlength)
 {
     rt_snprintf(name, maxlength, "tem%03d", fileno);
-    return 1;
 }
 
 char *_sys_command_string(char *cmd, int len)
