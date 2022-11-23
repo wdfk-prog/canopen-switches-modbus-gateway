@@ -36,7 +36,6 @@ int modbus_slave_input_bits_default(void)
   //01D~04D转向电机区域
   _tab_input_bits[1] = 0;//转向电机[1]角度超出范围标志
   //06D~10D心跳报警区域
-  _tab_input_bits[7] = 1;//调试串口心跳报警使能
   return RT_EOK;
 }
 /**

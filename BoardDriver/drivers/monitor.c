@@ -89,6 +89,14 @@ int monitor_init(void)
                           beat_monitor,
                           RT_NULL, rt_tick_from_millisecond(BEAT_PERIOD_TIME),
                           RT_TIMER_FLAG_PERIODIC);
-
+  /* Æô¶¯¶¨Ê±Æ÷ 1 */
+  if (timer != RT_NULL)
+  {
+     rt_timer_start(timer);
+  }
+  else
+  {
+      LOG_E("beat timer init falsed");
+  }
   return RT_EOK;
 }
