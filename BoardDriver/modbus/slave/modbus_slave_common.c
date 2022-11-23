@@ -103,6 +103,7 @@ void modbus_slave_rw(void)
     modbus_slave_input_bits_write();
     //读取寄存器至本机数据
     modbus_slave_register_read();
+
     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }
 /**

@@ -83,6 +83,11 @@ int modbus_slave_input_register_default(void)
 */
 void modbus_slave_input_register_write(void)
 {
+  static int now_time = 0,last_time = 0;
+
+  last_time = now_time;
+  now_time = rt_tick_get_millisecond();
+
   uint8_t nodeID = modbus_get_register(0,1);
   //01D~10D节点参数区域
   _tab_input_registers[2] = nodeID_get_nmt(nodeID);         //节点NMT状态
@@ -99,6 +104,7 @@ void modbus_slave_input_register_write(void)
   //21D~40D芯片参数区域
   _tab_input_registers[36] =  rt_tick_get_millisecond();
   _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16; //芯片运行时间
+  _tab_input_registers[39] =  (uint16_t)(now_time - last_time);//modbus通信周期 单位ms
   //41D~52D 转向电机区域
   _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;//转向电机角度反馈
   _tab_input_registers[42] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
