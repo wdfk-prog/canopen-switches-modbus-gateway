@@ -38,6 +38,17 @@ int modbus_slave_input_bits_default(void)
   return RT_EOK;
 }
 /**
+  * @brief  写入本机数据至输入寄存器中
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_slave_input_bits_write(void)
+{
+  //01D~04D转向电机区域
+  _tab_input_bits[1] = turn_motor_get_over_range(&turn_motor[0]);
+}
+/**
  * @brief Get the map buf object
  * @param  buf   目标地址
  * @param  bufsz 获取长度

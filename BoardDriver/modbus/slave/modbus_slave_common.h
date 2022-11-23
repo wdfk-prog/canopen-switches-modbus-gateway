@@ -108,7 +108,7 @@ extern int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave
 extern void modbus_mutex_lock(void);
 extern void modbus_mutex_unlock(void);
 //写入资源
-extern void modbus_slave_write(void);
+extern void modbus_slave_rw(void);
 //保持寄存器
 extern uint16_t modbus_get_register(uint16_t index,uint16_t sub_index);
 extern void modbus_set_register(uint16_t index,uint16_t sub_index,uint16_t data);

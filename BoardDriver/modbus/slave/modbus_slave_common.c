@@ -40,6 +40,9 @@ extern int modbus_slave_bits_default(void);
 extern int modbus_slave_register_init(void);
 //从机写入
 extern void modbus_slave_input_register_write(void);
+extern void modbus_slave_input_bits_write(void);
+//从机读取
+extern void modbus_slave_register_read(void);
 /**
   * @brief  modbus初始化
   * @param  None
@@ -88,15 +91,18 @@ void modbus_mutex_unlock(void)
 	}
 }
 /**
-  * @brief  写入MODBUS寄存器共享资源
+  * @brief  读写MODBUS寄存器共享资源
   * @param  None
   * @retval None
   * @note   None
 */
-void modbus_slave_write(void)
+void modbus_slave_rw(void)
 {
     //写入本机数据至寄存器
     modbus_slave_input_register_write();
+    modbus_slave_input_bits_write();
+    //读取寄存器至本机数据
+    modbus_slave_register_read();
     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }
 /**

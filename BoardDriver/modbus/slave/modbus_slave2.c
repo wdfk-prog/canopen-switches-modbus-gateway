@@ -225,7 +225,7 @@ static void modbus_thread(void* p)
           }
           continue;
       }
-      modbus_slave_write();
+      modbus_slave_rw();
       serial_send(ctx->send_buf, rc);
   }
 }

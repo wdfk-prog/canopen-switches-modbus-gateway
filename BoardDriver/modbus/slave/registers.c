@@ -89,6 +89,18 @@ int modbus_slave_register_init(void)
   mb_turn.min_angle      = &_tab_registers[54];//转向电机[1]最小角度
   return RT_EOK;
 }
+/**
+  * @brief  读取保持寄存器至本机数据中
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_slave_register_read(void)
+{
+  //41D~60D 转向电机区域
+  turn_motor[0].max_angle = *mb_turn.max_angle;//转向电机[1]最大角度
+  turn_motor[0].min_angle = *mb_turn.min_angle;//转向电机[1]最小角度
+}
 /**********************************************************************************/
 /**
   * @brief  获取MODBUS保持寄存器数据
