@@ -15,6 +15,7 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "motor.h"
+#include "monitor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -34,7 +35,22 @@ int modbus_slave_input_bits_default(void)
 {
   //01D~04D转向电机区域
   _tab_input_bits[1] = 0;//转向电机[1]角度超出范围标志
-
+  //06D~10D心跳报警区域
+  _tab_input_bits[7] = 1;//调试串口心跳报警使能
+  return RT_EOK;
+}
+/**
+  * @brief  输入寄存器初始化
+  * @param  None
+  * @retval int
+  * @note   None
+*/
+int modbus_slave_input_bits_init(void)
+{
+  //01D~04D转向电机区域
+  turn_motor[0].over_range = &_tab_input_bits[1];
+  //06D~10D心跳报警区域
+  debug_beat.flag = &_tab_input_bits[7];
   return RT_EOK;
 }
 /**
@@ -45,8 +61,7 @@ int modbus_slave_input_bits_default(void)
 */
 void modbus_slave_input_bits_write(void)
 {
-  //01D~04D转向电机区域
-  _tab_input_bits[1] = turn_motor_get_over_range(&turn_motor[0]);
+
 }
 /**
  * @brief Get the map buf object

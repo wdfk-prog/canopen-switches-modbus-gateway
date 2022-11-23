@@ -9,6 +9,7 @@
  * @par 修改日志:
  * Date       Version Author  Description
  * 2022-11-17 1.0     HLY     mb线圈抽象为按键
+ * 2022-11-23 1.1     HLY     加互斥量保护共享资源，通讯效率没有明显变化
  */
 /* includes ------------------------------------------------------------------*/
 
@@ -100,7 +101,7 @@ typedef struct
 }mbkey;
 /* private define ------------------------------------------------------------*/
 /* 线程配置 */
-#define THREAD_PRIORITY      4//线程优先级
+#define THREAD_PRIORITY      5//线程优先级
 #define THREAD_TIMESLICE     10//线程时间片
 #define THREAD_STACK_SIZE    1024//栈大小
 /* private macro -------------------------------------------------------------*/
@@ -431,12 +432,14 @@ void mbkey_handler(void *p)
   while(1)
   {
     rt_thread_mdelay(10);
+    modbus_mutex_lock();
     read_status();
     for(i = 0;i < MBKEY_NUM;i++)
     {
         if(operation[i] != RT_NULL)
           operation[i](&mbkey_buf[i].status.key_event);
     }
+    modbus_mutex_unlock();
   }
 }
 /**

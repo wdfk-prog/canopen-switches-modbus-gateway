@@ -44,7 +44,7 @@ typedef enum
 typedef struct
 {
   uint8_t       nodeID;         //电机节点ID
-  bool          over_range;     //角度超出标志
+  uint8_t*      over_range;     //角度超出范围标志
   stop_type     stop_state;     //急停标志
   int16_t       max_angle;      //最大角度
   int16_t       min_angle;      //最小角度
@@ -56,8 +56,8 @@ typedef struct
 #define TURN_MOTOR_NUM 1//转向电机电机数量
 /* Exported macro ------------------------------------------------------------*/
 #define TURN_MOTOR_SPEED_DEFAULT 60*10    //0.1RPM
-#define TURN_MOTOR_MAX_ANGLE_DEFAULT 180 
-#define TURN_MOTOR_MIN_ANGLE_DEFAULT -180
+#define TURN_MOTOR_MAX_ANGLE_DEFAULT 90 
+#define TURN_MOTOR_MIN_ANGLE_DEFAULT -90
 /* Exported variables ---------------------------------------------------------*/
 extern turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
 /* Exported functions prototypes ---------------------------------------------*/

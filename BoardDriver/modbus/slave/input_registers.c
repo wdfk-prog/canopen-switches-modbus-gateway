@@ -34,32 +34,27 @@ static uint16_t _tab_input_registers[MODBUS_REG_MAX_NUM];
 int modbus_slave_input_register_default(void)
 {
   //01D~10D节点参数区域
-  _tab_input_registers[1]  = MAX_NODE_COUNT - 1;  //节点数量
-  _tab_input_registers[2]  = 0X0F;                //节点NMT状态
-          //03D~06D 节点名称
-  nodeID_get_name((char *)&_tab_input_registers[3],
-                   modbus_get_register(0,1));     //节点名称
-  _tab_input_registers[7]  = 0X00;                //节点错误代码
-          //08D~10D节点具体错误
-  _tab_input_registers[8]  = 0X00;                 //节点具体错误
-  _tab_input_registers[9]  = 0X00;                 //节点具体错误
-  _tab_input_registers[10] = 0X00;                 //节点具体错误
+  _tab_input_registers[1]  = MAX_NODE_COUNT - 1;    //节点数量
+  _tab_input_registers[2]  = 0X0F;                  //节点NMT状态
+  nodeID_get_name((char *)&_tab_input_registers[3], //03D~06D 节点名称
+                   modbus_get_register(0,1));       //节点名称
+  _tab_input_registers[7]  = 0X00;                  //节点错误代码
+  _tab_input_registers[8]  = 0X00;                  //节点具体错误
+  _tab_input_registers[9]  = 0X00;                  //节点具体错误
+  _tab_input_registers[10] = 0X00;                  //节点具体错误
   //11D~20D电机参数区域
-  _tab_input_registers[11] = 0X00;                 //控制指令
-  _tab_input_registers[12] = 0X00;                 //状态位
-  _tab_input_registers[13] = 0X00;                 //当前位置低16位
-  _tab_input_registers[14] = 0X00;                 //当前位置高16位
-  _tab_input_registers[15] = 0X00;                 //当前速度低16位
-  _tab_input_registers[16] = 0X00;                 //当前速度高16位
-          //17D~20D电机保留区域
+  _tab_input_registers[11] = 0X00;  //控制指令
+  _tab_input_registers[12] = 0X00;  //状态位
+  _tab_input_registers[13] = 0X00;  //当前位置低16位
+  _tab_input_registers[14] = 0X00;  //当前位置高16位
+  _tab_input_registers[15] = 0X00;  //当前速度低16位
+  _tab_input_registers[16] = 0X00;  //当前速度高16位
   //21D~40D芯片参数区域
-          //21D~27D编译日期
-  rt_memcpy((char *)(_tab_input_registers+21),VERSION,sizeof(VERSION));              //打印版本信息
+  rt_memcpy((char *)(_tab_input_registers+21),VERSION,sizeof(VERSION));              //打印版本信息 21D~27D编译日期
   _tab_input_registers[24] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY) & 0xffff);  //日期低16bti
 	_tab_input_registers[25] = ((uint32_t)(YEAR*10000+(MONTH + 1)*100+DAY)>>16);		   //日期高16bti
 	_tab_input_registers[26] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)&0xffff);         //时间低16bti
 	_tab_input_registers[27] = ((uint32_t)(HOUR*10000+MINUTE*100+SEC)>>16);		         //时间高16bti
-          //28D~35D ID参数区域
   _tab_input_registers[28] =  HAL_GetUIDw0();
   _tab_input_registers[29] =  HAL_GetUIDw0() >> 16;
   _tab_input_registers[30] =  HAL_GetUIDw1();
@@ -68,11 +63,8 @@ int modbus_slave_input_register_default(void)
   _tab_input_registers[33] =  HAL_GetUIDw2() >> 16;
   _tab_input_registers[34] =  HAL_GetHalVersion();
   _tab_input_registers[35] =  HAL_GetHalVersion() >> 16;
-          //38D复位次数
-  _tab_input_registers[38] =  boot_count_read();
-  //41D~50D 时间区域
-        //41D~46D 时间同步区域
-        //47D~50D 心跳同步区域
+  _tab_input_registers[38] =  boot_count_read();    //复位次数
+  //41D~60D转向电机区域
   return RT_EOK;
 }
 /**
@@ -90,12 +82,10 @@ void modbus_slave_input_register_write(void)
 
   uint8_t nodeID = modbus_get_register(0,1);
   //01D~10D节点参数区域
-  _tab_input_registers[2] = nodeID_get_nmt(nodeID);         //节点NMT状态
-                //03D~06D节点名称
-  nodeID_get_name((char *)&_tab_input_registers[3],nodeID); //节点名称
-  _tab_input_registers[7] = nodeID_get_errcode(nodeID);     //节点错误代码
-                //08D~10D节点具体错误
-  nodeID_get_errSpec((char *)&_tab_input_registers[8],nodeID);
+  _tab_input_registers[2] = nodeID_get_nmt(nodeID);           //节点NMT状态
+  nodeID_get_name((char *)&_tab_input_registers[3],nodeID);   //节点名称 03D~06D
+  _tab_input_registers[7] = nodeID_get_errcode(nodeID);       //节点错误代码
+  nodeID_get_errSpec((char *)&_tab_input_registers[8],nodeID);//节点具体错误 08D~10D
   //11D~20D电机参数区域
   _tab_input_registers[11] = motor_get_controlword(nodeID);         //控制指令
   _tab_input_registers[12] = motor_get_statusword(nodeID);          //状态位
@@ -105,8 +95,8 @@ void modbus_slave_input_register_write(void)
   _tab_input_registers[36] =  rt_tick_get_millisecond();
   _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16; //芯片运行时间
   _tab_input_registers[39] =  (uint16_t)(now_time - last_time);//modbus通信周期 单位ms
-  //41D~52D 转向电机区域
-  _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;//转向电机角度反馈
+  //41D~60D 转向电机区域
+  _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;        //转向电机角度反馈
   _tab_input_registers[42] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
   motor_get_velocity((INTEGER32 *)&_tab_input_registers[49],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
 }

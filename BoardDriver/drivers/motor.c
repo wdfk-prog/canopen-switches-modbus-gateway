@@ -116,18 +116,18 @@ static float angle_range_judgment(turn_motor_typeDef *p,float angle)
     return angle;
   if(p->min_angle <= angle && angle <= p->max_angle)
   {
-    p->over_range = DISABLE;//输入没有超出角度
+    *p->over_range = false;//输入没有超出角度
   }
   else if(angle < p->min_angle)
   {
     angle = p->min_angle;
-    p->over_range = ENABLE;//输入超出角度
+    *p->over_range = true;//输入超出角度
     ulog_w("turn","Input beyond minimum Angle");
   }
   else if(angle > p->max_angle)
   {
     angle = p->max_angle;
-    p->over_range = ENABLE;//输入超出角度
+    *p->over_range = true;//输入超出角度
     ulog_w("turn","Input beyond maximum Angle");
   }
   return angle;

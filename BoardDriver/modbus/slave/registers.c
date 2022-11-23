@@ -15,6 +15,7 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "motor.h"
+#include "monitor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -23,9 +24,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
-canopen_debug mb_can;
-modbus_tm     mb_tm;
-modbus_turn   mb_turn;
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  写入输入寄存器默认值
@@ -54,7 +52,7 @@ int modbus_slave_register_default(void)
   return RT_EOK;
 }
 /**
-  * @brief  输入寄存器初始化
+  * @brief  保持寄存器初始化
   * @param  None
   * @retval int
   * @note   None
@@ -62,17 +60,18 @@ int modbus_slave_register_default(void)
 int modbus_slave_register_init(void)
 {
   //节点参数区域
-  mb_can.nodeID       = &_tab_registers[1];        //节点ID
+  mb_can.nodeID       = &_tab_registers[1];   //节点ID
   //02D~10D CAN保留区域
   //11D~30D 电机参数区域
-  mb_can.motor_mode   = &_tab_registers[11];       //电机模式
-  mb_can.offset_l     = &_tab_registers[12];       //原点偏移值 单位PUU
-  mb_can.offset_h     = &_tab_registers[12];       //原点偏移值 单位PUU
-  mb_can.method       = &_tab_registers[14];       //回原方式
-  mb_can.switch_speed = &_tab_registers[15];       //寻找原点开关速度 单位rpm
-  mb_can.zero_speed   = &_tab_registers[16];       //寻找 Z脉冲速度   单位rpm
+  mb_can.motor_mode   = &_tab_registers[11];  //电机模式
+  mb_can.offset_l     = &_tab_registers[12];  //原点偏移值 单位PUU
+  mb_can.offset_h     = &_tab_registers[12];  //原点偏移值 单位PUU
+  mb_can.method       = &_tab_registers[14];  //回原方式
+  mb_can.switch_speed = &_tab_registers[15];  //寻找原点开关速度 单位rpm
+  mb_can.zero_speed   = &_tab_registers[16];  //寻找 Z脉冲速度   单位rpm
   //17D~21D 电机参数区域
   //31D~40心跳时间参数区域
+  debug_beat.value    = &_tab_registers[38];  //调试串口心跳
   /* update date. */
   mb_tm.year      = &_tab_registers[31];
   mb_tm.mon       = &_tab_registers[32];

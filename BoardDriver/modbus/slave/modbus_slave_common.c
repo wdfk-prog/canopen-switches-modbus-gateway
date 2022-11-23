@@ -26,7 +26,11 @@
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-rt_mutex_t modbus_mutex = RT_NULL;
+canopen_debug mb_can;
+modbus_tm     mb_tm;
+modbus_turn   mb_turn;
+
+static rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
 //从机初始化
 extern int modbus_slave1_init(void);
@@ -38,6 +42,7 @@ extern int modbus_slave_input_register_default(void);
 extern int modbus_slave_bits_default(void);
 //从机挂钩
 extern int modbus_slave_register_init(void);
+extern int modbus_slave_input_bits_init(void);
 //从机写入
 extern void modbus_slave_input_register_write(void);
 extern void modbus_slave_input_bits_write(void);
@@ -56,6 +61,7 @@ int modbus_init(void)
   modbus_slave_bits_default();
 
   modbus_slave_register_init();
+  modbus_slave_input_bits_init();
 
   modbus_mutex = rt_mutex_create("modbus",RT_IPC_FLAG_PRIO);
   modbus_slave1_init();
@@ -72,7 +78,7 @@ int modbus_init(void)
 */
 void modbus_mutex_lock(void)
 {
-	if(rt_mutex_take(modbus_mutex, MAX_MUTEX_WAIT_TIME) != RT_EOK) 
+	if(rt_mutex_take(modbus_mutex, RT_WAITING_FOREVER) != RT_EOK) 
   {
 		LOG_E("modbus take mutex failed!");
 	}
