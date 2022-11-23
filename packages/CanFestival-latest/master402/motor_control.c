@@ -132,7 +132,7 @@ UNS8 motor_on_profile_position(UNS8 nodeId)
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
 	FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
-
+  SYNC_DELAY;//延时给驱动器响应时间，以免太快发送触发命令导致驱动器未响应
   return 0x00;
 }
 /**
@@ -153,6 +153,7 @@ UNS8 motor_on_interpolated_position(UNS8 nodeId)
   Event: Enter in the state OPERATION ENABLE with controlword and select ip 
   mode with modes of operation*/
 //  FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
+  SYNC_DELAY;//延时给驱动器响应时间，以免太快发送触发命令导致驱动器未响应
   return 0X00;
 }
 /**
@@ -202,7 +203,7 @@ UNS8 motor_on_profile_velocity(UNS8 nodeId)
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SHUTDOWN | FAULT_RESET));
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_SWITCH_ON));
 	FAILED_EXIT(Write_SLAVE_control_word(nodeId,CONTROL_WORD_ENABLE_OPERATION));
-  
+  SYNC_DELAY;//延时给驱动器响应时间，以免太快发送触发命令导致驱动器未响应
   return 0x00;
 }
 /******************************运动模式操作函数******************************************************************/
