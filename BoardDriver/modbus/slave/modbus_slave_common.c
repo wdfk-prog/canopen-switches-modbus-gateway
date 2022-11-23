@@ -74,7 +74,7 @@ void modbus_mutex_lock(void)
 {
 	if(rt_mutex_take(modbus_mutex, MAX_MUTEX_WAIT_TIME) != RT_EOK) 
   {
-		LOG_E("canfestival take mutex failed!");
+		LOG_E("modbus take mutex failed!");
 	}
 }
 /**
@@ -87,7 +87,7 @@ void modbus_mutex_unlock(void)
 {
 	if(rt_mutex_release(modbus_mutex) != RT_EOK) 
   {
-		LOG_E("canfestival release mutex failed!");
+		LOG_E("modbus release mutex failed!");
 	}
 }
 /**
