@@ -159,8 +159,8 @@ UNS8 motor_on_interpolated_position(UNS8 nodeId)
   * @brief  控制电机使能并选择原点复位模式
   * @param  offest:原点偏移值 单位:PUU [注意:只是把原点偏移值点当为0坐标点，并不会运动到0坐标点处]
   * @param  method:回原方式   范围:0 ~ 35
-  * @param  switch_speed:寻找原点开关速度 设定范围 0.1 ~ 200 默认值 10  单位rpm 精度:小数点后一位
-  * @param  zero_speed:寻找 Z脉冲速度     设定范围 0.1 ~ 50  默认值 2   单位rpm 精度:小数点后一位
+  * @param  switch_speed:寻找原点开关速度 设定范围 0.1 ~ 200 默认值 100  单位rpm 精度:小数点后一位
+  * @param  zero_speed:寻找 Z脉冲速度     设定范围 0.1 ~ 50  默认值 20   单位rpm 精度:小数点后一位
   * @param  nodeId:节点ID
   * @retval 成功返回0X00,失败返回0XFF
   * @note   None

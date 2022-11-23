@@ -97,14 +97,12 @@ void modbus_slave_input_register_write(void)
   motor_get_position((INTEGER32 *)&_tab_input_registers[13],nodeID);//当前位置
   motor_get_velocity((INTEGER32 *)&_tab_input_registers[15],nodeID);//当前速度 单位 0.1RPM
   //21D~40D芯片参数区域
-                //芯片运行时间
   _tab_input_registers[36] =  rt_tick_get_millisecond();
-  _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16;
-  //41D~50D 时间区域
-  //51D~62D 转向电机区域
-  _tab_input_registers[51] =  turn_motor_get_angle(&turn_motor[0]) * 1000;//转向电机角度反馈
-  _tab_input_registers[52] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
-  motor_get_velocity((INTEGER32 *)&_tab_input_registers[59],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
+  _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16; //芯片运行时间
+  //41D~52D 转向电机区域
+  _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;//转向电机角度反馈
+  _tab_input_registers[42] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
+  motor_get_velocity((INTEGER32 *)&_tab_input_registers[49],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
 }
 /**
   * @brief  获取MODBUS输入寄存器数据

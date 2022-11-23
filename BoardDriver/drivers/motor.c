@@ -14,6 +14,7 @@
 #include "motor.h"
 /* Private includes ----------------------------------------------------------*/
 #include "motor_control.h"
+#include "modbus_slave_common.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -179,6 +180,27 @@ float turn_motor_get_angle(turn_motor_typeDef* p)
   degree = angle_conversion(degree);
   return degree;
 }
+/**
+ * @brief  获取转向电机超出角度标志
+ * @param  p                
+ * @retval true 
+ * @retval false 
+ */
+bool turn_motor_get_over_range(turn_motor_typeDef* p)
+{
+  return p->over_range;
+}
+/**
+ * @brief  设置转向电机角度范围
+ * @param  max              
+ * @param  min              
+ * @param  p                
+ */
+void turn_motor_set_angle_range(int16_t max,int16_t min,turn_motor_typeDef* p)
+{
+  p->max_angle = max;
+  p->min_angle = min;
+}
 /******************************行走电机函数**************************************/
 
 /******************************公共函数******************************************/
@@ -193,7 +215,7 @@ static void motor_init_thread(void * p)
   {
     if(getNodeState(OD_Data,turn_motor[0].nodeID) == Operational)
     {
-      turn_motor_enable(&turn_motor[0]);
+      MB_TURN_SET;
       return;
     }
     rt_thread_mdelay(1);

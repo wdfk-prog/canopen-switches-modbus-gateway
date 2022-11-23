@@ -28,14 +28,17 @@
 /* Private variables ---------------------------------------------------------*/
 rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
+//从机初始化
 extern int modbus_slave1_init(void);
 extern int modbus_slave2_init(void);
 extern int mbkey_init(void);
-
+//从机默认值
 extern int modbus_slave_register_default(void);
 extern int modbus_slave_input_register_default(void);
 extern int modbus_slave_bits_default(void);
-
+//从机挂钩
+extern int modbus_slave_register_init(void);
+//从机写入
 extern void modbus_slave_input_register_write(void);
 /**
   * @brief  modbus初始化
@@ -48,6 +51,8 @@ int modbus_init(void)
   modbus_slave_register_default();
   modbus_slave_input_register_default();
   modbus_slave_bits_default();
+
+  modbus_slave_register_init();
 
   modbus_mutex = rt_mutex_create("modbus",RT_IPC_FLAG_PRIO);
   modbus_slave1_init();
@@ -83,7 +88,7 @@ void modbus_mutex_unlock(void)
 	}
 }
 /**
-  * @brief  读写MODBUS寄存器共享地址
+  * @brief  写入MODBUS寄存器共享资源
   * @param  None
   * @retval None
   * @note   None

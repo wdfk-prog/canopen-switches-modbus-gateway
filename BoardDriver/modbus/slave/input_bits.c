@@ -14,7 +14,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-
+#include "motor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -24,6 +24,19 @@
 /* Private variables ---------------------------------------------------------*/
 static uint8_t _tab_input_bits[MODBUS_BIT_MAX_NUM];
 /* Private function prototypes -----------------------------------------------*/
+/**
+  * @brief  写入输入寄存器默认值
+  * @param  None
+  * @retval int
+  * @note   None
+*/
+int modbus_slave_input_bits_default(void)
+{
+  //01D~04D转向电机区域
+  _tab_input_bits[1] = 0;//转向电机[1]角度超出范围标志
+
+  return RT_EOK;
+}
 /**
  * @brief Get the map buf object
  * @param  buf   目标地址

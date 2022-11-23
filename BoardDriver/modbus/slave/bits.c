@@ -34,7 +34,7 @@ int modbus_slave_bits_default(void)
   _tab_bits[1] = 0;  //电机控制使能
   _tab_bits[2] = 1;  //电机控制禁用
   //调试保留区域
-  _tab_bits[11] = 1;  //转向电机使能
+  _tab_bits[11] = 0;  //转向电机使能
   return RT_EOK;
 }
 /**

@@ -9,11 +9,11 @@
  * @par 修改日志:
  * Date       Version Author  Description
  * 2022-11-17 1.0     HLY     first version
+ * 2022-11-23 1.1     HLY     指针挂载寄存器地址，减少赋值时间
  */
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
-#include "master402_canopen.h"
 #include "motor.h"
 /* Private typedef -----------------------------------------------------------*/
 
@@ -23,6 +23,9 @@
 
 /* Private variables ---------------------------------------------------------*/
 static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
+canopen_debug mb_can;
+modbus_tm     mb_tm;
+modbus_turn   mb_turn;
 /* Private function prototypes -----------------------------------------------*/
 /**
   * @brief  写入输入寄存器默认值
@@ -33,15 +36,60 @@ static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
 int modbus_slave_register_default(void)
 {
   //节点参数区域
-  _tab_registers[1] = 1;  //设置需操作的节点ID
+  _tab_registers[1]   = 1;                            //节点ID
   //02D~10D CAN保留区域
   //11D~30D 电机参数区域
-  //31D~42D 转向电机区域
-  _tab_registers[31] = 0;       //转向电机角度低位
-  _tab_registers[32] = 0 >> 16; //转向电机角度高位
-  _tab_registers[39] = TURN_MOTOR_SPEED_DEFAULT;//转向电机速度输入
+  _tab_registers[11]  = 0;                            //电机模式
+  _tab_registers[12]  = 0;                            
+  _tab_registers[13]  = 0;                            //原点偏移值 单位PUU
+  _tab_registers[14]  = 34;                           //回原方式
+  _tab_registers[15]  = 100;                          //寻找原点开关速度 单位0.1rpm
+  _tab_registers[16]  = 20;                           //寻找 Z脉冲速度   单位0.1rpm
+  //17D~21D 电机参数区域
+  //31D~40D心跳时间参数区域
+  //41D~60D 转向电机区域
+  _tab_registers[49] = TURN_MOTOR_SPEED_DEFAULT;    //转向电机速度输入
+  _tab_registers[53] = TURN_MOTOR_MAX_ANGLE_DEFAULT;//转向电机最大角度
+  _tab_registers[54] = TURN_MOTOR_MIN_ANGLE_DEFAULT;//转向电机最小角度
   return RT_EOK;
 }
+/**
+  * @brief  输入寄存器初始化
+  * @param  None
+  * @retval int
+  * @note   None
+*/
+int modbus_slave_register_init(void)
+{
+  //节点参数区域
+  mb_can.nodeID       = &_tab_registers[1];        //节点ID
+  //02D~10D CAN保留区域
+  //11D~30D 电机参数区域
+  mb_can.motor_mode   = &_tab_registers[11];       //电机模式
+  mb_can.offset_l     = &_tab_registers[12];       //原点偏移值 单位PUU
+  mb_can.offset_h     = &_tab_registers[12];       //原点偏移值 单位PUU
+  mb_can.method       = &_tab_registers[14];       //回原方式
+  mb_can.switch_speed = &_tab_registers[15];       //寻找原点开关速度 单位rpm
+  mb_can.zero_speed   = &_tab_registers[16];       //寻找 Z脉冲速度   单位rpm
+  //17D~21D 电机参数区域
+  //31D~40心跳时间参数区域
+  /* update date. */
+  mb_tm.year      = &_tab_registers[31];
+  mb_tm.mon       = &_tab_registers[32];
+  mb_tm.mday      = &_tab_registers[33];     
+  /* update time. */
+  mb_tm.hour      = &_tab_registers[34];
+  mb_tm.min       = &_tab_registers[35];
+  mb_tm.sec       = &_tab_registers[36];
+  //41D~60D 转向电机区域
+  mb_turn.angle_l        = &_tab_registers[41];
+  mb_turn.angle_h        = &_tab_registers[42];//转向电机[1]角度输入 单位:0.001°
+  mb_turn.speed          = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
+  mb_turn.max_angle      = &_tab_registers[53];//转向电机[1]最大角度
+  mb_turn.min_angle      = &_tab_registers[54];//转向电机[1]最小角度
+  return RT_EOK;
+}
+/**********************************************************************************/
 /**
   * @brief  获取MODBUS保持寄存器数据
   * @param  index:数组索引

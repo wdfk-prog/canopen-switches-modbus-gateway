@@ -40,6 +40,42 @@ typedef struct
   rt_size_t size;
   bool      flag; //置一开启拷贝
 }uart_debug;
+/**
+ * @brief MODBUS调试CANOPEN结构体
+ */
+typedef struct
+{
+  uint16_t* nodeID;
+  uint16_t* motor_mode;
+  uint16_t* offset_l;
+  uint16_t* offset_h;
+  uint16_t* method;
+  uint16_t* switch_speed;
+  uint16_t* zero_speed;
+}canopen_debug;
+/**
+ * @brief MODBUS时间戳结构体
+ */
+typedef struct
+{
+  uint16_t* year;
+  uint16_t* mon;
+  uint16_t* mday;
+  uint16_t* hour;
+  uint16_t* min;
+  uint16_t* sec;
+}modbus_tm;
+/**
+ * @brief MOBDUS-转向电机结构体
+ */
+typedef struct
+{
+  uint16_t* angle_l;
+  uint16_t* angle_h;
+  uint16_t* speed;
+  uint16_t* max_angle;
+  uint16_t* min_angle;
+}modbus_turn;
 /* Exported constants --------------------------------------------------------*/
 #define MODBUS_START_ADDR       1     
 #define MODBUS_REG_MAX_NUM      125
@@ -51,11 +87,21 @@ typedef struct
 #define INPUT_REGISTER_MAPS_NUM 2
 /* Exported macro ------------------------------------------------------------*/
 #define UART_DEBUG 0//输出至调试串口
+/*
+ * 拼接16位为32位
+ * H:16位高位
+ * L:16位低位
+*/
+#define MAKEINT_32(H,L) (((int32_t)(H) << 16) | (uint16_t)(L))
 /* Exported variables ---------------------------------------------------------*/
 extern const agile_modbus_slave_util_map_t bit_maps[BIT_MAPS_NUM];
 extern const agile_modbus_slave_util_map_t input_bit_maps[INPUT_BIT_MAPS_NUM];
 extern const agile_modbus_slave_util_map_t register_maps[REGISTER_MAPS_NUM];
 extern const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MAPS_NUM];
+//挂钩指针
+extern canopen_debug  mb_can;
+extern modbus_tm      mb_tm;
+extern modbus_turn    mb_turn;
 /* Exported functions prototypes ---------------------------------------------*/
 extern int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info);
 //保护资源
@@ -74,6 +120,15 @@ extern uint8_t modbus_get_bits(uint16_t index,uint16_t sub_index);
 extern void modbus_set_bits(uint16_t index,uint16_t sub_index,uint16_t data);
 //离散输入线圈寄存器
 extern uint8_t modbus_get_input_bits(uint16_t index,uint16_t sub_index);
+/**************************线圈赋值***********************************************/
+//01D~10D 调试区域
+#define MB_DEBUG_MOTOR_ENABLE_SET     modbus_set_bits(0,1,1) //电机使能控制置一
+#define MB_DEBUG_MOTOR_ENABLE_RESET   modbus_set_bits(0,1,0) //电机使能控制置零
+#define MB_DEBUG_MOTOR_DISABLE_SET    modbus_set_bits(0,2,1) //电机禁用控制置一
+#define MB_DEBUG_MOTOR_DISABLE_RESET  modbus_set_bits(0,2,0) //电机禁用控制置零
+//11D
+#define MB_TURN_SET                   modbus_set_bits(0,11,1) //转向电机使能
+#define MB_TURN_RESET                 modbus_set_bits(0,11,0) //转向电机禁用
 
 #ifdef __cplusplus
 }

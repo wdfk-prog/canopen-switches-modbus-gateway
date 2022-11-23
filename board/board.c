@@ -95,13 +95,13 @@ static time_t rtc_update(void)
 {
   struct tm tm_new = {0};
   /* update date. */
-  tm_new.tm_year  = modbus_get_register(0,41) - 1900;// years since 1900
-  tm_new.tm_mon   = modbus_get_register(0,42) - 1;//tm_mon: 0~11
-  tm_new.tm_mday  = modbus_get_register(0,43);
+  tm_new.tm_year  = *mb_tm.year - 1900;//years since 1900
+  tm_new.tm_mon   = *mb_tm.mon  - 1;   //tm_mon: 0~11
+  tm_new.tm_mday  = *mb_tm.mday;
   /* update time. */
-  tm_new.tm_hour = modbus_get_register(0,44);
-  tm_new.tm_min  = modbus_get_register(0,45);
-  tm_new.tm_sec  = modbus_get_register(0,46);
+  tm_new.tm_hour = *mb_tm.hour;
+  tm_new.tm_min  = *mb_tm.min;
+  tm_new.tm_sec  = *mb_tm.sec;
   /* converts the local time into the calendar time. */
   if(tm_new.tm_mon < 0 || !(tm_new.tm_year + tm_new.tm_mday + tm_new.tm_hour + tm_new.tm_min + tm_new.tm_sec))
     return 0;
