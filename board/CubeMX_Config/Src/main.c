@@ -69,6 +69,7 @@ extern int rtc_update_init(void);
 extern int canopen_init(void);
 extern void motor_init(void);
 extern int modbus_init(void);
+extern int monitor_init(void);
 static int Version(void);
 /* USER CODE END PFP */
 
@@ -85,6 +86,7 @@ int main(void)
   canopen_init();
   motor_init();
   modbus_init();
+  monitor_init();
   Version();
 }
 /* USER CODE END 0 */
