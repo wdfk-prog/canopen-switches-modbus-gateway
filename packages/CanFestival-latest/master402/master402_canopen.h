@@ -19,17 +19,8 @@ extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
 #include "master402_od.h"
-/* Exported types ------------------------------------------------------------*/
-/**
- * @brief 电机配置结构体
- * @note  numerator:  运动一圈所需脉冲数
- *        denominator:电机编码器分辨率
- */
-typedef struct
-{
-  uint32_t numerator;   //电子齿轮比分子 
-  uint32_t denominator; //电子齿轮比分母
-}motor_config;  
+#include "motor.h"
+/* Exported types ------------------------------------------------------------*/  
 /** 
   * @brief  节点ID
   */  

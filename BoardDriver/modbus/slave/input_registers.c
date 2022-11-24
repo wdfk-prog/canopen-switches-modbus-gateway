@@ -15,7 +15,6 @@
 /* Private includes ----------------------------------------------------------*/
 #include "master402_canopen.h"
 #include "motor_control.h"
-#include "motor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/

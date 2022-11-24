@@ -6,7 +6,7 @@
  * @date 2022-11-21
  * @copyright Copyright (c) 2022
  * @attention 
- * @par ä¿®æ”¹æ—¥å¿—:
+ * @par ĞŞ¸ÄÈÕÖ¾:
  * Date       Version Author  Description
  * 2022-11-21 1.0     HLY     first version
  */
@@ -19,41 +19,53 @@ extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
 #include "user_math.h"
-#include "master402_canopen.h"
+
 /* Exported types ------------------------------------------------------------*/
 /** 
-  * @brief  åœæ­¢ä»£ç 
+  * @brief  Í£Ö¹´úÂë
   */  
 typedef enum
 {
-  NO_STOP = 0x00U,//æ— åœæ­¢            0x00
-  HARD_STOP,      //ç¡¬ä»¶æ€¥åœ          0x02
-  SOFT_STOP     , //è½¯æ€¥åœ            0x04
-  Detection_STOP, //ç›‘æ§å‡½æ•°æ€¥åœ      0x08
-  ENABLE_STOP   , //ç”µæœºå…³é—­ä½¿èƒ½æ€¥åœ  0x10
-  ALM_STOP      , //æŠ¥è­¦æ€¥åœ          0X20
-  CRASH_STOP    , //é˜²æ’æ¡æ€¥åœ        0X40
-  VBATT_STOP    , //ç”µå‹è¿‡ä½æ€¥åœ      0X80
-  BEAT_STOP    ,  //ç”µå‹è¿‡ä½æ€¥åœ      0X100
+  NO_STOP = 0x00U,//ÎŞÍ£Ö¹            0x00
+  HARD_STOP,      //Ó²¼ş¼±Í£          0x02
+  SOFT_STOP     , //Èí¼±Í£            0x04
+  Detection_STOP, //ĞÄÌøÒì³£          0x08
+  ENABLE_STOP   , //µç»ú¹Ø±ÕÊ¹ÄÜ      0x10
+  ALM_STOP      , //±¨¾¯±¨¾¯          0X20
+  CRASH_STOP    , //·À×²Ìõ±¨¾¯        0X40
+  VBATT_STOP    , //µçÑ¹¹ıµÍ±¨¾¯      0X80
+  BEAT_STOP    ,  //ĞÄÌøÒì³£          0X100
 }Stop_Code;
+
 #define stop_type uint16_t
+
 /**
- * @brief è½¬å‘ç”µæœºç»“æ„ä½“
- * @note  over_range:true è¶…å‡ºèŒƒå›´
+ * @brief µç»úÅäÖÃ½á¹¹Ìå
+ * @note  numerator:  ÔË¶¯Ò»È¦ËùĞèÂö³åÊı
+ *        denominator:µç»ú±àÂëÆ÷·Ö±æÂÊ
  */
 typedef struct
 {
-  uint8_t       nodeID;         //ç”µæœºèŠ‚ç‚¹ID
-  uint8_t*      over_range;     //è§’åº¦è¶…å‡ºèŒƒå›´æ ‡å¿—
-  stop_type     stop_state;     //æ€¥åœæ ‡å¿—
-  int16_t       max_angle;      //æœ€å¤§è§’åº¦
-  int16_t       min_angle;      //æœ€å°è§’åº¦
-  float         last;           //ä¸Šä¸€æ¬¡è§’åº¦
-  float         err;            //è§’åº¦æ›´æ–°è¯¯å·®
-  motor_config  cfg;            //ç”µæœºé…ç½®
+  uint32_t numerator;   //µç×Ó³İÂÖ±È·Ö×Ó 
+  uint32_t denominator; //µç×Ó³İÂÖ±È·ÖÄ¸
+}motor_config;
+/**
+ * @brief ×ªÏòµç»ú½á¹¹Ìå
+ * @note  over_range:true ³¬³ö·¶Î§
+ */
+typedef struct
+{
+  uint8_t       nodeID;         //µç»ú½ÚµãID
+  uint8_t*      over_range;     //½Ç¶È³¬³ö·¶Î§±êÖ¾
+  stop_type     stop_state;     //¼±Í£±êÖ¾
+  int16_t       max_angle;      //×î´ó½Ç¶È
+  int16_t       min_angle;      //×îĞ¡½Ç¶È
+  float         last;           //ÉÏÒ»´Î½Ç¶È
+  float         err;            //½Ç¶È¸üĞÂÎó²î
+  motor_config  cfg;            //µç»úÅäÖÃ
 }turn_motor_typeDef;
 /* Exported constants --------------------------------------------------------*/
-#define TURN_MOTOR_NUM 1//è½¬å‘ç”µæœºç”µæœºæ•°é‡
+#define TURN_MOTOR_NUM 1//×ªÏòµç»úµç»úÊıÁ¿
 /* Exported macro ------------------------------------------------------------*/
 #define TURN_MOTOR_SPEED_DEFAULT 60*10    //0.1RPM
 #define TURN_MOTOR_MAX_ANGLE_DEFAULT 90 

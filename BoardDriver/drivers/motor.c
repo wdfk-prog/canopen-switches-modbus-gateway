@@ -14,6 +14,7 @@
 #include "motor.h"
 /* Private includes ----------------------------------------------------------*/
 #include "motor_control.h"
+#include "master402_canopen.h"
 #include "modbus_slave_common.h"
 /* Private typedef -----------------------------------------------------------*/
 
@@ -26,33 +27,6 @@
 /* Private function prototypes -----------------------------------------------*/
 turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
 /******************************行走电机函数**************************************/
-/**
- * @brief 转向电机使能
- * @param  p
- * @note  初始化为位置规划模式
- */
-uint8_t turn_motor_enable(turn_motor_typeDef* p)
-{
-  return motor_on_profile_position(p->nodeID);
-}
-/**
- * @brief 转向电机禁用
- * @param  p
- * @note  关闭电机使能
- */
-uint8_t turn_motor_disable(turn_motor_typeDef* p)
-{
-  return motor_off(p->nodeID);
-}
-/**
- * @brief  转向电机停止运动控制
- * @param  p        
- * @note   none
- */
-uint8_t turn_motor_stop(turn_motor_typeDef* p)
-{
-  return 0;
-}
 /**
   * @brief  转向电机急停优先级.
   * @param  p
@@ -68,6 +42,45 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
   }
   else
     return 0;
+}
+/**
+ * @brief 转向电机使能
+ * @param  p
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01
+ * @note  初始化为位置规划模式
+ */
+uint8_t turn_motor_enable(turn_motor_typeDef* p)
+{
+  if (motor_stop_priority(p))
+    return 0X01;
+  return motor_on_profile_position(p->nodeID);
+}
+/**
+ * @brief 转向电机禁用
+ * @param  p
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01
+ * @note  关闭电机使能
+ */
+uint8_t turn_motor_disable(turn_motor_typeDef* p)
+{
+  if (motor_stop_priority(p))
+    return 0X01;
+  return motor_off(p->nodeID);
+}
+/**
+ * @brief  转向电机停止运动控制
+ * @param  p   
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01     
+ * @note   none
+ */
+uint8_t turn_motor_stop(turn_motor_typeDef* p)
+{
+  if (motor_stop_priority(p))
+    return 0X01;
+  return 0;
 }
 /**
  * @brief  转向电机开始运动控制
