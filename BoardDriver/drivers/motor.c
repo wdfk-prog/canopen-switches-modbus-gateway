@@ -38,7 +38,7 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
   if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
-//    ulog_w("turn","turn motor stop,code is %d",*p->stop_state);
+    ulog_w("turn","turn motor stop,code is 0X%4.4x",*p->stop_state);
     return 1;
   }
   else
