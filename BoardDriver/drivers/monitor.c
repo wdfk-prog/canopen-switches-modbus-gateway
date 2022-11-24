@@ -127,10 +127,10 @@ int monitor_init(void)
   * @note   None
 */
 
-int motor_stopcode_get(void)
+int motor_get_stopcode(void)
 {
-  rt_kprintf(   "Turn motor stop code is 0X%04X\n"  ,turn_motor[0].stop_state);
+  rt_kprintf("Turn motor stop code is 0X%04X\n"  ,*turn_motor[0].stop_state);
   return RT_EOK;
 }
-MSH_CMD_EXPORT(motor_stopcode_get,motor stop code get);
+MSH_CMD_EXPORT(motor_get_stopcode,motor stop code get);
 #endif /*RT_USING_MSH*/

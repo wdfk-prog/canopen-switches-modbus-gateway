@@ -35,9 +35,10 @@ turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
 */
 static uint8_t motor_stop_priority(turn_motor_typeDef* p)
 {
-  if(p->stop_state != NO_STOP)
+  if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
+    
     return 1;
   }
   else

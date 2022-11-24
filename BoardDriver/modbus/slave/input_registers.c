@@ -79,7 +79,7 @@ void modbus_slave_input_register_init(void)
   //11D~20D电机参数区域
   //21D~40D芯片参数区域
   //41D~60D 转向电机区域
-  //turn_motor[0].stop_state = &_tab_input_registers[53];
+  turn_motor[0].stop_state = &_tab_input_registers[53];
 }
 /**
   * @brief  写入本机数据至输入寄存器中
