@@ -85,9 +85,11 @@ extern uint8_t turn_motor_enable(turn_motor_typeDef* p);
 extern uint8_t turn_motor_disable(turn_motor_typeDef* p);
 extern uint8_t turn_motor_stop(turn_motor_typeDef* p);
 extern uint8_t turn_motor_angle_control(float angle,float speed,turn_motor_typeDef* p);
+extern void turn_motor_reentrant_setangle(turn_motor_typeDef* p);
 extern float turn_motor_get_angle(turn_motor_typeDef* p);
 extern bool turn_motor_get_over_range(turn_motor_typeDef* p);
 extern void turn_motor_set_angle_range(int16_t max,int16_t min,turn_motor_typeDef* p);
+
 #ifdef __cplusplus
 }
 #endif

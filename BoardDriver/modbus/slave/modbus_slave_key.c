@@ -272,9 +272,7 @@ static void key_turn_control(mbkey_status *event)
   case MBKEY_PRESS:   //松开到按下事件
     turn_motor_enable(p);
     //更新缓存,保证初始与进入时角度准确
-    p->last = turn_motor_get_angle(p);
-    *turn_motor[0].mb.angle_h = (int32_t)(p->last * 1000) >> 16;
-    *turn_motor[0].mb.angle_l = (int32_t)(p->last * 1000);
+    turn_motor_reentrant_setangle(p);
     break;
   case MBKEY_RAISE:   //按下到松开事件
     turn_motor_disable(p);

@@ -28,6 +28,19 @@
 turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
 /******************************行走电机函数**************************************/
 /**
+  * @brief  重入角度定位角度设置
+  * @param  None.
+  * @retval None.
+  * @note   保证再次进入角度定位不会立刻进行定位。
+*/
+void turn_motor_reentrant_setangle(turn_motor_typeDef* p)
+{
+    //更新缓存,保证初始与进入时角度准确
+    p->last = turn_motor_get_angle(p);
+    *p->mb.angle_h = (int32_t)(p->last * 1000) >> 16;
+    *p->mb.angle_l = (int32_t)(p->last * 1000);
+}
+/**
   * @brief  转向电机急停优先级.
   * @param  p
   * @retval None.
@@ -38,6 +51,7 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
   if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
+    turn_motor_reentrant_setangle(p);
     ulog_w("turn","turn motor stop,code is 0X%4.4x",*p->stop_state);
     return 1;
   }
