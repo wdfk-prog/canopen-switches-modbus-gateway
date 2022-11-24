@@ -261,8 +261,8 @@ static void key_turn_control(mbkey_status *event)
   {
   case MBKEY_ENABLE:  //按下处理事件
   {
-    int32_t angle = MAKEINT_32(*mb_turn.angle_h,*mb_turn.angle_l) / 1000.0f;//单位:0.001°
-    float   speed = *mb_turn.speed / 10;//单位:0.1RPM
+    int32_t angle = MAKEINT_32(*turn_motor[0].mb.angle_h,*turn_motor[0].mb.angle_l) / 1000.0f;//单位:0.001°
+    float   speed = *turn_motor[0].mb.speed / 10;//单位:0.1RPM
     turn_motor_angle_control(angle,speed,p);
   }
     break;
@@ -273,8 +273,8 @@ static void key_turn_control(mbkey_status *event)
     turn_motor_enable(p);
     //更新缓存,保证初始与进入时角度准确
     p->last = turn_motor_get_angle(p);
-    *mb_turn.angle_h = (int32_t)(p->last * 1000) >> 16;
-    *mb_turn.angle_l = (int32_t)(p->last * 1000);
+    *turn_motor[0].mb.angle_h = (int32_t)(p->last * 1000) >> 16;
+    *turn_motor[0].mb.angle_l = (int32_t)(p->last * 1000);
     break;
   case MBKEY_RAISE:   //按下到松开事件
     turn_motor_disable(p);

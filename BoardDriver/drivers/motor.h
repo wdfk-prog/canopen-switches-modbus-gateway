@@ -19,7 +19,6 @@ extern "C" {
 #endif
 /* Includes ------------------------------------------------------------------*/
 #include "user_math.h"
-
 /* Exported types ------------------------------------------------------------*/
 /** 
   * @brief  停止代码
@@ -47,6 +46,17 @@ typedef struct
   uint32_t denominator; //电子齿轮比分母
 }motor_config;
 /**
+ * @brief MOBDUS-转向电机结构体
+ */
+typedef struct
+{
+  uint16_t* angle_l;
+  uint16_t* angle_h;
+  uint16_t* speed;
+  uint16_t* max_angle;
+  uint16_t* min_angle;
+}modbus_turn;
+/**
  * @brief 转向电机结构体
  * @note  over_range:true 超出范围
  */
@@ -60,6 +70,7 @@ typedef struct
   float         last;           //上一次角度
   float         err;            //角度更新误差
   motor_config  cfg;            //电机配置
+  modbus_turn   mb;             //modbus挂钩指针
 }turn_motor_typeDef;
 /* Exported constants --------------------------------------------------------*/
 #define TURN_MOTOR_NUM 1//转向电机电机数量

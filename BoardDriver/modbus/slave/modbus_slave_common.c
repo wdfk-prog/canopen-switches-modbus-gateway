@@ -28,8 +28,6 @@
 /* Private variables ---------------------------------------------------------*/
 canopen_debug mb_can;
 modbus_tm     mb_tm;
-modbus_turn   mb_turn;
-
 static rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
 //从机初始化

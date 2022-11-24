@@ -62,17 +62,7 @@ typedef struct
   uint16_t* min;
   uint16_t* sec;
 }modbus_tm;
-/**
- * @brief MOBDUS-转向电机结构体
- */
-typedef struct
-{
-  uint16_t* angle_l;
-  uint16_t* angle_h;
-  uint16_t* speed;
-  uint16_t* max_angle;
-  uint16_t* min_angle;
-}modbus_turn;
+
 /* Exported constants --------------------------------------------------------*/
 #define MODBUS_START_ADDR       1     
 #define MODBUS_REG_MAX_NUM      125
@@ -98,7 +88,6 @@ extern const agile_modbus_slave_util_map_t input_register_maps[INPUT_REGISTER_MA
 //挂钩指针
 extern canopen_debug  mb_can;
 extern modbus_tm      mb_tm;
-extern modbus_turn    mb_turn;
 /* Exported functions prototypes ---------------------------------------------*/
 extern int addr_check(agile_modbus_t *ctx, struct agile_modbus_slave_info *slave_info);
 //保护资源

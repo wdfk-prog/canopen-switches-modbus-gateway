@@ -81,11 +81,11 @@ void modbus_slave_register_init(void)
 
   debug_beat.value  = &_tab_registers[38];  //调试串口心跳
   //41D~60D 转向电机区域
-  mb_turn.angle_l   = &_tab_registers[41];
-  mb_turn.angle_h   = &_tab_registers[42];//转向电机[1]角度输入 单位:0.001°
-  mb_turn.speed     = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
-  mb_turn.max_angle = &_tab_registers[53];//转向电机[1]最大角度
-  mb_turn.min_angle = &_tab_registers[54];//转向电机[1]最小角度
+  turn_motor[0].mb.angle_l   = &_tab_registers[41];
+  turn_motor[0].mb.angle_h   = &_tab_registers[42];//转向电机[1]角度输入 单位:0.001°
+  turn_motor[0].mb.speed     = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
+  turn_motor[0].mb.max_angle = &_tab_registers[53];//转向电机[1]最大角度
+  turn_motor[0].mb.min_angle = &_tab_registers[54];//转向电机[1]最小角度
 }
 /**
   * @brief  读取保持寄存器至本机数据中
@@ -96,8 +96,8 @@ void modbus_slave_register_init(void)
 void modbus_slave_register_read(void)
 {
   //41D~60D 转向电机区域
-  turn_motor[0].max_angle = *mb_turn.max_angle;//转向电机[1]最大角度
-  turn_motor[0].min_angle = *mb_turn.min_angle;//转向电机[1]最小角度
+  turn_motor[0].max_angle = *turn_motor[0].mb.max_angle;//转向电机[1]最大角度
+  turn_motor[0].min_angle = *turn_motor[0].mb.min_angle;//转向电机[1]最小角度
 }
 /**********************************************************************************/
 /**
