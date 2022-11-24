@@ -16,6 +16,7 @@
 /* Private includes ----------------------------------------------------------*/
 #include <rtthread.h>
 #include "user_math.h"
+#include "motor.h"
 /*ulog include*/
 #define LOG_TAG              "Monitor"
 #define LOG_LVL              DBG_INFO
@@ -29,6 +30,22 @@
 /* Private variables ---------------------------------------------------------*/
 Beat_TypeDef debug_beat;
 /* Private function prototypes -----------------------------------------------*/
+/**
+ * @brief 心跳回调函数
+ * @param  value      
+ * @note   
+ */
+static void debug_beat_callback(uint8_t value)
+{
+  if(value == true)
+  {
+    USER_CLEAR_BIT(turn_motor[0].stop_state,BEAT_STOP); 
+  }
+  else
+  {
+    USER_SET_BIT(turn_motor[0].stop_state,BEAT_STOP); 
+  }
+}
 /**
   * @brief  调试串口心跳检测.
   * @param  None.
@@ -65,6 +82,7 @@ static void debug_beat_monitor(void)
       debug_beat.button  = 2;
     }
   }
+  debug_beat_callback(*debug_beat.flag);
 }
 /**
   * @brief  心跳检测.
