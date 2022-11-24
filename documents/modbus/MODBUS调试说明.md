@@ -80,7 +80,7 @@ enum enum_nodeState {
 | 05D  | 0X7265     | re         |
 | 06D  | 0X0000     | NUL (NULL) |
 
-![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\other\modbus\查看节点名称.png)
+![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\documents\modbus\查看节点名称.png)
 
 ### 1.5查看节点错误代码
 
@@ -101,7 +101,7 @@ typedef enum
 
 其余错误代码为EMCY错误代码。
 
-![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\other\modbus\EMCY错误代码.png)
+![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\documents\modbus\EMCY错误代码.png)
 
 | 寄存器种类 | 地址    | 数据类型 | 参数范围 | 默认值 | 备注             |
 | ---------- | ------- | -------- | -------- | ------ | ---------------- |
@@ -110,11 +110,11 @@ typedef enum
 
 - 例如:节点2心跳错误，错误代码为0X8130,查看EMCY错误代码为**节点守护错误**.
 
-![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\other\modbus\节点心跳错误.png)
+![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\documents\modbus\节点心跳错误.png)
 
 - 例如:节点2配置错误，错误代码为0X0002，查看枚举为**配置回复未响应，节点字典出错**.
 
-![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\other\modbus\节点配置错误.png)
+![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\documents\modbus\节点配置错误.png)
 
 - 节点具体错误:MEF：厂商自定义的错误代码.
 
@@ -206,7 +206,7 @@ typedef enum
 
 - 原点偏移值:单位:PUU [注意:只是把原点偏移值点当为0坐标点，并不会运动到0坐标点处]
 
-![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\other\modbus\PUU.png)
+![](C:\Users\Administrator\Desktop\STM32F4_RTT_v5.0\documents\modbus\PUU.png)
 
 - 回原方式: 范围:0 ~ 35
 
@@ -555,21 +555,44 @@ typedef enum
 - 对保持寄存器地址31D~32D写入当前系统的时间戳，已保持时间同步与保证系统日志的有效性。
 - 时间1秒发送一次，以保证时间准确性。
 - 写入时间将会更改系统的RTC时间设置，已调整系统日志的时间，保证日志准确性。
+- 注意:年输入例如2022年。请勿输入两位数。月输入1~12
 
-| 保持寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注 |
-| -------------- | -------- | -------- | ------ | ---- |
-| 31D            | uint16   | 无       | 0      | 年   |
-| 32D            | uint16   | 无       | 0      | 月   |
-| 33D            | uint16   | 无       | 0      | 日   |
-| 34D            | uint16   | 无       | 0      | 时   |
-| 35D            | uint16   | 无       | 0      | 分   |
-| 36D            | uint16   | 无       | 0      | 秒   |
+| 保持寄存器地址 | 数据类型 | 参数范围  | 默认值 | 备注 |
+| -------------- | -------- | --------- | ------ | ---- |
+| 31D            | uint16   | 1900~9999 | 0      | 年   |
+| 32D            | uint16   | 1~12      | 0      | 月   |
+| 33D            | uint16   | 1~31      | 0      | 日   |
+| 34D            | uint16   | 0~24      | 0      | 时   |
+| 35D            | uint16   | 0~60      | 0      | 分   |
+| 36D            | uint16   | 0~60      | 0      | 秒   |
+
+- 详细格式如下
+
+```c
+  /* update date. */
+  tm_new.tm_year  = *mb_tm.year - 1900;//years since 1900
+  tm_new.tm_mon   = *mb_tm.mon  - 1;   //tm_mon: 0~11
+  tm_new.tm_mday  = *mb_tm.mday;
+  /* update time. */
+  tm_new.tm_hour = *mb_tm.hour;
+  tm_new.tm_min  = *mb_tm.min;
+  tm_new.tm_sec  = *mb_tm.sec;
+```
+
+- 例如：
+
+```shell
+num: 31|hold: 2022#num: 32|hold:   11#num: 33|hold:   24#num: 34|hold:   16#
+num: 35|hold:    3#num: 36|hold:   19
+
+即 2022年11月24日16时3分19秒
+
+```
 
 ### 4. 2 心跳设置
 
-- 上位机对1秒对保持寄存器地址37D写入心跳状态
-- 心跳状态写入如下，已通知单片机是否可以进行操作
-- 单片机本地2秒清零一次心跳值，若下次清零前，没有进行赋值，则心跳同步失败。
+- 上位机对0.5秒对保持寄存器地址37D写入心跳状态
+- 心跳状态写入如下，已通知单片机是否可以进行操作。
 
 ```c
 /* The nodes states 
@@ -591,14 +614,15 @@ enum enum_nodeState {
 };
 ```
 
-
-
 | 保持寄存器地址 | 数据类型 | 参数范围 | 默认值 | 备注           |
 | -------------- | -------- | -------- | ------ | -------------- |
 | 37D            | uint16   | 无       | 0      | 上位机心跳写入 |
 | 38D            | uint16   | 无       | 0      | 调试口心跳写入 |
 | 39D            | uint16   | 无       | 0      | 保留           |
 | 40D            | uint16   | 无       | 0      | 保留           |
+
+- 最高位（即第15位）写1开启心跳监控，写0关闭心跳监控。
+- 若开始心跳监控，单片机本地1秒写入0X80一次心跳值，若下次写入前，没有进行赋值，则心跳同步失败。
 
 ##  附录
 
@@ -678,7 +702,14 @@ enum enum_nodeState {
 
 ### 离散输入线圈寄存器
 
-| 地址 | 默认值 | 备注 |      |
-| ---- | ------ | ---- | ---- |
-|      |        |      |      |
-|      |        |      |      |
+| 地址    | 默认值 | 备注         |
+| ------- | ------ | ------------ |
+| 01D     | 0X00   | 心跳报警标志 |
+| 02D~05D | 0X00   | 心跳保留区域 |
+|         |        |              |
+|         |        |              |
+|         |        |              |
+|         |        |              |
+|         |        |              |
+|         |        |              |
+|         |        |              |

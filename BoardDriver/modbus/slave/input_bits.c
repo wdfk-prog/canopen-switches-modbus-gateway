@@ -33,9 +33,9 @@ static uint8_t _tab_input_bits[MODBUS_BIT_MAX_NUM];
 */
 void modbus_slave_input_bits_default(void)
 {
-  //01D~04D转向电机区域
-  _tab_input_bits[1] = 0;//转向电机[1]角度超出范围标志
-  //06D~10D心跳报警区域
+  //01D~04D心跳报警区域
+  //06D~10D转向电机区域
+  _tab_input_bits[6] = 0;//转向电机[1]角度超出范围标志
 }
 /**
   * @brief  离散输入寄存器初始化
@@ -45,10 +45,10 @@ void modbus_slave_input_bits_default(void)
 */
 void modbus_slave_input_bits_init(void)
 {
-  //01D~04D转向电机区域
-  turn_motor[0].over_range = &_tab_input_bits[1];
-  //06D~10D心跳报警区域
-  debug_beat.flag = &_tab_input_bits[7];
+  //01D~04D心跳报警区域
+  debug_beat.flag = &_tab_input_bits[1];
+  //06D~10D转向电机区域
+  turn_motor[0].over_range = &_tab_input_bits[6];
 }
 /**
   * @brief  写入本机数据至离散输入寄存器中
