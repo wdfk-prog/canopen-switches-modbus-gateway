@@ -269,17 +269,21 @@ UNS8 motor_profile_position(int32_t position,float speed,bool abs_rel,bool immed
 
   FAILED_EXIT(Write_SLAVE_control_word(nodeId,value));
 
-  *Statusword_Node[nodeId - 2].map_val = 0;//清除本地数据
-  if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
+  if(immediately == false)
   {
-    LOG_W("Motor runing time out");
-    return 0XFE;
+    *Statusword_Node[nodeId - 2].map_val = 0;//清除本地数据
+    if(block_query_BIT_change(Statusword_Node[nodeId - 2].map_val,TARGET_REACHED,MAX_WAIT_TIME,1) != 0x00)
+    {
+      LOG_W("Motor runing time out");
+      return 0XFE;
+    }
+    else
+    {
+      LOG_D("Completion of motor movement");
+      return 0X00;
+    }
   }
-  else
-  {
-    LOG_D("Completion of motor movement");
-    return 0X00;
-  }
+  return 0X00;
 }
 /**
   * @brief  控制电机以插补位置模式运动
