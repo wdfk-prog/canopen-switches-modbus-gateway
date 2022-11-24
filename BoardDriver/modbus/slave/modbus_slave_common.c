@@ -33,22 +33,25 @@ modbus_turn   mb_turn;
 static rt_mutex_t modbus_mutex = RT_NULL;
 /* Private function prototypes -----------------------------------------------*/
 //从机初始化
+extern int mbkey_init(void);
 extern int modbus_slave1_init(void);
 extern int modbus_slave2_init(void);
-extern int mbkey_init(void);
 //从机默认值
-extern int modbus_slave_register_default(void);
-extern int modbus_slave_input_register_default(void);
-extern int modbus_slave_bits_default(void);
-extern int modbus_slave_input_bits_default(void);
+extern void modbus_slave_register_default(void);
+extern void modbus_slave_input_register_default(void);
+extern void modbus_slave_bits_default(void);
+extern void modbus_slave_input_bits_default(void);
 //从机挂钩
-extern int modbus_slave_register_init(void);
-extern int modbus_slave_input_bits_init(void);
+extern void modbus_slave_register_init(void);
+extern void modbus_slave_input_register_init(void);
+extern void modbus_slave_bits_init(void);
+extern void modbus_slave_input_bits_init(void);
 //从机写入
 extern void modbus_slave_input_register_write(void);
 extern void modbus_slave_input_bits_write(void);
 //从机读取
 extern void modbus_slave_register_read(void);
+extern void modbus_slave_bits_read(void);
 /**
   * @brief  modbus初始化
   * @param  None
@@ -57,14 +60,17 @@ extern void modbus_slave_register_read(void);
 */
 int modbus_init(void)
 {
+  //写入寄存器默认参数
   modbus_slave_register_default();
   modbus_slave_input_register_default();
   modbus_slave_bits_default();
   modbus_slave_input_bits_default();
-
+  //寄存器挂钩地址
   modbus_slave_register_init();
+  modbus_slave_input_register_init();
+  modbus_slave_bits_init();
   modbus_slave_input_bits_init();
-
+  //初始化驱动
   modbus_mutex = rt_mutex_create("modbus",RT_IPC_FLAG_PRIO);
   modbus_slave1_init();
   modbus_slave2_init();
@@ -111,7 +117,8 @@ void modbus_slave_rw(void)
     modbus_slave_input_bits_write();
     //读取寄存器至本机数据
     modbus_slave_register_read();
-
+    modbus_slave_bits_read();
+    //读写提示
     HAL_GPIO_TogglePin(LED1_GPIO_Port,LED1_Pin);
 }
 /**

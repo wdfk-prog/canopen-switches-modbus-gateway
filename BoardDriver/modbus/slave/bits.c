@@ -26,16 +26,35 @@ static uint8_t _tab_bits[MODBUS_BIT_MAX_NUM];
 /**
   * @brief  写入线圈寄存器默认值
   * @param  None
-  * @retval RT_EOK
+  * @retval None
   * @note   None
 */
-int modbus_slave_bits_default(void)
+void modbus_slave_bits_default(void)
 {
   _tab_bits[1] = 0;  //电机控制使能
   _tab_bits[2] = 1;  //电机控制禁用
   //调试保留区域
   _tab_bits[11] = 0;  //转向电机使能
-  return RT_EOK;
+}
+/**
+  * @brief  线圈寄存器初始化
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_slave_bits_init(void)
+{
+
+}
+/**
+  * @brief  读取线圈寄存器至本机数据中
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+void modbus_slave_bits_read(void)
+{
+
 }
 /**
  * @brief Get the map buf object

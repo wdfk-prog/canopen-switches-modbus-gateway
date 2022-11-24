@@ -36,9 +36,6 @@ typedef enum
   VBATT_STOP    , //电压过低报警      0X80
   BEAT_STOP    ,  //心跳异常          0X100
 }Stop_Code;
-
-#define stop_type uint16_t
-
 /**
  * @brief 电机配置结构体
  * @note  numerator:  运动一圈所需脉冲数
@@ -57,7 +54,7 @@ typedef struct
 {
   uint8_t       nodeID;         //电机节点ID
   uint8_t*      over_range;     //角度超出范围标志
-  stop_type     stop_state;     //急停标志
+  uint16_t*     stop_state;     //急停标志
   int16_t       max_angle;      //最大角度
   int16_t       min_angle;      //最小角度
   float         last;           //上一次角度

@@ -13,7 +13,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
+#include "main.h"
 #include "master402_canopen.h"
+#include "filesystem.h"
 #include "motor_control.h"
 /* Private typedef -----------------------------------------------------------*/
 
@@ -30,7 +32,7 @@ static uint16_t _tab_input_registers[MODBUS_REG_MAX_NUM];
   * @retval int
   * @note   None
 */
-int modbus_slave_input_register_default(void)
+void modbus_slave_input_register_default(void)
 {
   //01D~10D节点参数区域
   _tab_input_registers[1]  = MAX_NODE_COUNT - 1;    //节点数量
@@ -64,7 +66,20 @@ int modbus_slave_input_register_default(void)
   _tab_input_registers[35] =  HAL_GetHalVersion() >> 16;
   _tab_input_registers[38] =  boot_count_read();    //复位次数
   //41D~60D转向电机区域
-  return RT_EOK;
+}
+/**
+  * @brief  输入寄存器初始化
+  * @param  None
+  * @retval int
+  * @note   None
+*/
+void modbus_slave_input_register_init(void)
+{
+  //01D~10D节点参数区域
+  //11D~20D电机参数区域
+  //21D~40D芯片参数区域
+  //41D~60D 转向电机区域
+  //turn_motor[0].stop_state = &_tab_input_registers[53];
 }
 /**
   * @brief  写入本机数据至输入寄存器中
@@ -91,14 +106,13 @@ void modbus_slave_input_register_write(void)
   motor_get_position((INTEGER32 *)&_tab_input_registers[13],nodeID);//当前位置
   motor_get_velocity((INTEGER32 *)&_tab_input_registers[15],nodeID);//当前速度 单位 0.1RPM
   //21D~40D芯片参数区域
-  _tab_input_registers[36] =  rt_tick_get_millisecond();
-  _tab_input_registers[37] =  rt_tick_get_millisecond() >> 16; //芯片运行时间
-  _tab_input_registers[39] =  (uint16_t)(now_time - last_time);//modbus通信周期 单位ms
+  _tab_input_registers[36] =  now_time;
+  _tab_input_registers[37] =  now_time >> 16;                   //芯片运行时间
+  _tab_input_registers[39] =  (uint16_t)(now_time - last_time); //modbus通信周期 单位ms
   //41D~60D 转向电机区域
   _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;        //转向电机角度反馈
   _tab_input_registers[42] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
   motor_get_velocity((INTEGER32 *)&_tab_input_registers[49],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
-  
 }
 /**
   * @brief  获取MODBUS输入寄存器数据

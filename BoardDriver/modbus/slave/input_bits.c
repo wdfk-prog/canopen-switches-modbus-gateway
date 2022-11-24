@@ -26,34 +26,32 @@
 static uint8_t _tab_input_bits[MODBUS_BIT_MAX_NUM];
 /* Private function prototypes -----------------------------------------------*/
 /**
-  * @brief  写入输入寄存器默认值
+  * @brief  写入离散输入寄存器默认值
   * @param  None
   * @retval int
   * @note   None
 */
-int modbus_slave_input_bits_default(void)
+void modbus_slave_input_bits_default(void)
 {
   //01D~04D转向电机区域
   _tab_input_bits[1] = 0;//转向电机[1]角度超出范围标志
   //06D~10D心跳报警区域
-  return RT_EOK;
 }
 /**
-  * @brief  输入寄存器初始化
+  * @brief  离散输入寄存器初始化
   * @param  None
   * @retval int
   * @note   None
 */
-int modbus_slave_input_bits_init(void)
+void modbus_slave_input_bits_init(void)
 {
   //01D~04D转向电机区域
   turn_motor[0].over_range = &_tab_input_bits[1];
   //06D~10D心跳报警区域
   debug_beat.flag = &_tab_input_bits[7];
-  return RT_EOK;
 }
 /**
-  * @brief  写入本机数据至输入寄存器中
+  * @brief  写入本机数据至离散输入寄存器中
   * @param  None
   * @retval None
   * @note   None

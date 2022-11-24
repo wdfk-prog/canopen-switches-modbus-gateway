@@ -39,11 +39,11 @@ static void debug_beat_callback(uint8_t value)
 {
   if(value == true)
   {
-    USER_CLEAR_BIT(turn_motor[0].stop_state,BEAT_STOP);
+    USER_CLEAR_BIT(*turn_motor[0].stop_state,BEAT_STOP);
   }
   else
   {
-    USER_SET_BIT(turn_motor[0].stop_state,BEAT_STOP); 
+    USER_SET_BIT(*turn_motor[0].stop_state,BEAT_STOP); 
   }
 }
 /**

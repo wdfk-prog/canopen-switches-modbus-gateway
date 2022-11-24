@@ -27,11 +27,6 @@ extern "C" {
 #include <string.h>
 #include <stdbool.h>
 #include "rtthread.h"
-
-#include "main.h"
-#include "filesystem.h"
-
-#include "motor.h"
 /* Exported types ------------------------------------------------------------*/
 /**
  * @brief 串口调试结构体

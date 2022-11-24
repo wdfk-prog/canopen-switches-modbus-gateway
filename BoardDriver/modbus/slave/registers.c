@@ -31,7 +31,7 @@ static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
   * @retval int
   * @note   None
 */
-int modbus_slave_register_default(void)
+void modbus_slave_register_default(void)
 {
   //节点参数区域
   _tab_registers[1]   = 1;                            //节点ID
@@ -49,7 +49,6 @@ int modbus_slave_register_default(void)
   _tab_registers[49] = TURN_MOTOR_SPEED_DEFAULT;    //转向电机速度输入
   _tab_registers[53] = TURN_MOTOR_MAX_ANGLE_DEFAULT;//转向电机最大角度
   _tab_registers[54] = TURN_MOTOR_MIN_ANGLE_DEFAULT;//转向电机最小角度
-  return RT_EOK;
 }
 /**
   * @brief  保持寄存器初始化
@@ -57,7 +56,7 @@ int modbus_slave_register_default(void)
   * @retval int
   * @note   None
 */
-int modbus_slave_register_init(void)
+void modbus_slave_register_init(void)
 {
   //节点参数区域
   mb_can.nodeID       = &_tab_registers[1];   //节点ID
@@ -87,7 +86,6 @@ int modbus_slave_register_init(void)
   mb_turn.speed     = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
   mb_turn.max_angle = &_tab_registers[53];//转向电机[1]最大角度
   mb_turn.min_angle = &_tab_registers[54];//转向电机[1]最小角度
-  return RT_EOK;
 }
 /**
   * @brief  读取保持寄存器至本机数据中
