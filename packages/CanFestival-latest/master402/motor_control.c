@@ -21,7 +21,7 @@
 #include <stdint.h>
 #ifdef RT_USING_FINSH
 #include <finsh.h>
-#endif
+#endif /*RT_USING_FINSH*/
 
 #include "canfestival.h"
 #include "timers_driver.h"
@@ -751,4 +751,4 @@ static void cmd_motor(uint8_t argc, char **argv)
     }
 }
 MSH_CMD_EXPORT_ALIAS(cmd_motor,motor,motor command.);
-#endif
+#endif /*RT_USING_MSH*/

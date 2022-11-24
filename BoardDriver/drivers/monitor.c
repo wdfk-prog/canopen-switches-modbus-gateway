@@ -39,7 +39,7 @@ static void debug_beat_callback(uint8_t value)
 {
   if(value == true)
   {
-    USER_CLEAR_BIT(turn_motor[0].stop_state,BEAT_STOP); 
+    USER_CLEAR_BIT(turn_motor[0].stop_state,BEAT_STOP);
   }
   else
   {
@@ -119,3 +119,18 @@ int monitor_init(void)
   }
   return RT_EOK;
 }
+#ifdef RT_USING_MSH
+/**
+  * @brief  Í£Ö¹´úÂë²éÑ¯
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+
+int motor_stopcode_get(void)
+{
+  rt_kprintf(   "Turn motor stop code is 0X%04X\n"  ,turn_motor[0].stop_state);
+  return RT_EOK;
+}
+MSH_CMD_EXPORT(motor_stopcode_get,motor stop code get);
+#endif /*RT_USING_MSH*/

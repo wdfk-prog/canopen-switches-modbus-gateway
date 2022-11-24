@@ -328,4 +328,4 @@ static void cmd_log_file_backend(uint8_t argc, char **argv)
     }
 }
 MSH_CMD_EXPORT_ALIAS(cmd_log_file_backend,ulog_be_cmd,ulog file cmd);
-#endif
+#endif /*RT_USING_MSH*/

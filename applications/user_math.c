@@ -57,14 +57,14 @@ float PID_Cal(position_PID *pid, float NowValue, float AimValue)
     pid->Integral += pid->I * iError;	            //位置式PID积分项累加
     pid->Integral = pid->Integral > pid->IntegralMax?pid->IntegralMax:pid->Integral;  //积分项上限幅
     pid->Integral = pid->Integral <-pid->IntegralMax?-pid->IntegralMax:pid->Integral; //积分项下限幅
-#endif		
+#endif /*PID_INTEGRAL_ON*/
 	
     Output = pid->P * iError                        //比例P            
            + pid->D * (iError - pid->Last_Error);   //微分D
 	
 #ifdef 	PID_INTEGRAL_ON		
     Output += pid->Integral;                        //积分I
-#endif	
+#endif /*PID_INTEGRAL_ON*/
  
     Output = Output > pid->OutputMax?pid->OutputMax:Output;  //控制输出上限幅
     Output = Output <-pid->OutputMax?-pid->OutputMax:Output; //控制输出下限幅

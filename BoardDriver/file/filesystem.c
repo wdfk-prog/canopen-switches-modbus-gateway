@@ -109,7 +109,7 @@ void rtc_time_write(void)
   struct fdb_blob blob; 
   get_timestamp(&rtc_time);
   fdb_kv_set_blob(&mb_param, "rtc_time", fdb_blob_make(&blob, &rtc_time, sizeof(rtc_time)));
-#endif
+#endif /*(FLASHDB_FILE_ENABLE == 1)*/
 }
 /**
  * @brief  rtc_time_read
@@ -135,7 +135,7 @@ time_t rtc_time_read(void)
   }
 #else
   return 0;
-#endif
+#endif /*(FLASHDB_FILE_ENABLE == 1)*/
 }
 /**
  * @brief 复位次数读取
@@ -272,11 +272,11 @@ static int filesystem_init(void)
   sys_log_file_backend_init();
   extern void motion_log_file_backend_init(void);
   motion_log_file_backend_init();
-#endif
+#endif /*(OUT_FILE_ENABLE == 1)*/
 #if (FLASHDB_FILE_ENABLE == 1)
   /*数据库初始化*/
   flash_kvdb_init();
-#endif
+#endif /*(FLASHDB_FILE_ENABLE == 1)*/
   ulog_e("","\n--------------------------------FILESYSTEM----------------------------------");
   return RT_EOK;
 }

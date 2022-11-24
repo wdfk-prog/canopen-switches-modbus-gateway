@@ -32,7 +32,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#endif
+#endif /*CUBE_ERROR*/
 #include "main.h"
 #include <rtconfig.h>
 /*ulog include*/
@@ -163,7 +163,7 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-#endif
+#endif /*CUBE_ERROR*/
 /**
   * @brief  ªÒ»°±‡“Î∞Ê±æ
   * @param  None

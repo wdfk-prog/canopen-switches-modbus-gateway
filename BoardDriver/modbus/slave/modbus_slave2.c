@@ -79,7 +79,7 @@ static rt_err_t uart_input(rt_device_t dev, rt_size_t size)
         rt_sem_release(_rx_sem);  
 #if (UART_DEBUG == 1)     
         cmd.size = size;
-#endif
+#endif /*(UART_DEBUG == 1) */
     }
     return RT_EOK;
 }
@@ -212,7 +212,7 @@ static void modbus_thread(void* p)
           rt_kprintf("\n");
           rt_memset(cmd.read_buf,0,AGILE_MODBUS_MAX_ADU_LENGTH);
       }
-#endif
+#endif /*(UART_DEBUG == 1) */
 
       int rc = agile_modbus_slave_handle(ctx, read_len, 0, agile_modbus_slave_util_callback, &_slave_util, NULL);
 
@@ -291,5 +291,5 @@ static void modbus_printf_2(int argc, char**argv)
     }
 }
 MSH_CMD_EXPORT_ALIAS(modbus_printf_2,modbus_printf_2,modbus_printf_2 [option]  --enter Enable or disable);
-#endif
-#endif
+#endif /*(UART_DEBUG == 1)  */
+#endif /*RT_USING_MSH*/

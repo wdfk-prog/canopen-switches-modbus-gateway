@@ -485,7 +485,7 @@ static void cmd_canopen_nmt(uint8_t argc, char **argv)
     }
 }
 MSH_CMD_EXPORT_ALIAS(cmd_canopen_nmt,canopen_nmt,canoepn nmt cmd.);
-#endif
+#endif /*RT_USING_MSH*/
 /***********************预操作状态函数**************************************************/
 /**
   * @brief  配置参数完成回调

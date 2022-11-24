@@ -64,7 +64,7 @@ static int set_finsh_irq(void)
   return ret;
 }
 INIT_COMPONENT_EXPORT(set_finsh_irq);
-#endif
+#endif /*FINSH_IRQ_PRIORITY*/
 /**
  * @brief  获取编译时间戳
  * @param  None.              
@@ -267,4 +267,4 @@ void HAL_PWR_PVDCallback(void)
       ulog_i("PVD","Voltage below 3.1V was detected");
   }
 }
-#endif
+#endif /*(PVD_ENABLE == 1)*/

@@ -444,4 +444,4 @@ static void modbus_set(int argc, char**argv)
   }
 }
 MSH_CMD_EXPORT_ALIAS(modbus_set,modbus_set,modbus_set <type|addr|num>);
-#endif
+#endif /*RT_USING_MSH*/

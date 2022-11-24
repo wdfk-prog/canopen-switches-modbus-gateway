@@ -98,6 +98,7 @@ void modbus_slave_input_register_write(void)
   _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;        //转向电机角度反馈
   _tab_input_registers[42] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
   motor_get_velocity((INTEGER32 *)&_tab_input_registers[49],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
+  
 }
 /**
   * @brief  获取MODBUS输入寄存器数据
