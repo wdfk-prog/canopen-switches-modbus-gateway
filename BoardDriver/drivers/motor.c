@@ -38,7 +38,7 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
   if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
-    
+//    ulog_w("turn","turn motor stop,code is %d",*p->stop_state);
     return 1;
   }
   else
@@ -53,8 +53,6 @@ static uint8_t motor_stop_priority(turn_motor_typeDef* p)
  */
 uint8_t turn_motor_enable(turn_motor_typeDef* p)
 {
-  if (motor_stop_priority(p))
-    return 0X01;
   return motor_on_profile_position(p->nodeID);
 }
 /**
@@ -66,8 +64,6 @@ uint8_t turn_motor_enable(turn_motor_typeDef* p)
  */
 uint8_t turn_motor_disable(turn_motor_typeDef* p)
 {
-  if (motor_stop_priority(p))
-    return 0X01;
   return motor_off(p->nodeID);
 }
 /**
@@ -79,8 +75,6 @@ uint8_t turn_motor_disable(turn_motor_typeDef* p)
  */
 uint8_t turn_motor_stop(turn_motor_typeDef* p)
 {
-  if (motor_stop_priority(p))
-    return 0X01;
   return 0;
 }
 /**
