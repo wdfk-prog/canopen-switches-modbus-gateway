@@ -37,13 +37,23 @@ Beat_TypeDef debug_beat;
  */
 static void debug_beat_callback(uint8_t value)
 {
+  static uint16_t err_cnt = 0;
   if(value == true)
   {
     USER_CLEAR_BIT(*turn_motor[0].stop_state,BEAT_STOP);
+    if(err_cnt)
+    {
+      LOG_I("Heartbeat communication recovery");
+    }
+    err_cnt = 0;
   }
   else
   {
     USER_SET_BIT(*turn_motor[0].stop_state,BEAT_STOP); 
+    if(!(++err_cnt % (5000 / BEAT_PERIOD_TIME)) && err_cnt != 0)
+    {
+      LOG_W("Abnormal heartbeat,cnt = %d",err_cnt);
+    }
   }
 }
 /**
