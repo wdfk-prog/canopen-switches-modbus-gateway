@@ -279,6 +279,22 @@ menu "Hardware Drivers Config"
                         bool "Enable PWM5 channel3"
                         default n
                 endif
+            menuconfig BSP_USING_PWM14
+                bool "Enable timer14 output PWM"
+                default n
+                if BSP_USING_PWM14
+                    config BSP_USING_PWM14_CH1
+                        bool "Enable PWM14 channel1"
+                        default n
+    
+                    config BSP_USING_PWM14_CH2
+                        bool "Enable PWM14 channel2"
+                        default n
+    
+                    config BSP_USING_PWM14_CH3
+                        bool "Enable PWM14 channel3"
+                        default n
+                endif
             endif
         menuconfig BSP_USING_PULSE_ENCODER
             bool "Enable PULSE ENCODER"
