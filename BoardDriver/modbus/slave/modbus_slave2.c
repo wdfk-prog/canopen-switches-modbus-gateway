@@ -134,7 +134,13 @@ static int serial_init(void)
     rt_device_set_rx_indicate(serial, uart_input);
     /* step5£º  open serial device */
     rt_device_open(serial, RT_DEVICE_FLAG_RX_NON_BLOCKING | RT_DEVICE_FLAG_TX_NON_BLOCKING);
-    rt_device_control(serial,RT_DEVICE_CTRL_SET_INT_PRIORITY,(void *)IRQ_PRIORITY);
+#ifdef IRQ_PRIORITY
+    struct stm32_uart *uart;
+    uart = rt_container_of(serial, struct stm32_uart, serial);
+    /* parameter check */
+    RT_ASSERT(uart != RT_NULL);
+    HAL_NVIC_SetPriority(uart->config->irq_type,IRQ_PRIORITY, 0);
+#endif    
 //    RS485_SLAVE_RX_EN();
     return RT_EOK;
 }
