@@ -49,15 +49,22 @@ void turn_motor_reentrant(turn_motor_typeDef* p)
 */
 static uint8_t turn_motor_stop_priority(turn_motor_typeDef* p)
 {
+  static uint16_t err_cnt = 0;
   if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
     turn_motor_reentrant(p);
-    ulog_w("turn","turn motor stop,code is 0X%4.4x",*p->stop_state);
+    if(!(++err_cnt % (5000 / 10)) && err_cnt != 0)
+    {
+      ulog_w("turn","turn motor stop,code is 0X%4.4x",*p->stop_state);
+    }
     return 1;
   }
   else
+  {
+    err_cnt = 0;
     return 0;
+  }
 }
 /**
  * @brief 转向电机使能
@@ -169,6 +176,9 @@ static float angle_range_judgment(turn_motor_typeDef *p,float angle)
  */
 uint8_t turn_motor_angle_control(float angle,float speed,turn_motor_typeDef* p)
 {
+  if (turn_motor_stop_priority(p))
+    return 0X01;
+
   int32_t dest_position = 0;//目标位置
   //角度换算
   angle = angle_conversion(angle);
@@ -208,14 +218,14 @@ float turn_motor_get_angle(turn_motor_typeDef* p)
 }
 /******************************行走电机函数**************************************/
 /**
-  * @brief  
+  * @brief  更新缓存
   * @param  None.
   * @retval None.
   * @note   
 */
 void walk_motor_reentrant(walk_motor_typeDef* p)
 {
-
+  *p->mb.speed = 0;
 }
 /**
   * @brief  行走电机急停优先级.
@@ -225,15 +235,21 @@ void walk_motor_reentrant(walk_motor_typeDef* p)
 */
 static uint8_t walk_motor_stop_priority(walk_motor_typeDef* p)
 {
+  static uint16_t err_cnt = 0;
   if(*p->stop_state != NO_STOP)
   {
     walk_motor_stop(p);
-    walk_motor_reentrant(p);
-    ulog_w("walk","walk motor stop,code is 0X%4.4x",*p->stop_state);
+    if(!(++err_cnt % (5000 / 10)) && err_cnt != 0)
+    {
+      ulog_w("walk","walk motor stop,code is 0X%4.4x",*p->stop_state);
+    }
     return 1;
   }
   else
+  {
+    err_cnt = 0;
     return 0;
+  }
 }
 /**
  * @brief 行走电机使能
@@ -266,7 +282,8 @@ uint8_t walk_motor_disable(walk_motor_typeDef* p)
  */
 uint8_t walk_motor_stop(walk_motor_typeDef* p)
 {
-  return 0;
+  walk_motor_reentrant(p);
+  return motor_profile_velocity(0,p->nodeID);
 }
 /**
  * @brief  行走电机开始运动控制
@@ -333,6 +350,8 @@ static float speed_range_judgment(walk_motor_typeDef *p,float input)
  */
 uint8_t walk_motor_speed_control(float speed,walk_motor_typeDef* p)
 {
+  if (walk_motor_stop_priority(p))
+    return 0X01;
   /*角度更新判断*/
   p->err  = speed - p->last;
   p->last = speed;
@@ -389,7 +408,7 @@ static void motor_init_thread(void * p)
     }
     if(event == 0)
     {
-      rt_kprintf("All the motors have been powered on and enabled\n");
+      ulog_i("motor","All the motors have been powered on and enabled\n");
       return;
     }
     rt_thread_mdelay(1);

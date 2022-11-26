@@ -308,10 +308,10 @@ static void key_walk0_control(mbkey_status *event)
   }
     break;
   case MBKEY_DISABLE: //松开处理事件
-    walk_motor_stop(p);
     break;
   case MBKEY_PRESS:   //松开到按下事件
     walk_motor_enable(p);
+    walk_motor_reentrant(p);
     break;
   case MBKEY_RAISE:   //按下到松开事件
     walk_motor_disable(p);
