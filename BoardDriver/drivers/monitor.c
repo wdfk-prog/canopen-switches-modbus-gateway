@@ -33,22 +33,22 @@ Beat_TypeDef debug_beat;
 bool beat_enable = true;  //心跳监控开关
 /* Private function prototypes -----------------------------------------------*/
 /**
- * @brief 心跳回调函数
- * @param  value      
- * @note   
+ * @brief   心跳回调函数
+ * @param  value:心跳异常标志
+ * @note   flag: 输出日志标志 true,输出一次心跳恢复;FALSE,输出一次心跳异常;
  */
 static void debug_beat_callback(uint8_t value)
 {
-  static uint16_t err_cnt = 0;
+  static bool flag = false;
   if(value == true)
   {
     USER_CLEAR_BIT(*turn_motor[0].stop_state,BEAT_STOP);
     USER_CLEAR_BIT(*walk_motor[0].stop_state,BEAT_STOP);
 
-    if(err_cnt == 1)
+    if(flag == true)
     {
-      LOG_I("Heartbeat communication recovery");
-      err_cnt = 0;
+      ulog_i("debug","Heartbeat communication recovery");
+      flag = false;
     }
   }
   else
@@ -56,10 +56,10 @@ static void debug_beat_callback(uint8_t value)
     USER_SET_BIT(*turn_motor[0].stop_state,BEAT_STOP); 
     USER_SET_BIT(*walk_motor[0].stop_state,BEAT_STOP); 
 
-    if(err_cnt == 0)
+    if(flag == false)
     {
-      err_cnt = 1;
-      LOG_W("Abnormal heartbeat");
+      flag = true;
+      ulog_w("debug","Abnormal heartbeat");
     }
   }
 }
@@ -67,13 +67,20 @@ static void debug_beat_callback(uint8_t value)
   * @brief  调试串口心跳检测.
   * @param  None.
   * @retval None.
-  * @note   01 06 01 F3 12 34 75 72
+  * @note   flag: 输出日志标志 true,输出一次心跳保护开启;FALSE,输出一次心跳保护关闭;
 */
 static void debug_beat_monitor(void)
 {
   uint16_t beat = *debug_beat.value;
+  static bool flag = false;
   if(USER_GET_BIT(beat,7) == true)
   {
+    if(flag == true)
+    {
+      ulog_i("debug","The heartbeat protection is enabled");
+      flag = false;
+    }
+
     beat = beat & 0X7F;//清除最高位
     if(beat != 0)
     {
@@ -92,6 +99,12 @@ static void debug_beat_monitor(void)
   }
   else
   {
+    if(flag == false)
+    {
+      ulog_i("debug","The heartbeat protection is disabled");
+      flag = true;
+    }
+
     *debug_beat.flag = true;
     if(debug_beat.button != 2)
     {
@@ -104,7 +117,7 @@ static void debug_beat_monitor(void)
   * @brief  心跳检测.
   * @param  None.
   * @retval None.
-  * @note   1.2s检查一次
+  * @note   1s检查一次
 */
 static void beat_monitor(void *p)
 {
