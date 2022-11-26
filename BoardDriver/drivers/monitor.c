@@ -17,6 +17,7 @@
 #include <rtthread.h>
 #include "user_math.h"
 #include "motor.h"
+#include <string.h>
 /*ulog include*/
 #define LOG_TAG              "Monitor"
 #define LOG_LVL              DBG_INFO
@@ -29,6 +30,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 Beat_TypeDef debug_beat;
+bool beat_enable = true;
 /* Private function prototypes -----------------------------------------------*/
 /**
  * @brief 心跳回调函数
@@ -102,7 +104,10 @@ static void debug_beat_monitor(void)
 */
 static void beat_monitor(void *p)
 {
-  debug_beat_monitor();
+  if(beat_enable)
+  {
+    debug_beat_monitor();
+  }
 }
 /**
   * @brief  监控函数初始化
@@ -131,13 +136,67 @@ int monitor_init(void)
 }
 #ifdef RT_USING_MSH
 /**
+  * @brief  心跳控制命令
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+
+int beat_cmd(uint8_t argc, char **argv)
+{
+#define BEAT_CMD_ON                    0
+#define BEAT_CMD_OFF                   1
+
+  size_t i = 0;
+
+  const char* help_info[] =
+  {
+    [BEAT_CMD_ON]             = "beat_cmd on  --beat on",
+    [BEAT_CMD_OFF]            = "beat_cmd off --beat off",
+  };
+
+  if (argc < 2)
+  {
+      rt_kprintf("Usage:\n");
+      for (i = 0; i < sizeof(help_info) / sizeof(char*); i++)
+      {
+          rt_kprintf("%s\n", help_info[i]);
+      }
+      rt_kprintf("\n");
+  }
+  else
+  {
+      const char *operator = argv[1];
+
+      if (!strcmp(operator, "on"))
+      {
+        beat_enable = true;
+      }
+      else if (!strcmp(operator, "off"))
+      {
+        beat_enable = false;
+      }
+      else
+      {
+          rt_kprintf("Usage:\n");
+          for (i = 0; i < sizeof(help_info) / sizeof(char*); i++)
+          {
+              rt_kprintf("%s\n", help_info[i]);
+          }
+          rt_kprintf("\n");
+      }
+  }
+  return RT_EOK;
+}
+MSH_CMD_EXPORT(beat_cmd,beat_cmd);
+/**
   * @brief  停止代码查询
   * @param  None
   * @retval None
   * @note   None
 */
 
-int motor_get_stopcode(void)
+int motor_get_stopcode(uint8_t argc, char **argv)
 {
   rt_kprintf("Turn motor stop code is 0X%04X\n"  ,*turn_motor[0].stop_state);
   return RT_EOK;
