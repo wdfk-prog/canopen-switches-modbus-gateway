@@ -5,7 +5,7 @@
 
 /* RT-Thread Kernel */
 
-#define RT_NAME_MAX 16
+#define RT_NAME_MAX 8
 #define RT_ALIGN_SIZE 4
 #define RT_THREAD_PRIORITY_32
 #define RT_THREAD_PRIORITY_MAX 32
@@ -315,7 +315,7 @@
 /* end of entertainment: terminal games and other interesting software packages */
 #define PKG_USING_CANFESTIVAL
 #define CANFESTIVAL_CAN_DEVICE_NAME "can1"
-#define CANFESTIVAL_TIMER_DEVICE_NAME "timer14"
+#define CANFESTIVAL_TIMER_DEVICE_NAME "timer13"
 #define CANFESTIVAL_RECV_THREAD_PRIO 1
 #define CANFESTIVAL_TIMER_THREAD_PRIO 2
 #define CANFESTIVAL_USING_EG_MASTER402
@@ -380,6 +380,7 @@
 #define BSP_USING_CAN
 #define BSP_USING_CAN1
 #define BSP_USING_TIM
+#define BSP_USING_TIM13
 #define BSP_USING_TIM14
 #define BSP_USING_ONCHIP_RTC
 #define BSP_RTC_USING_LSE
@@ -401,10 +402,6 @@
 
 #define CANFESTIVAL_USING_MASTER402
 /* end of CANFESTIVAL MASTER402 */
-
-/* FREEMODBUSV1.5.0 */
-
-/* end of FREEMODBUSV1.5.0 */
 /* end of User Driver Config */
 
 #endif

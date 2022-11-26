@@ -104,10 +104,16 @@ void Error_Handler(void);
 #define LED_GPIO_Port GPIOC
 #define SPI5_NSS_Pin GPIO_PIN_6
 #define SPI5_NSS_GPIO_Port GPIOF
+#define PROPORTIONAL_VALVE_Pin GPIO_PIN_7
+#define PROPORTIONAL_VALVE_GPIO_Port GPIOA
+#define SPILL_VALVE_Pin GPIO_PIN_11
+#define SPILL_VALVE_GPIO_Port GPIOD
 #define LED1_Pin GPIO_PIN_12
 #define LED1_GPIO_Port GPIOD
-#define debug_IO_Pin GPIO_PIN_12
-#define debug_IO_GPIO_Port GPIOC
+#define PUMP_Pin GPIO_PIN_3
+#define PUMP_GPIO_Port GPIOI
+#define DBG_Pin GPIO_PIN_12
+#define DBG_GPIO_Port GPIOC
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
