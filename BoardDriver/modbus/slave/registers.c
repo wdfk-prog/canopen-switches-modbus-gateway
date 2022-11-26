@@ -33,7 +33,7 @@ static uint16_t _tab_registers[MODBUS_REG_MAX_NUM];
 */
 void modbus_slave_register_default(void)
 {
-  //节点参数区域
+  //01D~10D 节点参数区域
   _tab_registers[1]   = 1;                            //节点ID
   //02D~10D CAN保留区域
   //11D~30D 电机参数区域
@@ -46,9 +46,13 @@ void modbus_slave_register_default(void)
   //17D~21D 电机参数区域
   //31D~40D心跳时间参数区域
   //41D~60D 转向电机区域
-  _tab_registers[49] = TURN_MOTOR_SPEED_DEFAULT;    //转向电机速度输入
-  _tab_registers[53] = TURN_MOTOR_MAX_ANGLE_DEFAULT;//转向电机最大角度
-  _tab_registers[54] = TURN_MOTOR_MIN_ANGLE_DEFAULT;//转向电机最小角度
+  _tab_registers[49] = TURN_MOTOR0_SPEED_DEFAULT;    //转向电机[0]速度输入 单位0.1RPM
+  _tab_registers[53] = TURN_MOTOR0_MAX_ANGLE_DEFAULT;//转向电机[0]最大角度
+  _tab_registers[54] = TURN_MOTOR0_MIN_ANGLE_DEFAULT;//转向电机[0]最小角度
+  //31D~40D 心跳时间参数区域
+  //41D~60D 转向电机区域
+  //61D~70D 行走电机区域
+  _tab_registers[65] = WALK_MOTOR0_MAX_SPEED_DEFAULT;//行走电机[0]最大速度 单位RPM
 }
 /**
   * @brief  保持寄存器初始化
@@ -58,7 +62,7 @@ void modbus_slave_register_default(void)
 */
 void modbus_slave_register_init(void)
 {
-  //节点参数区域
+  //01D~10D 节点参数区域
   mb_can.nodeID       = &_tab_registers[1];   //节点ID
   //02D~10D CAN保留区域
   //11D~30D 电机参数区域
@@ -69,7 +73,7 @@ void modbus_slave_register_init(void)
   mb_can.switch_speed = &_tab_registers[15];  //寻找原点开关速度 单位rpm
   mb_can.zero_speed   = &_tab_registers[16];  //寻找 Z脉冲速度   单位rpm
   //17D~21D 电机参数区域
-  //31D~40心跳时间参数区域
+  //31D~40D 心跳时间参数区域
   /* update date. */
   mb_tm.year        = &_tab_registers[31];
   mb_tm.mon         = &_tab_registers[32];
@@ -82,10 +86,13 @@ void modbus_slave_register_init(void)
   debug_beat.value  = &_tab_registers[38];  //调试串口心跳
   //41D~60D 转向电机区域
   turn_motor[0].mb.angle_l   = &_tab_registers[41];
-  turn_motor[0].mb.angle_h   = &_tab_registers[42];//转向电机[1]角度输入 单位:0.001°
-  turn_motor[0].mb.speed     = &_tab_registers[49];//转向电机[1]速度输入 单位:0.1RPM
-  turn_motor[0].mb.max_angle = &_tab_registers[53];//转向电机[1]最大角度
-  turn_motor[0].mb.min_angle = &_tab_registers[54];//转向电机[1]最小角度
+  turn_motor[0].mb.angle_h   = &_tab_registers[42];//转向电机[0]角度输入 单位:0.001°
+  turn_motor[0].mb.speed     = &_tab_registers[49];//转向电机[0]速度输入 单位:0.1RPM
+  turn_motor[0].mb.max_angle = &_tab_registers[53];//转向电机[0]最大角度
+  turn_motor[0].mb.min_angle = &_tab_registers[54];//转向电机[0]最小角度
+  //61D~70D 行走电机区域
+  walk_motor[0].mb.speed     = &_tab_registers[61];//行走电机[0]速度输入 单位:0.1RPM
+  walk_motor[0].mb.max_speed = &_tab_registers[65];//行走电机[0]最大速度 单位:RPM
 }
 /**
   * @brief  读取保持寄存器至本机数据中
@@ -95,9 +102,11 @@ void modbus_slave_register_init(void)
 */
 void modbus_slave_register_read(void)
 {
+  //01D~10D 节点参数区域
+  //11D~30D 电机参数区域
+  //31D~40D 心跳时间参数区域
   //41D~60D 转向电机区域
-  turn_motor[0].max_angle = *turn_motor[0].mb.max_angle;//转向电机[1]最大角度
-  turn_motor[0].min_angle = *turn_motor[0].mb.min_angle;//转向电机[1]最小角度
+  //61D~70D 行走电机区域
 }
 /**********************************************************************************/
 /**

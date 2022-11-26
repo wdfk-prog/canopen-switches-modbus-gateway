@@ -79,7 +79,9 @@ void modbus_slave_input_register_init(void)
   //11D~20D电机参数区域
   //21D~40D芯片参数区域
   //41D~60D 转向电机区域
-  turn_motor[0].stop_state = &_tab_input_registers[53];
+  turn_motor[0].stop_state = &_tab_input_registers[53]; //转向电机[0]停止代码
+  //61D~70D 行走电机区域
+  walk_motor[0].stop_state = &_tab_input_registers[65]; //行走电机[0]停止代码
 }
 /**
   * @brief  写入本机数据至输入寄存器中
@@ -110,9 +112,11 @@ void modbus_slave_input_register_write(void)
   _tab_input_registers[37] =  now_time >> 16;                   //芯片运行时间
   _tab_input_registers[39] =  (uint16_t)(now_time - last_time); //modbus通信周期 单位ms
   //41D~60D 转向电机区域
-  _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;        //转向电机角度反馈
+  _tab_input_registers[41] =  turn_motor_get_angle(&turn_motor[0]) * 1000;        //转向电机[0]角度反馈
   _tab_input_registers[42] =  (int32_t)(turn_motor_get_angle(&turn_motor[0]) * 1000) >> 16;
-  motor_get_velocity((INTEGER32 *)&_tab_input_registers[49],turn_motor[0].nodeID);//当前速度 单位 0.1RPM
+  motor_get_velocity((INTEGER32 *)&_tab_input_registers[49],turn_motor[0].nodeID);//转向电机[0]当前速度 单位 0.1RPM
+  //61D~70D 行走电机区域
+  _tab_input_registers[61] =  walk_motor_get_speed(&walk_motor[0]) * 10;        //行走电机[0] 单位:0.1RPM
 }
 /**
   * @brief  获取MODBUS输入寄存器数据

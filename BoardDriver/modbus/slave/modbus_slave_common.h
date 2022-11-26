@@ -112,9 +112,11 @@ extern uint8_t modbus_get_input_bits(uint16_t index,uint16_t sub_index);
 #define MB_DEBUG_MOTOR_ENABLE_RESET   modbus_set_bits(0,1,0) //电机使能控制置零
 #define MB_DEBUG_MOTOR_DISABLE_SET    modbus_set_bits(0,2,1) //电机禁用控制置一
 #define MB_DEBUG_MOTOR_DISABLE_RESET  modbus_set_bits(0,2,0) //电机禁用控制置零
-//11D
-#define MB_TURN_SET                   modbus_set_bits(0,11,1) //转向电机使能
-#define MB_TURN_RESET                 modbus_set_bits(0,11,0) //转向电机禁用
+//11D~20d 电机区域
+#define MB_TURN1_SET                  modbus_set_bits(0,11,1) //转向电机[1]使能
+#define MB_TURN1_RESET                modbus_set_bits(0,11,0) //转向电机[1]禁用
+#define MB_WALK1_SET                  modbus_set_bits(0,15,1) //行走电机[1]使能
+#define MB_WALK1_RESET                modbus_set_bits(0,15,0) //行走电机[1]禁用
 
 #ifdef __cplusplus
 }

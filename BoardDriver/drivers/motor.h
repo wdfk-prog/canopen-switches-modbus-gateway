@@ -72,24 +72,57 @@ typedef struct
   motor_config  cfg;            //电机配置
   modbus_turn   mb;             //modbus挂钩指针
 }turn_motor_typeDef;
+/**
+ * @brief MOBDUS-行走电机结构体
+ */
+typedef struct
+{
+  uint16_t* speed;
+  uint16_t* max_speed;
+}modbus_walk;
+/**
+ * @brief 行走电机结构体
+ * @note  over_range:true 超出范围
+ */
+typedef struct
+{
+  uint8_t       nodeID;         //电机节点ID
+  uint8_t*      over_range;     //角度超出范围标志
+  uint16_t*     stop_state;     //急停标志
+  int16_t       max_speed;      //最大速度
+  int16_t       min_speed;      //最小速度
+  float         last;           //上一次速度
+  float         err;            //速度更新误差
+  motor_config  cfg;            //电机配置
+  modbus_walk   mb;             //modbus挂钩指针
+}walk_motor_typeDef;
 /* Exported constants --------------------------------------------------------*/
 #define TURN_MOTOR_NUM 1//转向电机电机数量
 /* Exported macro ------------------------------------------------------------*/
-#define TURN_MOTOR_SPEED_DEFAULT 60*10    //0.1RPM
-#define TURN_MOTOR_MAX_ANGLE_DEFAULT 90 
-#define TURN_MOTOR_MIN_ANGLE_DEFAULT -90
+//转向电机
+#define TURN_MOTOR0_SPEED_DEFAULT 60*10     //转向电机[0]默认速度 单位0.1RPM
+#define TURN_MOTOR0_MAX_ANGLE_DEFAULT 90    //转向电机[0]默认最大角度
+#define TURN_MOTOR0_MIN_ANGLE_DEFAULT -90   //转向电机[0]默认最小角度
+//行走电机
+#define WALK_MOTOR0_MAX_SPEED_DEFAULT 2000  //行走电机[0]默认最大速度 单位0.1RPM 
 /* Exported variables ---------------------------------------------------------*/
 extern turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
+extern walk_motor_typeDef walk_motor[TURN_MOTOR_NUM];
 /* Exported functions prototypes ---------------------------------------------*/
+//转向电机
 extern uint8_t turn_motor_enable(turn_motor_typeDef* p);
 extern uint8_t turn_motor_disable(turn_motor_typeDef* p);
 extern uint8_t turn_motor_stop(turn_motor_typeDef* p);
 extern uint8_t turn_motor_angle_control(float angle,float speed,turn_motor_typeDef* p);
-extern void turn_motor_reentrant_setangle(turn_motor_typeDef* p);
+extern void turn_motor_reentrant(turn_motor_typeDef* p);
 extern float turn_motor_get_angle(turn_motor_typeDef* p);
-extern bool turn_motor_get_over_range(turn_motor_typeDef* p);
-extern void turn_motor_set_angle_range(int16_t max,int16_t min,turn_motor_typeDef* p);
-
+//行走电机
+extern uint8_t walk_motor_enable(walk_motor_typeDef* p);
+extern uint8_t walk_motor_disable(walk_motor_typeDef* p);
+extern uint8_t walk_motor_stop(walk_motor_typeDef* p);
+extern uint8_t walk_motor_speed_control(float speed,walk_motor_typeDef* p);
+extern void walk_motor_reentrant(walk_motor_typeDef* p);
+extern float walk_motor_get_speed(walk_motor_typeDef* p);
 #ifdef __cplusplus
 }
 #endif

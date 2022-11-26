@@ -31,6 +31,7 @@ typedef enum
 	KEY_MOTOR_ENABLE,                //电机使能
   KEY_MOTOR_DISABLE,               //电机使能
   KEY_TURN_CONTROL,                //转向电机控制
+  KEY_WALK_CONTROL,                //行走电机控制
   MBKEY_NUM,// 必须要有的记录按钮数量，必须在最后
 }mbkey_list;
 /** 
@@ -239,12 +240,12 @@ static void key_motor_disable(mbkey_status *event)
   }
 }
 /** 
-  * @brief  转向电机控制
+  * @brief  转向电机[0]控制
   * @param  event 
   * @note   写入1使能电机后，可进行电机控制。
   *         写入0禁用电机，禁用电机将关闭电机使能状态。
   */ 
-static void key_turn_control(mbkey_status *event)
+static void key_turn0_control(mbkey_status *event)
 {
   turn_motor_typeDef *p = &turn_motor[0];
 
@@ -252,7 +253,7 @@ static void key_turn_control(mbkey_status *event)
   {
     return;
   }
-  if(getNodeState(OD_Data,turn_motor[0].nodeID) != Operational)
+  if(getNodeState(OD_Data,p->nodeID) != Operational)
   {
     return;
   }
@@ -261,8 +262,8 @@ static void key_turn_control(mbkey_status *event)
   {
   case MBKEY_ENABLE:  //按下处理事件
   {
-    int32_t angle = MAKEINT_32(*turn_motor[0].mb.angle_h,*turn_motor[0].mb.angle_l) / 1000.0f;//单位:0.001°
-    float   speed = *turn_motor[0].mb.speed / 10;//单位:0.1RPM
+    int32_t angle = MAKEINT_32(*p->mb.angle_h,*p->mb.angle_l) / 1000.0f;//单位:0.001°
+    float   speed = *p->mb.speed / 10;//单位:0.1RPM
     turn_motor_angle_control(angle,speed,p);
   }
     break;
@@ -272,10 +273,48 @@ static void key_turn_control(mbkey_status *event)
   case MBKEY_PRESS:   //松开到按下事件
     turn_motor_enable(p);
     //更新缓存,保证初始与进入时角度准确
-    turn_motor_reentrant_setangle(p);
+    turn_motor_reentrant(p);
     break;
   case MBKEY_RAISE:   //按下到松开事件
     turn_motor_disable(p);
+    break;    
+  }
+}
+/** 
+  * @brief  行走电机[0]控制
+  * @param  event 
+  * @note   写入1使能电机后，可进行电机控制。
+  *         写入0禁用电机，禁用电机将关闭电机使能状态。
+  */ 
+static void key_walk0_control(mbkey_status *event)
+{
+  walk_motor_typeDef *p = &walk_motor[0];
+
+  if(p->nodeID  == MASTER_NODEID || p->nodeID  > MAX_NODE_COUNT || p->nodeID  == 0)
+  {
+    return;
+  }
+  if(getNodeState(OD_Data,p->nodeID) != Operational)
+  {
+    return;
+  }
+
+  switch(*event)
+  {
+  case MBKEY_ENABLE:  //按下处理事件
+  { 
+    float   speed = *p->mb.speed / 10;//单位:0.1RPM
+    walk_motor_speed_control(speed,p);
+  }
+    break;
+  case MBKEY_DISABLE: //松开处理事件
+    walk_motor_stop(p);
+    break;
+  case MBKEY_PRESS:   //松开到按下事件
+    walk_motor_enable(p);
+    break;
+  case MBKEY_RAISE:   //按下到松开事件
+    walk_motor_disable(p);
     break;    
   }
 }
@@ -292,7 +331,8 @@ static void (*operation[MBKEY_NUM])(mbkey_status *event) =
 {
   key_motor_enable,
   key_motor_disable,
-  key_turn_control,
+  key_turn0_control,
+  key_walk0_control,
 };
 /** 
   * @brief  获取io电平的函数
@@ -468,7 +508,8 @@ int mbkey_init(void)
     //激活电平 索引 子索引
     {PULLUP,    0,    1},  //电机使能
     {PULLUP,    0,    2},  //电机禁用
-    {PULLUP,    0,    11}, //转向电机控制
+    {PULLUP,    0,    11}, //转向电机[1]控制
+    {PULLUP,    0,    15}, //行走电机[1]控制
   };
   creat_key(init);// 调用按键初始化函数
   /* 创建 MODBUS线程*/

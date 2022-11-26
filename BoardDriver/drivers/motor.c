@@ -26,6 +26,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
+walk_motor_typeDef walk_motor[TURN_MOTOR_NUM];
 /******************************行走电机函数**************************************/
 /**
   * @brief  重入角度定位角度设置
@@ -33,7 +34,7 @@ turn_motor_typeDef turn_motor[TURN_MOTOR_NUM];
   * @retval None.
   * @note   保证再次进入角度定位不会立刻进行定位。
 */
-void turn_motor_reentrant_setangle(turn_motor_typeDef* p)
+void turn_motor_reentrant(turn_motor_typeDef* p)
 {
     //更新缓存,保证初始与进入时角度准确
     p->last = turn_motor_get_angle(p);
@@ -46,12 +47,12 @@ void turn_motor_reentrant_setangle(turn_motor_typeDef* p)
   * @retval None.
   * @note   
 */
-static uint8_t motor_stop_priority(turn_motor_typeDef* p)
+static uint8_t turn_motor_stop_priority(turn_motor_typeDef* p)
 {
   if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
-    turn_motor_reentrant_setangle(p);
+    turn_motor_reentrant(p);
     ulog_w("turn","turn motor stop,code is 0X%4.4x",*p->stop_state);
     return 1;
   }
@@ -102,7 +103,7 @@ uint8_t turn_motor_stop(turn_motor_typeDef* p)
  */
 static uint8_t turn_motor_start(int32_t position,float speed,turn_motor_typeDef* p)
 {
-  if (motor_stop_priority(p))
+  if (turn_motor_stop_priority(p))
     return 0X01;
   
   return motor_profile_position(position,speed,0,1,p->nodeID);
@@ -134,6 +135,9 @@ static float angle_conversion(float angle)
 */
 static float angle_range_judgment(turn_motor_typeDef *p,float angle)
 {
+  p->max_angle = *p->mb.max_angle;//最大角度
+  p->min_angle = *p->mb.min_angle;//最小角度
+
   if(p->min_angle == 0 && p->max_angle == 0)
     return angle;
   if(p->min_angle <= angle && angle <= p->max_angle)
@@ -202,29 +206,156 @@ float turn_motor_get_angle(turn_motor_typeDef* p)
   degree = angle_conversion(degree);
   return degree;
 }
-/**
- * @brief  获取转向电机超出角度标志
- * @param  p                
- * @retval true 
- * @retval false 
- */
-bool turn_motor_get_over_range(turn_motor_typeDef* p)
-{
-  return p->over_range;
-}
-/**
- * @brief  设置转向电机角度范围
- * @param  max              
- * @param  min              
- * @param  p                
- */
-void turn_motor_set_angle_range(int16_t max,int16_t min,turn_motor_typeDef* p)
-{
-  p->max_angle = max;
-  p->min_angle = min;
-}
 /******************************行走电机函数**************************************/
+/**
+  * @brief  
+  * @param  None.
+  * @retval None.
+  * @note   
+*/
+void walk_motor_reentrant(walk_motor_typeDef* p)
+{
 
+}
+/**
+  * @brief  行走电机急停优先级.
+  * @param  p
+  * @retval None.
+  * @note   
+*/
+static uint8_t walk_motor_stop_priority(walk_motor_typeDef* p)
+{
+  if(*p->stop_state != NO_STOP)
+  {
+    walk_motor_stop(p);
+    walk_motor_reentrant(p);
+    ulog_w("walk","walk motor stop,code is 0X%4.4x",*p->stop_state);
+    return 1;
+  }
+  else
+    return 0;
+}
+/**
+ * @brief 行走电机使能
+ * @param  p
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01
+ * @note  初始化为速度规划模式
+ */
+uint8_t walk_motor_enable(walk_motor_typeDef* p)
+{
+  return motor_on_profile_velocity(p->nodeID);
+}
+/**
+ * @brief 行走电机禁用
+ * @param  p
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01
+ * @note  关闭电机使能
+ */
+uint8_t walk_motor_disable(walk_motor_typeDef* p)
+{
+  return motor_off(p->nodeID);
+}
+/**
+ * @brief  行走电机停止运动控制
+ * @param  p   
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01     
+ * @note   none
+ */
+uint8_t walk_motor_stop(walk_motor_typeDef* p)
+{
+  return 0;
+}
+/**
+ * @brief  行走电机开始运动控制
+    
+ * @param  speed 单位：RPM
+ * @param  p
+ * @retval 成功返回0X00,模式错误返回0XFF.超时返回0XFE.
+           触发急停返回0X01
+ * @note   速度规划模式    
+ */
+static uint8_t walk_motor_start(int16_t speed,walk_motor_typeDef* p)
+{
+  if (walk_motor_stop_priority(p))
+    return 0X01;
+  
+  return motor_profile_velocity(speed,p->nodeID);
+}
+/**
+  * @brief  判断电机速度范围
+  * @param  SMove_AngleTypeDef 电机速度结构体
+  * @param  input ：需要判读的速度
+  * @retval None
+  * @note   判断是否超出，超出设置为临界值
+            若没有设置速度范围，则不判断范围限制，返回输入值
+*/
+static float speed_range_judgment(walk_motor_typeDef *p,float input)
+{
+  float speed = fabs(input);
+
+  p->max_speed = *p->mb.max_speed;//最大数度
+  p->min_speed = 0;
+
+  if(p->min_speed == 0 && p->max_speed == 0)
+    return speed;
+
+  if(p->min_speed <= speed && speed <= p->max_speed)
+  {
+    *p->over_range = false;//输入没有超出
+  }
+  else if(speed < p->min_speed)
+  {
+    speed = p->min_speed;
+    *p->over_range = true;//输入超出
+    ulog_w("walk","Input beyond minimum speed");
+  }
+  else if(speed > p->max_speed)
+  {
+    speed = p->max_speed;
+    *p->over_range = true;//输入超出
+    ulog_w("walk","Input beyond maximum speed");
+  }
+  return speed;
+}
+/**
+ * @brief  行走电机速度控制  
+ * @param  speed  单位 RPM
+ * @param  p                
+ * @note   成功返回0X00,模式错误返回0XFF.超时返回0XFE
+           触发急停返回0X01,速度无变化返回0X02
+ * @note   
+ */
+uint8_t walk_motor_speed_control(float speed,walk_motor_typeDef* p)
+{
+  /*角度更新判断*/
+  p->err  = speed - p->last;
+  p->last = speed;
+  
+  if(p->err != 0)
+  {
+    //速度限幅
+    speed = speed_range_judgment(p,speed);
+    //开始运动
+    return walk_motor_start(speed,p);
+  }
+  return 0X02;
+}
+/**
+  * @brief  返回电机速度
+  * @param  p
+  * @retval 速度 RPM
+  * @note   
+*/
+float walk_motor_get_speed(walk_motor_typeDef* p)
+{
+  long speed;
+  //获取速度
+  motor_get_velocity(&speed,p->nodeID);
+  return (float)speed / 10;//注意单位为0.1rpm
+}
 /******************************公共函数******************************************/
 /**
  * @brief  电机初始化线程
@@ -235,12 +366,27 @@ static void motor_init_thread(void * p)
 {
   turn_motor[0].nodeID = SERVO_NODEID_1;
   nodeID_get_config(&turn_motor[0].cfg,turn_motor[0].nodeID);
+  walk_motor[0].nodeID = SERVO_NODEID_2;
+  nodeID_get_config(&walk_motor[0].cfg,walk_motor[0].nodeID);
 
+  uint16_t event = 0;
+  USER_SET_BIT(event,1); 
+  USER_SET_BIT(event,2);
   while(1)
   {
     if(getNodeState(OD_Data,turn_motor[0].nodeID) == Operational)
     {
-      MB_TURN_SET;
+      MB_TURN1_SET;
+      USER_CLEAR_BIT(event,1); 
+    }
+    if(getNodeState(OD_Data,walk_motor[0].nodeID) == Operational)
+    {
+      MB_WALK1_SET;
+      USER_CLEAR_BIT(event,2); 
+    }
+    if(event == 0)
+    {
+      rt_kprintf("All the motors have been powered on and enabled\n");
       return;
     }
     rt_thread_mdelay(1);
