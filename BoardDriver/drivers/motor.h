@@ -77,7 +77,7 @@ typedef struct
  */
 typedef struct
 {
-  uint16_t* speed;
+  int16_t* speed;
   uint16_t* max_speed;
 }modbus_walk;
 /**

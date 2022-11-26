@@ -30,7 +30,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 Beat_TypeDef debug_beat;
-bool beat_enable = true;
+bool beat_enable = true;  //心跳监控开关
 /* Private function prototypes -----------------------------------------------*/
 /**
  * @brief 心跳回调函数
@@ -43,6 +43,8 @@ static void debug_beat_callback(uint8_t value)
   if(value == true)
   {
     USER_CLEAR_BIT(*turn_motor[0].stop_state,BEAT_STOP);
+    USER_CLEAR_BIT(*walk_motor[0].stop_state,BEAT_STOP);
+
     if(err_cnt)
     {
       LOG_I("Heartbeat communication recovery");
@@ -52,6 +54,8 @@ static void debug_beat_callback(uint8_t value)
   else
   {
     USER_SET_BIT(*turn_motor[0].stop_state,BEAT_STOP); 
+    USER_SET_BIT(*walk_motor[0].stop_state,BEAT_STOP); 
+
     if(!(++err_cnt % (5000 / BEAT_PERIOD_TIME)) && err_cnt != 0)
     {
       LOG_W("Abnormal heartbeat,cnt = %d",err_cnt);
@@ -141,7 +145,6 @@ int monitor_init(void)
   * @retval None
   * @note   None
 */
-
 int beat_cmd(uint8_t argc, char **argv)
 {
 #define BEAT_CMD_ON                    0
@@ -189,17 +192,4 @@ int beat_cmd(uint8_t argc, char **argv)
   return RT_EOK;
 }
 MSH_CMD_EXPORT(beat_cmd,beat_cmd);
-/**
-  * @brief  停止代码查询
-  * @param  None
-  * @retval None
-  * @note   None
-*/
-
-int motor_get_stopcode(uint8_t argc, char **argv)
-{
-  rt_kprintf("Turn motor stop code is 0X%04X\n"  ,*turn_motor[0].stop_state);
-  return RT_EOK;
-}
-MSH_CMD_EXPORT(motor_get_stopcode,motor stop code get);
 #endif /*RT_USING_MSH*/

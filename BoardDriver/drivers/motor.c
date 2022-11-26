@@ -295,30 +295,33 @@ static uint8_t walk_motor_start(int16_t speed,walk_motor_typeDef* p)
 static float speed_range_judgment(walk_motor_typeDef *p,float input)
 {
   float speed = fabs(input);
+  int8_t flag = ((input > 0) ? 1 : -1);//正负符号
 
-  p->max_speed = *p->mb.max_speed;//最大数度
+  p->max_speed = *p->mb.max_speed;//最大速度
   p->min_speed = 0;
 
   if(p->min_speed == 0 && p->max_speed == 0)
-    return speed;
+    return speed * flag;
 
   if(p->min_speed <= speed && speed <= p->max_speed)
   {
     *p->over_range = false;//输入没有超出
+    return speed * flag;
   }
   else if(speed < p->min_speed)
   {
-    speed = p->min_speed;
+    speed = p->min_speed * flag;
     *p->over_range = true;//输入超出
     ulog_w("walk","Input beyond minimum speed");
   }
   else if(speed > p->max_speed)
   {
-    speed = p->max_speed;
+    speed = p->max_speed * flag;
     *p->over_range = true;//输入超出
     ulog_w("walk","Input beyond maximum speed");
   }
-  return speed;
+
+  return speed * flag;
 }
 /**
  * @brief  行走电机速度控制  
@@ -417,3 +420,18 @@ void motor_init(void)
       LOG_E("motor_init created failed.");
   }
 }
+#ifdef RT_USING_MSH
+/**
+  * @brief  停止代码查询
+  * @param  None
+  * @retval None
+  * @note   None
+*/
+int motor_get_stop(uint8_t argc, char **argv)
+{
+  rt_kprintf("Turn motor 0 stop code is 0X%04X\n"  ,*turn_motor[0].stop_state);
+  rt_kprintf("Walk motor 0 stop code is 0X%04X\n"  ,*walk_motor[0].stop_state);
+  return RT_EOK;
+}
+MSH_CMD_EXPORT(motor_get_stop,motor stop code get);
+#endif /*RT_USING_MSH*/
