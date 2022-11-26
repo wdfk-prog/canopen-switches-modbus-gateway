@@ -45,7 +45,6 @@ void modbus_slave_register_default(void)
   _tab_registers[16]  = 20;                           //寻找 Z脉冲速度   单位0.1rpm
   //17D~21D 电机参数区域
   //31D~40D心跳时间参数区域
-  _tab_registers[38] = 0X80; //调试串口心跳不使能
   //41D~60D 转向电机区域
   _tab_registers[49] = TURN_MOTOR0_SPEED_DEFAULT;    //转向电机[0]速度输入 单位0.1RPM
   _tab_registers[53] = TURN_MOTOR0_MAX_ANGLE_DEFAULT;//转向电机[0]最大角度
