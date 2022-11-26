@@ -72,13 +72,13 @@ static void debug_beat_callback(uint8_t value)
 static void debug_beat_monitor(void)
 {
   uint16_t beat = *debug_beat.value;
-  static bool flag = false;
+  static uint8_t flag = 0;
   if(USER_GET_BIT(beat,7) == true)
   {
-    if(flag == true)
+    if(flag == 0 || flag == 2)
     {
       ulog_i("debug","The heartbeat protection is enabled");
-      flag = false;
+      flag = 1;
     }
 
     beat = beat & 0X7F;//清除最高位
@@ -99,10 +99,10 @@ static void debug_beat_monitor(void)
   }
   else
   {
-    if(flag == false)
+    if(flag == 0 || flag == 1)
     {
       ulog_i("debug","The heartbeat protection is disabled");
-      flag = true;
+      flag = 2;
     }
 
     *debug_beat.flag = true;
