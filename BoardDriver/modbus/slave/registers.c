@@ -91,7 +91,7 @@ void modbus_slave_register_init(void)
   turn_motor[0].mb.max_angle = &_tab_registers[53];//转向电机[0]最大角度
   turn_motor[0].mb.min_angle = &_tab_registers[54];//转向电机[0]最小角度
   //61D~70D 行走电机区域
-  walk_motor[0].mb.speed     = &_tab_registers[61];//行走电机[0]速度输入 单位:0.1RPM
+  walk_motor[0].mb.speed     = (int16_t*)&_tab_registers[61];//行走电机[0]速度输入 单位:0.1RPM
   walk_motor[0].mb.max_speed = &_tab_registers[65];//行走电机[0]最大速度 单位:RPM
 }
 /**
