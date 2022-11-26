@@ -49,20 +49,21 @@ void turn_motor_reentrant(turn_motor_typeDef* p)
 */
 static uint8_t turn_motor_stop_priority(turn_motor_typeDef* p)
 {
-  static uint16_t err_cnt = 0;
+  static uint16_t last_code = NO_STOP;
+
   if(*p->stop_state != NO_STOP)
   {
     turn_motor_stop(p);
     turn_motor_reentrant(p);
-    if(!(++err_cnt % (5000 / 10)) && err_cnt != 0)
+    if(last_code != *p->stop_state)
     {
       ulog_w("turn","turn motor stop,code is 0X%4.4x",*p->stop_state);
     }
+    last_code = *p->stop_state;
     return 1;
   }
   else
   {
-    err_cnt = 0;
     return 0;
   }
 }
@@ -235,19 +236,19 @@ void walk_motor_reentrant(walk_motor_typeDef* p)
 */
 static uint8_t walk_motor_stop_priority(walk_motor_typeDef* p)
 {
-  static uint16_t err_cnt = 0;
+  static uint16_t last_code = NO_STOP;
   if(*p->stop_state != NO_STOP)
   {
     walk_motor_stop(p);
-    if(!(++err_cnt % (5000 / 10)) && err_cnt != 0)
+    if(last_code != *p->stop_state)
     {
       ulog_w("walk","walk motor stop,code is 0X%4.4x",*p->stop_state);
     }
+    last_code = *p->stop_state;
     return 1;
   }
   else
   {
-    err_cnt = 0;
     return 0;
   }
 }
@@ -408,7 +409,7 @@ static void motor_init_thread(void * p)
     }
     if(event == 0)
     {
-      ulog_i("motor","All the motors have been powered on and enabled\n");
+      ulog_i("motor","All the motors have been powered on and enabled");
       return;
     }
     rt_thread_mdelay(1);

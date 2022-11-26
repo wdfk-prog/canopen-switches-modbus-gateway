@@ -45,20 +45,21 @@ static void debug_beat_callback(uint8_t value)
     USER_CLEAR_BIT(*turn_motor[0].stop_state,BEAT_STOP);
     USER_CLEAR_BIT(*walk_motor[0].stop_state,BEAT_STOP);
 
-    if(err_cnt)
+    if(err_cnt == 1)
     {
       LOG_I("Heartbeat communication recovery");
+      err_cnt = 0;
     }
-    err_cnt = 0;
   }
   else
   {
     USER_SET_BIT(*turn_motor[0].stop_state,BEAT_STOP); 
     USER_SET_BIT(*walk_motor[0].stop_state,BEAT_STOP); 
 
-    if(!(++err_cnt % (5000 / BEAT_PERIOD_TIME)) && err_cnt != 0)
+    if(err_cnt == 0)
     {
-      LOG_W("Abnormal heartbeat,cnt = %d",err_cnt);
+      err_cnt = 1;
+      LOG_W("Abnormal heartbeat");
     }
   }
 }
@@ -71,7 +72,6 @@ static void debug_beat_callback(uint8_t value)
 static void debug_beat_monitor(void)
 {
   uint16_t beat = *debug_beat.value;
- 
   if(USER_GET_BIT(beat,7) == true)
   {
     beat = beat & 0X7F;//清除最高位
