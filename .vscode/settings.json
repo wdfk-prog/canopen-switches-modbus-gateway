@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "master402_od.h": "c",
+        "canopen_callback.h": "c",
+        "master402_canopen.h": "c"
+    },
+    "RTT_Studio.Build.Parallel_Jobs": "16"
+}
