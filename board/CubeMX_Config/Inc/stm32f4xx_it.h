@@ -43,12 +43,20 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "main.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+/** 
+  * @brief  引脚参数 structures definition  
+  */  
+typedef struct
+{
+  GPIO_TypeDef* GPIOx;                  //引脚段
+  uint16_t GPIO_Pin;                    //引脚位
+  GPIO_PinState level;                  //电平
+}PinTypeDef;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
