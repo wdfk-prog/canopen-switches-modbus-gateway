@@ -71,6 +71,7 @@ extern void motor_init(void);
 extern int modbus_init(void);
 extern int monitor_init(void);
 static int Version(void);
+extern void lifter_motor_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -87,6 +88,7 @@ int main(void)
   monitor_init();
   modbus_init();
   motor_init();
+  lifter_motor_init();
   Version();
 }
 /* USER CODE END 0 */
