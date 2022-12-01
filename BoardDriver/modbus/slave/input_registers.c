@@ -17,6 +17,7 @@
 #include "master402_canopen.h"
 #include "filesystem.h"
 #include "motor_control.h"
+#include "lifter_motor.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -82,6 +83,8 @@ void modbus_slave_input_register_init(void)
   turn_motor[0].stop_state = &_tab_input_registers[53]; //转向电机[0]停止代码
   //61D~70D 行走电机区域
   walk_motor[0].stop_state = &_tab_input_registers[65]; //行走电机[0]停止代码
+  //71D~80D 升降电机区域
+  lifter_motor.stop_state  = &_tab_input_registers[71]; //升降电机停止代码
 }
 /**
   * @brief  写入本机数据至输入寄存器中

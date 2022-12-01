@@ -15,6 +15,7 @@
 #include "modbus_slave_common.h"
 /* Private includes ----------------------------------------------------------*/
 #include "motor.h"
+#include "lifter_motor.h"
 #include "monitor.h"
 /* Private typedef -----------------------------------------------------------*/
 
@@ -53,6 +54,8 @@ void modbus_slave_register_default(void)
   //41D~60D 转向电机区域
   //61D~70D 行走电机区域
   _tab_registers[65] = WALK_MOTOR0_MAX_SPEED_DEFAULT;//行走电机[0]最大速度 单位RPM
+  //71D~80D 升降电机区域
+  
 }
 /**
   * @brief  保持寄存器初始化
@@ -93,6 +96,10 @@ void modbus_slave_register_init(void)
   //61D~70D 行走电机区域
   walk_motor[0].mb.speed     = (int16_t*)&_tab_registers[61];//行走电机[0]速度输入 单位:0.1RPM
   walk_motor[0].mb.max_speed = &_tab_registers[65];//行走电机[0]最大速度 单位:RPM
+  //71D~80D 升降电机区域
+  lifter_motor.target        = (int16_t*)&_tab_registers[71];//升降电机定位高度 单位:mm
+
+  lifter_motor.feedback      = (int16_t*)&_tab_registers[80];//升降电机定位高度 单位:mm 
 }
 /**
   * @brief  读取保持寄存器至本机数据中
