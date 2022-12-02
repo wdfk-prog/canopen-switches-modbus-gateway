@@ -43,5 +43,10 @@
   "path": "/packages/misc/CanFestival", 
   "ver": "latest", 
   "name": "CANFESTIVAL"
+ }, 
+ {
+  "path": "/packages/misc/MFBD", 
+  "ver": "latest", 
+  "name": "MFBD"
  }
 ]
