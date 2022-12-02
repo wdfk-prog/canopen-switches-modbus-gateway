@@ -102,7 +102,7 @@ typedef struct
 }mbkey;
 /* private define ------------------------------------------------------------*/
 /* 线程配置 */
-#define THREAD_PRIORITY      5//线程优先级
+#define THREAD_PRIORITY      6//线程优先级
 #define THREAD_TIMESLICE     10//线程时间片
 #define THREAD_STACK_SIZE    1024//栈大小
 /* private macro -------------------------------------------------------------*/

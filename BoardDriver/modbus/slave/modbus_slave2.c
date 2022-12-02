@@ -36,7 +36,7 @@ struct rx_msg
 #define IRQ_PRIORITY  3
 /* Private macro -------------------------------------------------------------*/
 /* 线程配置 */
-#define THREAD_PRIORITY      4//线程优先级
+#define THREAD_PRIORITY      5//线程优先级
 #define THREAD_TIMESLICE     10//线程时间片
 #define THREAD_STACK_SIZE    2048//栈大小
 
