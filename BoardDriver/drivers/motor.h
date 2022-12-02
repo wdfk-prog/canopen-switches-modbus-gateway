@@ -26,7 +26,7 @@ extern "C" {
 typedef enum
 {
   NO_STOP = 0x00U,//无停止            0x00
-  HARD_STOP,      //硬件急停          0x02
+  HARD_STOP     , //硬件急停          0x02
   SOFT_STOP     , //软急停            0x04
   Detection_STOP, //心跳异常          0x08
   ENABLE_STOP   , //电机关闭使能      0x10
@@ -62,15 +62,15 @@ typedef struct
  */
 typedef struct
 {
-  uint8_t       nodeID;         //电机节点ID
-  uint8_t*      over_range;     //角度超出范围标志
-  uint16_t*     stop_state;     //急停标志
-  int16_t       max_angle;      //最大角度
-  int16_t       min_angle;      //最小角度
-  float         last;           //上一次角度
-  float         err;            //角度更新误差
-  motor_config  cfg;            //电机配置
-  modbus_turn   mb;             //modbus挂钩指针
+  uint8_t         nodeID;         //电机节点ID
+  uint8_t*        over_range;     //角度超出范围标志
+  uint16_t*       stop_state;     //急停标志
+  int16_t         max_angle;      //最大角度
+  int16_t         min_angle;      //最小角度
+  float           last;           //上一次角度
+  float           err;            //角度更新误差
+  motor_config    cfg;            //电机配置
+  modbus_turn     mb;             //modbus挂钩指针
 }turn_motor_typeDef;
 /**
  * @brief MOBDUS-行走电机结构体

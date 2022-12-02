@@ -419,7 +419,7 @@ static void motor_init_thread(void * p)
  * @brief 电机初始化
  * @note  在canopen进去操作模式后进行
  */
-void motor_init(void)
+int motor_init(void)
 {
   rt_err_t ret = RT_EOK;
   /* 创建 MODBUS从机线程*/
@@ -439,6 +439,7 @@ void motor_init(void)
       ret = RT_ERROR;
       LOG_E("motor_init created failed.");
   }
+  return ret;
 }
 #ifdef RT_USING_MSH
 /**

@@ -138,7 +138,7 @@ void lifter_motor_fall_init(lifter_motor_typedef *p)
   * @retval None.
   * @note   None.
 */
-void lifter_motor_init(void)
+int lifter_motor_init(void)
 {
   lifter_motor.period = 10;//ms
 
@@ -171,7 +171,13 @@ void lifter_motor_init(void)
                            RT_TIMER_FLAG_PERIODIC);
 
   /* Æô¶¯¶¨Ê±Æ÷ 1 */
-  if (timer != RT_NULL) rt_timer_start(timer);
+  if (timer != RT_NULL) 
+  {
+    rt_timer_start(timer);
+    return RT_EOK;
+  }
+  else
+    return RT_ERROR;
 }
 /**********************************************************************************/
 /**
