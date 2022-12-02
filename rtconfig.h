@@ -321,6 +321,8 @@
 #define CANFESTIVAL_TIMER_THREAD_PRIO 2
 #define CANFESTIVAL_USING_EG_MASTER402
 #define PKG_USING_CANFESTIVAL_LATEST_VERSION
+#define PKG_USING_MFBD
+#define PKG_USING_MFBD_LATEST_VERSION
 /* end of miscellaneous packages */
 
 /* Arduino libraries */
