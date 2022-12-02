@@ -109,6 +109,8 @@ void Error_Handler(void);
 #define WK_UP_Pin GPIO_PIN_0
 #define WK_UP_GPIO_Port GPIOA
 #define WK_UP_EXTI_IRQn EXTI0_IRQn
+#define VBATT_Pin GPIO_PIN_1
+#define VBATT_GPIO_Port GPIOA
 #define Lift_Reflection_Pin GPIO_PIN_4
 #define Lift_Reflection_GPIO_Port GPIOA
 #define Lift_Reflection_EXTI_IRQn EXTI4_IRQn

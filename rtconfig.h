@@ -101,6 +101,7 @@
 #define RT_SERIAL_USING_DMA
 #define RT_USING_CAN
 #define RT_USING_HWTIMER
+#define RT_USING_ADC
 #define RT_USING_PWM
 #define RT_USING_MTD_NOR
 #define RT_USING_RTC
@@ -388,6 +389,8 @@
 #define BSP_USING_PWM
 #define BSP_USING_PWM14
 #define BSP_USING_PWM14_CH1
+#define BSP_USING_ADC
+#define BSP_USING_ADC1
 #define BSP_USING_ONCHIP_RTC
 #define BSP_RTC_USING_LSE
 #define BSP_USING_WDT
