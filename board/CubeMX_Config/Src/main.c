@@ -67,11 +67,12 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 extern int rtc_update_init(void);
 extern int canopen_init(void);
-extern void motor_init(void);
+extern int mfbd_init(void);
+extern int motor_init(void);
 extern int modbus_init(void);
 extern int monitor_init(void);
 static int Version(void);
-extern void lifter_motor_init(void);
+extern int lifter_motor_init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -84,10 +85,11 @@ extern void lifter_motor_init(void);
 int main(void)
 {
   rtc_update_init();
-  canopen_init();
+  //canopen_init();
   monitor_init();
   modbus_init();
-  motor_init();
+  mfbd_init();
+  //motor_init();
   lifter_motor_init();
   Version();
 }
