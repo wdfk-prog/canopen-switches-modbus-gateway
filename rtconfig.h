@@ -292,6 +292,13 @@
 
 /* peripheral libraries and drivers */
 
+/* sensors drivers */
+
+/* end of sensors drivers */
+
+/* touch drivers */
+
+/* end of touch drivers */
 
 /* Kendryte SDK */
 
@@ -301,6 +308,10 @@
 /* AI packages */
 
 /* end of AI packages */
+
+/* Signal Processing and Control Algorithm Packages */
+
+/* end of Signal Processing and Control Algorithm Packages */
 
 /* miscellaneous packages */
 
@@ -323,11 +334,23 @@
 #define CANFESTIVAL_USING_EG_MASTER402
 #define PKG_USING_CANFESTIVAL_LATEST_VERSION
 #define PKG_USING_MFBD
+#define PKG_MFBD_BTN_CODE_SIZE_2BYTE
+#define PKG_MFBD_BTN_CODE_SIZE 2
+#define PKG_MFBD_BTN_COUNT_SIZE_2BYTE
+#define PKG_MFBD_BTN_COUNT_SIZE 2
+#define PKG_MFBD_BTN_INDEX_SIZE_4BYTE
+#define PKG_MFBD_BTN_INDEX_SIZE 4
+#define PKG_MFBD_USE_NORMAL_BUTTON
 #define PKG_USING_MFBD_LATEST_VERSION
+#define PKG_MFBD_VER_NUM 0x999999
 /* end of miscellaneous packages */
 
 /* Arduino libraries */
 
+
+/* Projects */
+
+/* end of Projects */
 
 /* Sensors */
 
@@ -341,9 +364,28 @@
 
 /* end of Timing */
 
-/* Projects */
+/* Data Processing */
 
-/* end of Projects */
+/* end of Data Processing */
+
+/* Data Storage */
+
+/* Communication */
+
+/* end of Communication */
+
+/* Device Control */
+
+/* end of Device Control */
+
+/* Other */
+
+/* Signal IO */
+
+/* end of Signal IO */
+
+/* Uncategorized */
+
 /* end of Arduino libraries */
 /* end of RT-Thread online packages */
 #define SOC_FAMILY_STM32
