@@ -86,7 +86,7 @@ void rt_cm_backtrace_exception_hook(void *context)
     uint32_t lr;
     uint32_t *other_info_sp = 0;
 
-    rt_enter_critical();
+    rt_interrupt_enter();
 
 #ifdef RT_USING_FINSH
     extern long list_thread(void);
@@ -178,6 +178,8 @@ void rt_cm_backtrace_exception_hook(void *context)
     cmb_println("==============================================================");
 
     cmb_println("Current system tick: %ld", rt_tick_get());
+    
+    rt_interrupt_leave();
 }
 
 #else
@@ -196,8 +198,8 @@ void rt_cm_backtrace_exception_hook(void *context)
 #else
 #define EXC_RETURN_MASK                0x0000000F // Bits[31:5]
 #endif
-        
-    rt_enter_critical();
+
+    rt_interrupt_enter();
 
 #ifdef RT_USING_FINSH
     extern long list_thread(void);
@@ -230,13 +232,15 @@ void rt_cm_backtrace_exception_hook(void *context)
     cm_backtrace_fault(lr, cmb_get_sp() + sizeof(uint32_t) * CMB_SP_WORD_OFFSET);
 
     cmb_println("Current system tick: %ld", rt_tick_get());
+    
+    rt_interrupt_leave();
 }
 
 #endif
 
 void rt_cm_backtrace_assert_hook(const char* ex, const char* func, rt_size_t line)
 {
-    rt_enter_critical();
+    rt_interrupt_enter();
 
 #ifdef RT_USING_FINSH
     extern long list_thread(void);
@@ -249,6 +253,8 @@ void rt_cm_backtrace_assert_hook(const char* ex, const char* func, rt_size_t lin
     cm_backtrace_assert(cmb_get_sp());
 
     cmb_println("Current system tick: %ld", rt_tick_get());
+  
+    rt_interrupt_leave();
 }
 
 RT_WEAK rt_err_t exception_hook(void *context) {
