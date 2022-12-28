@@ -1,4 +1,4 @@
-﻿# get_irq_priority
+﻿﻿# get_irq_priority
 
 [TOC]
 
@@ -7,6 +7,13 @@
 **get_irq_priority软件包** 主要是提供了获取中断优先级的MSH命令.可以获取系统当前使能的中断与中断名以及中断优先级等信息.仿照KEIL的DEBUG中的NVIC实现.
 
 - 目前仅支持STM32系列
+
+| 芯片系列 | 是否支持 | 是否验证 |
+| -------- | -------- | -------- |
+| STM32H7  | 支持     | 验证H750 |
+| STM32F7  | 支持     | 验证F747 |
+| STM32F4  | 支持     | 验证F429 |
+| STM32F1  | 支持     | 验证F103 |
 
 ### 1.1工作原理简述
 
@@ -26,6 +33,7 @@
 get_irq_priority
 ├───inc                             // 头文件目录
 │   |   ```                 		// 中断名称头文件
+|   └───irq_stm32f4.h           	// 中断名称头文件
 │   └───irq_stm32h7.h           	// 中断名称头文件
 ├───src                             // 源码目录
 │   |   get_irq.c	                // 主功能模块
@@ -65,13 +73,19 @@ get_irq_priority package 遵循 LGPLv2.1 许可，详见 `LICENSE` 文件。
 
 组件安装后，在控制台串口中输入nvic_irq_get后回车,既可查看当前使能的中断信息.
 
-### 4.1 STM32F429测试示例
-
-![syswatch_test_mode_0.JPG](figures/syswatch_test_mode_0.JPG)
-
-### 4.2 STM32H750测试示例
+### 4.1 STM32H750测试示例
 
 ![get_irq_priority_1.png](figures/get_irq_priority_1.png)
+
+### 4.2 STM32F429测试示例
+
+![get_irq_priority_3.png](figures/get_irq_priority_3.png)
+
+
+
+### 4.3 STM32F429 中断优先级排序 测试示例
+
+![get_irq_priority_4.png](figures/get_irq_priority_4.png)
 
 ## 5. 联系方式
 
